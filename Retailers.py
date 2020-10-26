@@ -134,69 +134,69 @@ if option == 'Bradlows/Russels':
 # Checkers
 
 elif option == 'Checkers':
-    #try:
-    # Get retailers data
-    df_checkers_retailers_map = df_map
-
-    # Get retailer data
-    df_checkers_data = df_data
-    df_checkers_data.columns = df_checkers_data.iloc[2]
-    df_checkers_data = df_checkers_data.iloc[3:]
-
-    # Rename columns
-    df_checkers_data = df_checkers_data.rename(columns={'Item Code': 'Article'})
-
-    # Merge with Sony Range
-    df_checkers_merged = df_checkers_data.merge(df_checkers_retailers_map, how='left', on='Article')
-
-    # Find missing data
-    missing_model_checkers = df_checkers_merged['SMD Code'].isnull()
-    df_checkers_missing_model = df_checkers_merged[missing_model_checkers]
-    checkers_unique_title = df_checkers_missing_model['Description'].unique()
-    checkers_unique_SKU = df_checkers_missing_model['Article'].unique()
-    dict_checkers_unique_title = dict(zip(checkers_unique_SKU, checkers_unique_title))
-    missing_rsp_checkers = df_checkers_merged['RSP'].isnull()
-    df_checkers_missing_rsp = df_checkers_merged[missing_rsp_checkers]
-    checkers_unique_title_2 = df_checkers_missing_rsp['Description'].unique()
-    checkers_unique_SKU_2 = df_checkers_missing_rsp['Article'].unique()
-    dict_checkers_unique_title_2 = dict(zip(checkers_unique_SKU_2, checkers_unique_title_2))
-    st.write("The following products are missing the SMD code on the map: ")
-    dict_checkers_unique_title
-    st.write("The following products are missing the RSP on the map: ")
-    dict_checkers_unique_title_2
-
-    #except:
-        #st.write('File not selected yet')
-
     try:
-        # Add columns for dates
-        df_checkers_merged['Start Date'] = Date_Format_S
+        # Get retailers data
+        df_checkers_retailers_map = df_map
 
-        # Add Total Amount column
-        Units_Sold = 'Units :'+ Day +' '+ Short_Date_Dict[Month] + ' ' + Year
-        df_checkers_merged['Total Amt'] = df_checkers_merged[Units_Sold] * df_checkers_merged['RSP']
-
-        # Add column for retailer and SOH
-        df_checkers_merged['Forecast Group'] = 'Checkers'
-        df_checkers_merged['SOH Qty'] = 0
+        # Get retailer data
+        df_checkers_data = df_data
+        df_checkers_data.columns = df_checkers_data.iloc[2]
+        df_checkers_data = df_checkers_data.iloc[3:]
 
         # Rename columns
-        df_checkers_merged = df_checkers_merged.rename(columns={'Article': 'SKU No.'})
-        df_checkers_merged = df_checkers_merged.rename(columns={Units_Sold: 'Sales Qty'})
-        df_checkers_merged = df_checkers_merged.rename(columns={'SMD Code': 'Product Code'})
-        df_checkers_merged = df_checkers_merged.rename(columns={'Branch': 'Store Name'})
+        df_checkers_data = df_checkers_data.rename(columns={'Item Code': 'Article'})
 
-        # Final df. Don't change these headings. Rather change the ones above
-        final_df_checkers_sales = df_checkers_merged[['Start Date','SKU No.', 'Product Code', 'Forecast Group','Store Name','SOH Qty','Sales Qty','Total Amt']]
+        # Merge with Sony Range
+        df_checkers_merged = df_checkers_data.merge(df_checkers_retailers_map, how='left', on='Article')
 
-        # Show final df
-        final_df_checkers_sales
+        # Find missing data
+        missing_model_checkers = df_checkers_merged['SMD Code'].isnull()
+        df_checkers_missing_model = df_checkers_merged[missing_model_checkers]
+        checkers_unique_title = df_checkers_missing_model['Description'].unique()
+        checkers_unique_SKU = df_checkers_missing_model['Article'].unique()
+        dict_checkers_unique_title = dict(zip(checkers_unique_SKU, checkers_unique_title))
+        missing_rsp_checkers = df_checkers_merged['RSP'].isnull()
+        df_checkers_missing_rsp = df_checkers_merged[missing_rsp_checkers]
+        checkers_unique_title_2 = df_checkers_missing_rsp['Description'].unique()
+        checkers_unique_SKU_2 = df_checkers_missing_rsp['Article'].unique()
+        dict_checkers_unique_title_2 = dict(zip(checkers_unique_SKU_2, checkers_unique_title_2))
+        st.write("The following products are missing the SMD code on the map: ")
+        dict_checkers_unique_title
+        st.write("The following products are missing the RSP on the map: ")
+        dict_checkers_unique_title_2
 
-        # Output to .xlsx
-        st.write('Please ensure that no products are missing before downloading!')
-        st.markdown(get_table_download_link(final_df_checkers_sales), unsafe_allow_html=True)
     except:
-        st.write('Check data')
+        st.write('File not selected yet')
+
+    #try:
+    # Add columns for dates
+    df_checkers_merged['Start Date'] = Date_Format_S
+
+    # Add Total Amount column
+    Units_Sold = 'Units :'+ Day +' '+ Short_Date_Dict[Month] + ' ' + Year
+    df_checkers_merged['Total Amt'] = df_checkers_merged[Units_Sold] * df_checkers_merged['RSP']
+
+    # Add column for retailer and SOH
+    df_checkers_merged['Forecast Group'] = 'Checkers'
+    df_checkers_merged['SOH Qty'] = 0
+
+    # Rename columns
+    df_checkers_merged = df_checkers_merged.rename(columns={'Article': 'SKU No.'})
+    df_checkers_merged = df_checkers_merged.rename(columns={Units_Sold: 'Sales Qty'})
+    df_checkers_merged = df_checkers_merged.rename(columns={'SMD Code': 'Product Code'})
+    df_checkers_merged = df_checkers_merged.rename(columns={'Branch': 'Store Name'})
+
+    # Final df. Don't change these headings. Rather change the ones above
+    final_df_checkers_sales = df_checkers_merged[['Start Date','SKU No.', 'Product Code', 'Forecast Group','Store Name','SOH Qty','Sales Qty','Total Amt']]
+
+    # Show final df
+    final_df_checkers_sales
+
+    # Output to .xlsx
+    st.write('Please ensure that no products are missing before downloading!')
+    st.markdown(get_table_download_link(final_df_checkers_sales), unsafe_allow_html=True)
+    #except:
+        #st.write('Check data')
 
 
 # Musica
