@@ -134,39 +134,39 @@ if option == 'Bradlows/Russels':
 # Checkers
 
 elif option == 'Checkers':
-    try:
-        # Get retailers data
-        df_checkers_retailers_map = df_map
+    #try:
+    # Get retailers data
+    df_checkers_retailers_map = df_map
 
-        # Get retailer data
-        df_checkers_data = df_data
-        df_checkers_data.columns = df_checkers_data.iloc[2]
-        df_checkers_data = df_checkers_data.iloc[3:]
+    # Get retailer data
+    df_checkers_data = df_data
+    df_checkers_data.columns = df_checkers_data.iloc[2]
+    df_checkers_data = df_checkers_data.iloc[3:]
 
-        # Rename columns
-        df_checkers_data = df_checkers_data.rename(columns={'Item Code': 'Article'})
-        
-        # Merge with Sony Range
-        df_checkers_merged = df_checkers_data.merge(df_checkers_retailers_map, how='left', on='Article')
-        
-        # Find missing data
-        missing_model_checkers = df_checkers_merged['SMD Code'].isnull()
-        df_checkers_missing_model = df_checkers_merged[missing_model_checkers]
-        checkers_unique_title = df_checkers_missing_model['Description'].unique()
-        checkers_unique_SKU = df_checkers_missing_model['Article'].unique()
-        dict_checkers_unique_title = dict(zip(checkers_unique_SKU, checkers_unique_title))
-        missing_rsp_checkers = df_checkers_merged['RSP'].isnull()
-        df_checkers_missing_rsp = df_checkers_merged[missing_rsp_checkers]
-        checkers_unique_title_2 = df_checkers_missing_rsp['Description'].unique()
-        checkers_unique_SKU_2 = df_checkers_missing_rsp['Article'].unique()
-        dict_checkers_unique_title_2 = dict(zip(checkers_unique_SKU_2, checkers_unique_title_2))
-        st.write("The following products are missing the SMD code on the map: ")
-        dict_checkers_unique_title
-        st.write("The following products are missing the RSP on the map: ")
-        dict_checkers_unique_title_2
+    # Rename columns
+    df_checkers_data = df_checkers_data.rename(columns={'Item Code': 'Article'})
 
-    except:
-        st.write('File not selected yet')
+    # Merge with Sony Range
+    df_checkers_merged = df_checkers_data.merge(df_checkers_retailers_map, how='left', on='Article')
+
+    # Find missing data
+    missing_model_checkers = df_checkers_merged['SMD Code'].isnull()
+    df_checkers_missing_model = df_checkers_merged[missing_model_checkers]
+    checkers_unique_title = df_checkers_missing_model['Description'].unique()
+    checkers_unique_SKU = df_checkers_missing_model['Article'].unique()
+    dict_checkers_unique_title = dict(zip(checkers_unique_SKU, checkers_unique_title))
+    missing_rsp_checkers = df_checkers_merged['RSP'].isnull()
+    df_checkers_missing_rsp = df_checkers_merged[missing_rsp_checkers]
+    checkers_unique_title_2 = df_checkers_missing_rsp['Description'].unique()
+    checkers_unique_SKU_2 = df_checkers_missing_rsp['Article'].unique()
+    dict_checkers_unique_title_2 = dict(zip(checkers_unique_SKU_2, checkers_unique_title_2))
+    st.write("The following products are missing the SMD code on the map: ")
+    dict_checkers_unique_title
+    st.write("The following products are missing the RSP on the map: ")
+    dict_checkers_unique_title_2
+
+    #except:
+        #st.write('File not selected yet')
 
     try:
         # Add columns for dates
