@@ -86,18 +86,18 @@ if option == 'Bradlows/Russels':
         # Find missing data
         missing_model_br = df_br_data_merged['Product Code'].isnull()
         df_br_missing_model = df_br_data_merged[missing_model_br]
-        br_unique_title = df_br_missing_model['Description'].unique()
-        br_unique_SKU = df_br_missing_model['SKU No. B&R'].unique()
-        dict_br_unique_title = dict(zip(br_unique_SKU, br_unique_title))
+        df_missing = df_br_missing_model[['SKU No. B&R','Description']]
+        df_missing_unique = df_missing.drop_duplicates()
+        st.write("The following products are missing the SMD code on the map: ")
+        st.table(df_missing_unique)
+        st.write(" ")
+
         missing_rsp_br = df_br_data_merged['RSP'].isnull()
         df_br_missing_rsp = df_br_data_merged[missing_rsp_br]
-        br_unique_title_2 = df_br_missing_rsp['Description'].unique()
-        br_unique_SKU_2 = df_br_missing_rsp['SKU No. B&R'].unique()
-        dict_br_unique_title_2 = dict(zip(br_unique_SKU_2, br_unique_title_2))
-        st.write("The following products are missing the SMD code on the map: ")
-        dict_br_unique_title
+        df_missing_2 = df_br_missing_rsp[['SKU No. B&R','Description']]
+        df_missing_unique_2 = df_missing_2.drop_duplicates()
         st.write("The following products are missing the RSP on the map: ")
-        dict_br_unique_title_2
+        st.table(df_missing_unique_2)
 
     except:
         st.write('File not selected yet')
