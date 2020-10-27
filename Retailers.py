@@ -217,19 +217,19 @@ elif option == 'Musica':
         # Find missing data
         missing_model = df_musica_merged['SMD code'].isnull()
         df_musica_missing_model = df_musica_merged[missing_model]
-        musica_unique_title = df_musica_missing_model['Title Desc'].unique()
-        musica_unique_SKU = df_musica_missing_model['Musica Code'].unique() 
-        dict_musica_unique_title = dict(zip(musica_unique_SKU, musica_unique_title))
+        df_missing = df_musica_missing_model[['Title Desc', 'Musica Code']]
+        df_missing_unique = df_missing.drop_duplicates()
         st.write("The following products are missing the SMD code on the map: ")
-        dict_musica_unique_title
+        st.table(df_missing_unique)
+
         st.write(" ")
         missing_rsp = df_musica_merged['RSP'].isnull()
         df_musica_missing_rsp = df_musica_merged[missing_rsp]
-        musica_unique_title_2 = df_musica_missing_rsp['Title Desc'].unique()
-        musica_unique_SKU_2 = df_musica_missing_rsp['Musica Code'].unique() 
-        dict_musica_unique_title_2 = dict(zip(musica_unique_SKU_2, musica_unique_title_2))
+        df_missing_2 = df_musica_missing_rsp[['Title Desc', 'Musica Code']]
+        df_missing_unique_2 = df_missing_2.drop_duplicates()
         st.write("The following products are missing the RSP on the map: ")
-        dict_musica_unique_title_2
+        st.table(df_missing_unique_2)
+
 
     except:
         st.write('File not selected yet')
