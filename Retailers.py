@@ -153,7 +153,7 @@ elif option == 'Checkers':
         # Find missing data
         missing_model_checkers = df_checkers_merged['SMD Code'].isnull()
         df_checkers_missing_model = df_checkers_merged[missing_model_checkers]
-        df_missing = df_musica_missing_model[['Article','Description']]
+        df_missing = df_checkers_missing_model[['Article','Description']]
         df_missing_unique = df_missing.drop_duplicates()
         st.write("The following products are missing the SMD code on the map: ")
         st.table(df_missing_unique)
@@ -161,7 +161,7 @@ elif option == 'Checkers':
 
         missing_rsp_checkers = df_checkers_merged['RSP'].isnull()
         df_checkers_missing_rsp = df_checkers_merged[missing_rsp_checkers]
-        df_missing_2 = df_musica_missing_rsp[['Article','Description']]
+        df_missing_2 = df_checkers_missing_rsp[['Article','Description']]
         df_missing_unique_2 = df_missing_2.drop_duplicates()
         st.write("The following products are missing the RSP on the map: ")
         st.table(df_missing_unique_2)
