@@ -217,7 +217,7 @@ elif option == 'Musica':
         # Find missing data
         missing_model = df_musica_merged['SMD code'].isnull()
         df_musica_missing_model = df_musica_merged[missing_model]
-        df_missing = df_musica_missing_model[['Title Desc', 'Musica Code']]
+        df_missing = df_musica_missing_model[['Musica Code','Title Desc']]
         df_missing_unique = df_missing.drop_duplicates()
         st.write("The following products are missing the SMD code on the map: ")
         st.table(df_missing_unique)
@@ -225,7 +225,7 @@ elif option == 'Musica':
         st.write(" ")
         missing_rsp = df_musica_merged['RSP'].isnull()
         df_musica_missing_rsp = df_musica_merged[missing_rsp]
-        df_missing_2 = df_musica_missing_rsp[['Title Desc', 'Musica Code']]
+        df_missing_2 = df_musica_missing_rsp[['Musica Code','Title Desc']]
         df_missing_unique_2 = df_missing_2.drop_duplicates()
         st.write("The following products are missing the RSP on the map: ")
         st.table(df_missing_unique_2)
