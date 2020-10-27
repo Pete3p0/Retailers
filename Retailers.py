@@ -122,6 +122,7 @@ if option == 'Bradlows/Russels':
         final_df_br = df_br_data_merged[['Start Date','SKU No.', 'Product Code', 'Forecast Group','Store Name','SOH Qty','Sales Qty','Total Amt']]
 
         # Show final df
+        st.write('Final table:')
         final_df_br
 
         # Output to .xlsx
@@ -145,10 +146,10 @@ elif option == 'Checkers':
 
         # Rename columns
         df_checkers_data = df_checkers_data.rename(columns={'Item Code': 'Article'})
-
+        
         # Merge with Sony Range
         df_checkers_merged = df_checkers_data.merge(df_checkers_retailers_map, how='left', on='Article')
-
+        
         # Find missing data
         missing_model_checkers = df_checkers_merged['SMD Code'].isnull()
         df_checkers_missing_model = df_checkers_merged[missing_model_checkers]
@@ -190,6 +191,7 @@ elif option == 'Checkers':
         final_df_checkers_sales = df_checkers_merged[['Start Date','SKU No.', 'Product Code', 'Forecast Group','Store Name','SOH Qty','Sales Qty','Total Amt']]
 
         # Show final df
+        st.write('Final table:')
         final_df_checkers_sales
 
         # Output to .xlsx
@@ -249,6 +251,7 @@ elif option == 'Musica':
         final_df_musica = df_musica_merged[['Start Date','SKU No.', 'Product Code', 'Forecast Group','Store Name','SOH Qty','Sales Qty','Total Amt']]
 
         # Show final df
+        st.write('Final table:')
         final_df_musica
 
         # Output to .xlsx
@@ -271,19 +274,18 @@ elif option == 'Takealot':
         # Find missing data
         missing_model = df_takealot_merged['SMD Code'].isnull()
         df_takealot_missing_model = df_takealot_merged[missing_model]
-        takealot_unique_title = df_takealot_missing_model['Supplier Code'].unique()
-        takealot_unique_SKU = df_takealot_missing_model['idProduct'].unique()
-        dict_takealot_unique_title = dict(zip(takealot_unique_SKU, takealot_unique_title))
+        df_missing = df_takealot_missing_model[['idProduct','Supplier Code']]
+        df_missing_unique = df_missing.drop_duplicates()
         st.write("The following products are missing the SMD code on the map: ")
-        dict_takealot_unique_title
+        st.table(df_missing_unique)
+
         st.write(" ")
         missing_rsp = df_takealot_merged['RSP'].isnull()
         df_takealot_missing_rsp = df_takealot_merged[missing_rsp]
-        takealot_unique_title_2 = df_takealot_missing_rsp['Supplier Code'].unique()
-        takealot_unique_SKU_2 = df_takealot_missing_rsp['idProduct'].unique() 
-        dict_takealot_unique_title_2 = dict(zip(takealot_unique_SKU_2, takealot_unique_title_2))
+        df_missing_2 = df_takealot_missing_rsp[['idProduct','Supplier Code']]
+        df_missing_unique_2 = df_missing_2.drop_duplicates()
         st.write("The following products are missing the RSP on the map: ")
-        dict_takealot_unique_title_2
+        st.table(df_missing_unique_2)
 
     except:
         st.write('File not selected yet')
@@ -305,6 +307,7 @@ elif option == 'Takealot':
         final_df_takealot = df_takealot_merged[['Start Date','SKU No.', 'Product Code', 'Forecast Group','Store Name','SOH Qty','Sales Qty','Total Amt']]
 
         # Show final df
+        st.write('Final table:')
         final_df_takealot
 
         # Output to .xlsx
