@@ -153,18 +153,18 @@ elif option == 'Checkers':
         # Find missing data
         missing_model_checkers = df_checkers_merged['SMD Code'].isnull()
         df_checkers_missing_model = df_checkers_merged[missing_model_checkers]
-        checkers_unique_title = df_checkers_missing_model['Description'].unique()
-        checkers_unique_SKU = df_checkers_missing_model['Article'].unique()
-        dict_checkers_unique_title = dict(zip(checkers_unique_SKU, checkers_unique_title))
+        df_missing = df_musica_missing_model[['Article','Description']]
+        df_missing_unique = df_missing.drop_duplicates()
+        st.write("The following products are missing the SMD code on the map: ")
+        st.table(df_missing_unique)
+        st.write(" ")
+
         missing_rsp_checkers = df_checkers_merged['RSP'].isnull()
         df_checkers_missing_rsp = df_checkers_merged[missing_rsp_checkers]
-        checkers_unique_title_2 = df_checkers_missing_rsp['Description'].unique()
-        checkers_unique_SKU_2 = df_checkers_missing_rsp['Article'].unique()
-        dict_checkers_unique_title_2 = dict(zip(checkers_unique_SKU_2, checkers_unique_title_2))
-        st.write("The following products are missing the SMD code on the map: ")
-        dict_checkers_unique_title
+        df_missing_2 = df_musica_missing_rsp[['Article','Description']]
+        df_missing_unique_2 = df_missing_2.drop_duplicates()
         st.write("The following products are missing the RSP on the map: ")
-        dict_checkers_unique_title_2
+        st.table(df_missing_unique_2)
 
     except:
         st.write('File not selected yet')
