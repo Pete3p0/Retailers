@@ -36,7 +36,7 @@ Year = Date_End_Temp[:4]
 Short_Date_Dict = {'01':'Jan','02':'Feb','03':'Mar','04':'Apr','05':'May','06':'Jun','07':'Jul','08':'Aug','09':'Sep','10':'Oct','11':'Nov','12':'Dec'}
 option = st.selectbox(
     'Please select a retailer?',
-    ('Please select','Bradlows/Russels','Checkers', 'Musica','Takealot','Pick n Pay'))
+    ('Please select','Bradlows/Russels','Checkers', 'Musica','Takealot','TFG'))
 st.write('You selected:', option)
 
 st.write("")
@@ -98,7 +98,7 @@ if option == 'Bradlows/Russels':
         df_missing_unique_2 = df_missing_2.drop_duplicates()
         st.write("The following products are missing the RSP on the map: ")
         st.table(df_missing_unique_2)
-
+        
     except:
         st.write('File not selected yet')
 
@@ -230,7 +230,6 @@ elif option == 'Musica':
         st.write("The following products are missing the RSP on the map: ")
         st.table(df_missing_unique_2)
 
-
     except:
         st.write('File not selected yet')
     try:
@@ -315,6 +314,7 @@ elif option == 'Takealot':
         st.markdown(get_table_download_link(final_df_takealot), unsafe_allow_html=True)
     except:
         st.write('Check data')
+
 
 # TFG
 elif option == 'TFG':
