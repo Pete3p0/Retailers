@@ -315,3 +315,64 @@ elif option == 'Takealot':
         st.markdown(get_table_download_link(final_df_takealot), unsafe_allow_html=True)
     except:
         st.write('Check data')
+
+# TFG
+elif option == 'TFG':
+    try:
+        # Get retailers map
+        df_tfg_retailers_map = df_map
+        df_retailers_map_tfg_final = df_tfg_retailers_map[['Article Code','Code','DES','RSP', 'Grouping']]
+        # Get retailer data
+        df_tfg_data = df_data
+        # Apply the split string method on the Style code to get the SKU No. out
+        df_tfg_data['Article Code'] = df_tfg_data['Style'].str.split(' ').str[0]
+        # Convert to float
+        df_tfg_data['Article Code'] = df_tfg_data['Article Code'].astype(float)
+        # Merge with retailer map 
+        df_tfg_merged = df_tfg_data.merge(df_retailers_map_tfg_final, how='left', on='Article Code')
+
+        # Find missing data
+        missing_model_tfg = df_tfg_merged['Code'].isnull()
+        df_tfg_missing_model = df_tfg_merged[missing_model_tfg]
+        df_missing = df_tfg_missing_model[['Article Code','Style']]
+        df_missing_unique = df_missing.drop_duplicates()
+        st.write("The following products are missing the SMD code on the map: ")
+        st.table(df_missing_unique)
+
+        st.write(" ")
+        missing_rsp_tfg = df_tfg_merged['RSP'].isnull()
+        df_tfg_missing_rsp = df_tfg_merged[missing_rsp_tfg] 
+        df_missing_2 = df_tfg_missing_rsp[['Article Code','Style']]
+        df_missing_unique_2 = df_missing_2.drop_duplicates()
+        st.write("The following products are missing the RSP on the map: ")
+        st.table(df_missing_unique_2)
+
+    except:
+        st.write('File not selected yet')
+
+    try:
+        # Set date columns
+        df_tfg_merged['Start Date'] = Date_Format_S
+
+        # Total amount column
+        df_tfg_merged['Total Amt'] = df_tfg_merged['Sls (U)'] * df_tfg_merged['RSP']
+
+        # Add retailer and store column
+        df_tfg_merged['Forecast Group'] = 'TFG'
+        df_tfg_merged['Store Name'] = ''
+
+        # Rename columns
+        df_tfg_merged = df_tfg_merged.rename(columns={'Article Code': 'SKU No.','Sls (U)' :'Sales Qty', 'CSOH Incl IT (U)':'SOH Qty', 'Code' : 'Product Code' })
+
+        # Don't change these headings. Rather change the ones above
+        df_tfg_merged = df_tfg_merged[['Start Date','SKU No.', 'Product Code', 'Forecast Group','Store Name','SOH Qty','Sales Qty','Total Amt']]
+
+        # Show final df
+        st.write('Final table:')
+        df_tfg_merged
+
+        # Output to .xlsx
+        st.write('Please ensure that no products are missing before downloading!')
+        st.markdown(get_table_download_link(df_tfg_merged), unsafe_allow_html=True)
+    except:
+        st.write('Check data')
