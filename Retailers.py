@@ -5,6 +5,8 @@ import pandas as pd
 import base64
 from io import BytesIO
 import datetime as dt
+import locale
+locale.setlocale( locale.LC_ALL, 'en_ZA.UTF-8' )
 
 def to_excel(df):
     output = BytesIO()
@@ -37,12 +39,12 @@ Year = str(Date_End.year)
 Short_Date_Dict = {1:'Jan', 2:'Feb', 3:'Mar',4:'Apr',5:'May',6:'Jun',7:'Jul',8:'Aug',9:'Sep',10:'Oct',11:'Nov',12:'Dec'}
 
 option = st.selectbox(
-    'Please select a retailer?',
+    'Please select a retailer:',
     ('Please select','Bradlows/Russels','Checkers', 'Musica','Takealot','TFG'))
 st.write('You selected:', option)
 
 st.write("")
-st.write("Please ensure data is in the first sheet of your Excel Workbook")
+st.markdown("Please ensure data is in the **_first sheet_** of your Excel Workbook")
 
 map_file = st.file_uploader('Retailer Map', type='xlsx')
 if map_file:
@@ -125,7 +127,7 @@ if option == 'Bradlows/Russels':
 
         # Show final df
         total = final_df_br['Total Amt'].sum()
-        st.write('The total sales for the week are: R',"{0:.2f}".format(total))
+        st.write('The total sales for the week are: ',locale.currency( total, grouping=True))
         final_df_br
 
         # Output to .xlsx
@@ -195,7 +197,7 @@ elif option == 'Checkers':
 
         # Show final df
         total = final_df_checkers_sales['Total Amt'].sum()
-        st.write('The total sales for the week are: R',"{0:.2f}".format(total))
+        st.write('The total sales for the week are: ',locale.currency( total, grouping=True))
         final_df_checkers_sales
 
         # Output to .xlsx
@@ -255,7 +257,7 @@ elif option == 'Musica':
 
         # Show final df
         total = final_df_musica['Total Amt'].sum()
-        st.write('The total sales for the week are: R',"{0:.2f}".format(total))
+        st.write('The total sales for the week are: ',locale.currency( total, grouping=True))
         final_df_musica
 
         # Output to .xlsx
@@ -312,7 +314,7 @@ elif option == 'Takealot':
 
         # Show final df
         total = final_df_takealot['Total Amt'].sum()
-        st.write('The total sales for the week are: R',"{0:.2f}".format(total))
+        st.write('The total sales for the week are: ',locale.currency( total, grouping=True))
         final_df_takealot
 
         # Output to .xlsx
@@ -375,7 +377,7 @@ elif option == 'TFG':
 
         # Show final df
         total = df_tfg_merged['Total Amt'].sum()
-        st.write('The total sales for the week are: R',"{0:.2f}".format(total))
+        st.write('The total sales for the week are: ',locale.currency( total, grouping=True))
         df_tfg_merged
 
         # Output to .xlsx
