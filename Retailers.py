@@ -174,37 +174,37 @@ elif option == 'Checkers':
     except:
         st.write('File not selected yet')
 
-    try:
-        # Add columns for dates
-        df_checkers_merged['Start Date'] = Date_Start
+#     try:
+    # Add columns for dates
+    df_checkers_merged['Start Date'] = Date_Start
 
-        # Add Total Amount column
-        Units_Sold = 'Units :'+ Day +' '+ Short_Date_Dict[Month] + ' ' + Year
-        df_checkers_merged['Total Amt'] = df_checkers_merged[Units_Sold] * df_checkers_merged['RSP']
+    # Add Total Amount column
+    Units_Sold = 'Units :'+ Day +' '+ Short_Date_Dict[Month] + ' ' + Year
+    df_checkers_merged['Total Amt'] = df_checkers_merged[Units_Sold] * df_checkers_merged['RSP']
 
-        # Add column for retailer and SOH
-        df_checkers_merged['Forecast Group'] = 'Checkers'
-        df_checkers_merged['SOH Qty'] = 0
+    # Add column for retailer and SOH
+    df_checkers_merged['Forecast Group'] = 'Checkers'
+    df_checkers_merged['SOH Qty'] = 0
 
-        # Rename columns
-        df_checkers_merged = df_checkers_merged.rename(columns={'Article': 'SKU No.'})
-        df_checkers_merged = df_checkers_merged.rename(columns={Units_Sold: 'Sales Qty'})
-        df_checkers_merged = df_checkers_merged.rename(columns={'SMD Code': 'Product Code'})
-        df_checkers_merged = df_checkers_merged.rename(columns={'Branch': 'Store Name'})
+    # Rename columns
+    df_checkers_merged = df_checkers_merged.rename(columns={'Article': 'SKU No.'})
+    df_checkers_merged = df_checkers_merged.rename(columns={Units_Sold: 'Sales Qty'})
+    df_checkers_merged = df_checkers_merged.rename(columns={'SMD Code': 'Product Code'})
+    df_checkers_merged = df_checkers_merged.rename(columns={'Branch': 'Store Name'})
 
-        # Final df. Don't change these headings. Rather change the ones above
-        final_df_checkers_sales = df_checkers_merged[['Start Date','SKU No.', 'Product Code', 'Forecast Group','Store Name','SOH Qty','Sales Qty','Total Amt']]
+    # Final df. Don't change these headings. Rather change the ones above
+    final_df_checkers_sales = df_checkers_merged[['Start Date','SKU No.', 'Product Code', 'Forecast Group','Store Name','SOH Qty','Sales Qty','Total Amt']]
 
-        # Show final df
-        total = final_df_checkers_sales['Total Amt'].sum()
-        st.write('The total sales for the week are: ',locale.currency( total, grouping=True))
-        final_df_checkers_sales
+    # Show final df
+    total = final_df_checkers_sales['Total Amt'].sum()
+    st.write('The total sales for the week are: ',locale.currency( total, grouping=True))
+    final_df_checkers_sales
 
-        # Output to .xlsx
-        st.write('Please ensure that no products are missing before downloading!')
-        st.markdown(get_table_download_link(final_df_checkers_sales), unsafe_allow_html=True)
-    except:
-        st.write('Check data')
+    # Output to .xlsx
+    st.write('Please ensure that no products are missing before downloading!')
+    st.markdown(get_table_download_link(final_df_checkers_sales), unsafe_allow_html=True)
+#     except:
+#         st.write('Check data')
 
 
 # Musica
