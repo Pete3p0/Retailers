@@ -4,6 +4,7 @@ import numpy as np
 import pandas as pd
 import base64
 from io import BytesIO
+import datetime as dt
 
 def to_excel(df):
     output = BytesIO()
@@ -24,16 +25,17 @@ def get_table_download_link(df):
 
 st.title('Retailer Sales Reports')
 
-Date_End = st.number_input("Week ending (yyyymmdd): ",step=1.00,format="%.0f")
+Date_End = st.date_input("Week ending: ")
+Date_Start = Date_End - dt.timedelta(days=7)
 
-Date_End_Temp = str(Date_End)
-Date_Start_F = round(int(Date_End) - 7,0)
-Date_Start = str(Date_Start_F)
-Date_Format_S = Date_Start[-2:]+'/'+Date_Start[4:6]+'/'+Date_Start[:4]
-Day = Date_End_Temp[-4:-2]
-Month = Date_End_Temp[4:6]
-Year = Date_End_Temp[:4]
-Short_Date_Dict = {'01':'Jan','02':'Feb','03':'Mar','04':'Apr','05':'May','06':'Jun','07':'Jul','08':'Aug','09':'Sep','10':'Oct','11':'Nov','12':'Dec'}
+if Date_End.day < 10:
+    Day = '0'+str(Date_End.day)
+else:
+    Day = str(Date_End.day)
+Month = Date_End.month
+Year = str(Date_End.year)
+Short_Date_Dict = {1:'Jan', 2:'Feb', 3:'Mar',4:'Apr',5:'May',6:'Jun',7:'Jul',8:'Aug',9:'Sep',10:'Oct',11:'Nov',12:'Dec'}
+
 option = st.selectbox(
     'Please select a retailer?',
     ('Please select','Bradlows/Russels','Checkers', 'Musica','Takealot','TFG'))
@@ -104,7 +106,7 @@ if option == 'Bradlows/Russels':
 
     try:
         # Set date columns
-        df_br_data_merged['Start Date'] = Date_Format_S
+        df_br_data_merged['Start Date'] = Date_Start
 
         # Total amount column
         df_br_data_merged['Total Amt'] = df_br_data_merged['Sales Qty*'] * df_br_data_merged['RSP']
@@ -122,7 +124,8 @@ if option == 'Bradlows/Russels':
         final_df_br = df_br_data_merged[['Start Date','SKU No.', 'Product Code', 'Forecast Group','Store Name','SOH Qty','Sales Qty','Total Amt']]
 
         # Show final df
-        st.write('Final table:')
+        total = final_df_br['Total Amt'].sum()
+        st.write('The total sales for the week are: R',"{0:.2f}".format(total))
         final_df_br
 
         # Output to .xlsx
@@ -171,7 +174,7 @@ elif option == 'Checkers':
 
     try:
         # Add columns for dates
-        df_checkers_merged['Start Date'] = Date_Format_S
+        df_checkers_merged['Start Date'] = Date_Start
 
         # Add Total Amount column
         Units_Sold = 'Units :'+ Day +' '+ Short_Date_Dict[Month] + ' ' + Year
@@ -191,7 +194,8 @@ elif option == 'Checkers':
         final_df_checkers_sales = df_checkers_merged[['Start Date','SKU No.', 'Product Code', 'Forecast Group','Store Name','SOH Qty','Sales Qty','Total Amt']]
 
         # Show final df
-        st.write('Final table:')
+        total = final_df_checkers_sales['Total Amt'].sum()
+        st.write('The total sales for the week are: R',"{0:.2f}".format(total))
         final_df_checkers_sales
 
         # Output to .xlsx
@@ -234,7 +238,7 @@ elif option == 'Musica':
         st.write('File not selected yet')
     try:
         # Set date columns
-        df_musica_merged['Start Date'] = Date_Format_S
+        df_musica_merged['Start Date'] = Date_Start
    
         # Total amount column
         df_musica_merged['Total Amt'] = df_musica_merged['Sales Qty'] * df_musica_merged['RSP']
@@ -250,7 +254,8 @@ elif option == 'Musica':
         final_df_musica = df_musica_merged[['Start Date','SKU No.', 'Product Code', 'Forecast Group','Store Name','SOH Qty','Sales Qty','Total Amt']]
 
         # Show final df
-        st.write('Final table:')
+        total = final_df_musica['Total Amt'].sum()
+        st.write('The total sales for the week are: R',"{0:.2f}".format(total))
         final_df_musica
 
         # Output to .xlsx
@@ -290,7 +295,7 @@ elif option == 'Takealot':
         st.write('File not selected yet')
     try:
         # Set date columns
-        df_takealot_merged['Start Date'] = Date_Format_S
+        df_takealot_merged['Start Date'] = Date_Start
 
         # Total amount column
         df_takealot_merged['Total Amt'] = df_takealot_merged['Units Sold Qty'] * df_takealot_merged['RSP']
@@ -306,7 +311,8 @@ elif option == 'Takealot':
         final_df_takealot = df_takealot_merged[['Start Date','SKU No.', 'Product Code', 'Forecast Group','Store Name','SOH Qty','Sales Qty','Total Amt']]
 
         # Show final df
-        st.write('Final table:')
+        total = final_df_takealot['Total Amt'].sum()
+        st.write('The total sales for the week are: R',"{0:.2f}".format(total))
         final_df_takealot
 
         # Output to .xlsx
@@ -352,7 +358,7 @@ elif option == 'TFG':
 
     try:
         # Set date columns
-        df_tfg_merged['Start Date'] = Date_Format_S
+        df_tfg_merged['Start Date'] = Date_Start
 
         # Total amount column
         df_tfg_merged['Total Amt'] = df_tfg_merged['Sls (U)'] * df_tfg_merged['RSP']
@@ -368,7 +374,8 @@ elif option == 'TFG':
         df_tfg_merged = df_tfg_merged[['Start Date','SKU No.', 'Product Code', 'Forecast Group','Store Name','SOH Qty','Sales Qty','Total Amt']]
 
         # Show final df
-        st.write('Final table:')
+        total = df_tfg_merged['Total Amt'].sum()
+        st.write('The total sales for the week are: R',"{0:.2f}".format(total))
         df_tfg_merged
 
         # Output to .xlsx
