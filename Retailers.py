@@ -40,7 +40,7 @@ Short_Date_Dict = {1:'Jan', 2:'Feb', 3:'Mar',4:'Apr',5:'May',6:'Jun',7:'Jul',8:'
 
 option = st.selectbox(
     'Please select a retailer:',
-    ('Please select','Bradlows/Russels','Checkers', 'Musica','Takealot','TFG'))
+    ('Please select','Bradlows/Russels','Checkers','Makro', 'Musica','Takealot','TFG'))
 st.write('You selected:', option)
 
 st.write("")
@@ -206,6 +206,78 @@ elif option == 'Checkers':
     except:
         st.write('Check data')
 
+# Makro
+
+elif option == 'Makro':
+    Week = st.text_input("Enter week number: ")
+    weekly_sales = Week+'-'+Year
+    makro_stores = st.file_uploader('Stores', type='xlsx')
+    if makro_stores:
+        df_makro_stores = pd.read_excel(makro_stores)
+   
+    try:
+        # Get retailers map
+        df_makro_retailers_map = df_map
+        df_retailers_map_makro_final = df_makro_retailers_map[['Article','SMD Product Code','SMD Description','RSP']]
+
+        # Get retailer data
+        df_makro_data = df_data
+
+        # Merge with retailer map 
+        df_makro_merged = df_makro_data.merge(df_retailers_map_makro_final, how='left', on='Article')
+
+        # Merge with stores
+        df_makro_merged = df_makro_merged.merge(df_makro_stores, how='left', on='Site')
+        
+        # Find missing data
+        missing_model_makro = df_makro_merged['SMD Product Code'].isnull()
+        df_makro_missing_model = df_makro_merged[missing_model_makro]
+        df_missing = df_makro_missing_model[['Article','Article Desc']]
+        df_missing_unique = df_missing.drop_duplicates()
+        st.write("The following products are missing the SMD code on the map: ")
+        st.table(df_missing_unique)
+
+        st.write(" ")
+        missing_rsp_makro = df_makro_merged['RSP'].isnull()
+        df_makro_missing_rsp = df_makro_merged[missing_rsp_makro]  
+        df_missing_2 = df_makro_missing_rsp[['Article','Article Desc']]
+        df_missing_unique_2 = df_missing_2.drop_duplicates()
+        st.write("The following products are missing the RSP on the map: ")
+        st.table(df_missing_unique_2)
+
+    except:
+        st.write('File not selected yet')
+
+    try:
+        # Set date columns
+        df_makro_merged['Start Date'] = Date_Start
+
+        # Total amount column
+        df_makro_merged['Total Amt'] = df_makro_merged[weekly_sales] * df_makro_merged['RSP']
+        
+        # Add retailer column
+        df_makro_merged['Forecast Group'] = 'Makro'
+
+        # Rename columns
+        df_makro_merged = df_makro_merged.rename(columns={'Article': 'SKU No.'})
+        df_makro_merged = df_makro_merged.rename(columns={'SMD Product Code': 'Product Code'})
+        df_makro_merged = df_makro_merged.rename(columns={'SOH': 'SOH Qty'})
+        df_makro_merged = df_makro_merged.rename(columns={weekly_sales: 'Sales Qty'})
+
+        # Don't change these headings. Rather change the ones above
+        final_df_makro = df_makro_merged[['Start Date','SKU No.', 'Product Code', 'Forecast Group','Store Name','SOH Qty','Sales Qty','Total Amt']]
+
+        # Show final df
+        total = final_df_makro['Total Amt'].sum()
+        st.write('The total sales for the week are: ',locale.currency( total, grouping=True))
+        final_df_makro
+
+        # Output to .xlsx
+        st.write('Please ensure that no products are missing before downloading!')
+        st.markdown(get_table_download_link(final_df_makro), unsafe_allow_html=True)
+
+    except:
+        st.write('Check data')
 
 # Musica
 elif option == 'Musica':
