@@ -219,6 +219,9 @@ elif option == 'Clicks':
         df_clicks_data.columns = df_clicks_data.iloc[3]
         df_clicks_data = df_clicks_data.iloc[5:]
 
+        # Drop result rows
+        df_clicks_data.drop(df_clicks_data[df_clicks_data['Product Status'] == 'Sum:'].index, inplace = True) 
+
         # Merge with retailer map 
         df_clicks_merged = df_clicks_data.merge(df_retailers_map_clicks_final, how='left', on='Clicks Product Number')
 
