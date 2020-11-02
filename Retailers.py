@@ -142,6 +142,8 @@ if option == 'Bradlows/Russels':
 # Checkers
 
 elif option == 'Checkers':
+
+    Units_Sold = 'Units :'+ Day +' '+ Short_Date_Dict[Month] + ' ' + Year
     try:
         # Get retailers data
         df_checkers_retailers_map = df_map
@@ -183,7 +185,6 @@ elif option == 'Checkers':
         df_checkers_merged['Start Date'] = Date_Start
 
         # Add Total Amount column
-        Units_Sold = 'Units :'+ Day +' '+ Short_Date_Dict[Month] + ' ' + Year
         df_checkers_merged['Total Amt'] = df_checkers_merged[Units_Sold] * df_checkers_merged['RSP']
 
         # Add column for retailer and SOH
@@ -329,7 +330,7 @@ elif option == 'Incredible Connection':
     except:
         st.markdown("**Retailer map column headings:** Article, SMD Code & RRP")
         st.markdown("**Retailer data column headings:** Article, Article Name, Site, Site Name, Total SOH Qty & "+Units_Sold)
-        st.markdown("Column headings are **case sensitive**")
+        st.markdown("Column headings are **case sensitive.** Please make sure they are correct")
 
     try:
         # Set date columns
@@ -404,7 +405,9 @@ elif option == 'Makro':
         st.table(df_missing_unique_2)
 
     except:
-        st.write('File not selected yet')
+        st.markdown("**Retailer map column headings:** Article, SMD Product Code, RSP")
+        st.markdown("**Retailer data column headings:** Article, Article Desc, Site, Store Name (in Stores.xlsx), SOH, "+weekly_sales)
+        st.markdown("Column headings are **case sensitive.** Please make sure they are correct")
 
     try:
         # Set date columns
@@ -442,7 +445,7 @@ elif option == 'Musica':
     try:
         # Get retailers map
         df_musica_retailers_map = df_map
-        df_retailers_map_musica_final = df_musica_retailers_map[['Musica Code','SMD code','RSP','SMD Desc', 'Grouping']]
+        df_retailers_map_musica_final = df_musica_retailers_map[['Musica Code','SMD code','RSP']]
 
         # Get retailer data
         df_musica_data = df_data
@@ -467,7 +470,10 @@ elif option == 'Musica':
         st.table(df_missing_unique_2)
 
     except:
-        st.write('File not selected yet')
+        st.markdown("**Retailer map column headings:** Musica Code, SMD code, RSP")
+        st.markdown("**Retailer data column headings:** Store Name, SKU No., Title Desc, Sales.Qty, SOH Qty")
+        st.markdown("Column headings are **case sensitive.** Please make sure they are correct")
+
     try:
         # Set date columns
         df_musica_merged['Start Date'] = Date_Start
@@ -524,7 +530,10 @@ elif option == 'Takealot':
         st.table(df_missing_unique_2)
 
     except:
-        st.write('File not selected yet')
+        st.markdown("**Retailer map column headings:** idProduct, SMD Code, RSP")
+        st.markdown("**Retailer data column headings:** idProduct, Supplier Code, Total SOH, Units Sold Qty")
+        st.markdown("Column headings are **case sensitive.** Please make sure they are correct")
+
     try:
         # Set date columns
         df_takealot_merged['Start Date'] = Date_Start
@@ -559,7 +568,7 @@ elif option == 'TFG':
     try:
         # Get retailers map
         df_tfg_retailers_map = df_map
-        df_retailers_map_tfg_final = df_tfg_retailers_map[['Article Code','Code','DES','RSP', 'Grouping']]
+        df_retailers_map_tfg_final = df_tfg_retailers_map[['Article Code','Code','RSP']]
         # Get retailer data
         df_tfg_data = df_data
         # Apply the split string method on the Style code to get the SKU No. out
@@ -586,7 +595,9 @@ elif option == 'TFG':
         st.table(df_missing_unique_2)
 
     except:
-        st.write('File not selected yet')
+        st.markdown("**Retailer map column headings:** Article Code, Code, RSP")
+        st.markdown("**Retailer data column headings:** Style, Sls (U), CSOH Incl IT (U)")
+        st.markdown("Column headings are **case sensitive.** Please make sure they are correct")
 
     try:
         # Set date columns
@@ -617,4 +628,4 @@ elif option == 'TFG':
         st.write('Check data')
 
 else:
-    st.write('File not selected yet')
+    st.write('Retailer not selected yet')
