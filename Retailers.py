@@ -280,51 +280,51 @@ elif option == 'Clicks':
 # Incredible Connection
 
 elif option == 'Incredible Connection':
-#     try:
-    Units_Sold = ('Qty Sold '+ str(Month) + '.' + Year)
+    try:
+        Units_Sold = ('Qty Sold '+ str(Month) + '.' + Year)
 
-    # Get retailers map
-    df_ic_retailers_map = df_map
-        
+        # Get retailers map
+        df_ic_retailers_map = df_map
 
-    # Get previous week
-    ic_data_prev = st.file_uploader('Previous week', type='xlsx')
-    if ic_data_prev:
-        df_ic_data_prev = pd.read_excel(ic_data_prev)
-    df_ic_data_prev['Lookup'] = df_ic_data_prev['Article'].astype(str) + df_ic_data_prev['Site']
-    df_ic_data_prev = df_ic_data_prev.rename(columns={Units_Sold: 'Prev Sales'})
-    df_ic_data_prev_final = df_ic_data_prev[['Lookup','Prev Sales']]
 
-    # Get current week
-    df_ic_data = df_data
-    df_ic_data['Lookup'] = df_ic_data['Article'].astype(str) + df_ic_data['Site']
+        # Get previous week
+        ic_data_prev = st.file_uploader('Previous week', type='xlsx')
+        if ic_data_prev:
+            df_ic_data_prev = pd.read_excel(ic_data_prev)
+        df_ic_data_prev['Lookup'] = df_ic_data_prev['Article'].astype(str) + df_ic_data_prev['Site']
+        df_ic_data_prev = df_ic_data_prev.rename(columns={Units_Sold: 'Prev Sales'})
+        df_ic_data_prev_final = df_ic_data_prev[['Lookup','Prev Sales']]
 
-    # Rename columns
-    df_ic_retailers_map = df_ic_retailers_map.rename(columns={'RRP': 'RSP'})
+        # Get current week
+        df_ic_data = df_data
+        df_ic_data['Lookup'] = df_ic_data['Article'].astype(str) + df_ic_data['Site']
 
-    # Merge with retailer map and previous week
-    df_ic_data_merge_curr = df_ic_data.merge(df_ic_data_prev_final, how='left', on='Lookup')
-    df_ic_merged = df_ic_data_merge_curr.merge(df_ic_retailers_map, how='left', on='Article')
+        # Rename columns
+        df_ic_retailers_map = df_ic_retailers_map.rename(columns={'RRP': 'RSP'})
 
-    missing_model_ic = df_ic_merged['SMD Code'].isnull()
-    df_ic_missing_model = df_ic_merged[missing_model_ic]
-    df_missing = df_ic_missing_model[['Article','Article Name']]
-    df_missing_unique = df_missing.drop_duplicates()
-    st.write("The following products are missing the SMD code on the map: ")
-    st.table(df_missing_unique)
+        # Merge with retailer map and previous week
+        df_ic_data_merge_curr = df_ic_data.merge(df_ic_data_prev_final, how='left', on='Lookup')
+        df_ic_merged = df_ic_data_merge_curr.merge(df_ic_retailers_map, how='left', on='Article')
 
-    st.write(" ")
-    missing_rsp_ic = df_ic_merged['RSP'].isnull()
-    df_ic_missing_rsp = df_ic_merged[missing_rsp_ic]
-    df_missing_2 = df_ic_missing_rsp[['Article','Article Name']]
-    df_missing_unique_2 = df_missing_2.drop_duplicates()
-    st.write("The following products are missing the RSP on the map: ")
-    st.table(df_missing_unique_2)
+        missing_model_ic = df_ic_merged['SMD Code'].isnull()
+        df_ic_missing_model = df_ic_merged[missing_model_ic]
+        df_missing = df_ic_missing_model[['Article','Article Name']]
+        df_missing_unique = df_missing.drop_duplicates()
+        st.write("The following products are missing the SMD code on the map: ")
+        st.table(df_missing_unique)
 
-#     except:
-#         st.markdown("**Retailer map column headings:** Article, SMD Code & RRP")
-#         st.markdown("**Retailer data column headings:** Article, Article Name, Site, Site Name, Total SOH Qty & "+Units_Sold)
-#         st.markdown("Column headings are **case sensitive**")
+        st.write(" ")
+        missing_rsp_ic = df_ic_merged['RSP'].isnull()
+        df_ic_missing_rsp = df_ic_merged[missing_rsp_ic]
+        df_missing_2 = df_ic_missing_rsp[['Article','Article Name']]
+        df_missing_unique_2 = df_missing_2.drop_duplicates()
+        st.write("The following products are missing the RSP on the map: ")
+        st.table(df_missing_unique_2)
+
+    except:
+        st.markdown("**Retailer map column headings:** Article, SMD Code & RRP")
+        st.markdown("**Retailer data column headings:** Article, Article Name, Site, Site Name, Total SOH Qty & "+Units_Sold)
+        st.markdown("Column headings are **case sensitive**")
 
     try:
         # Set date columns
