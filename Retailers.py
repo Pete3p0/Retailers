@@ -106,7 +106,7 @@ if option == 'Bradlows/Russels':
     except:
         st.markdown("**Retailer map column headings:** Article number, Product Code & RSP")
         st.markdown("**Retailer data column headings:** Cluster, Article, Description, Site, Site Name, Valuated Stock Qty(Total), Sales Qty*")
-        st.markdown("Column headings are **case sensitive**")
+        st.markdown("Column headings are **case sensitive.** Please make sure they are correct") 
 
     try:
         # Set date columns
@@ -174,7 +174,9 @@ elif option == 'Checkers':
         st.table(df_missing_unique_2)
 
     except:
-        st.write('File not selected yet')
+        st.markdown("**Retailer map column headings:** Article, SMD Code & RSP")
+        st.markdown("**Retailer data column headings:** Item Code, Description, "+Units_Sold)
+        st.markdown("Column headings are **case sensitive.** Please make sure they are correct") 
 
     try:
         # Add columns for dates
@@ -205,6 +207,7 @@ elif option == 'Checkers':
         # Output to .xlsx
         st.write('Please ensure that no products are missing before downloading!')
         st.markdown(get_table_download_link(final_df_checkers_sales), unsafe_allow_html=True)
+
     except:
         st.write('Check data')
 
@@ -243,39 +246,41 @@ elif option == 'Clicks':
         st.write("The following products are missing the RSP on the map: ")
         st.table(df_missing_unique_2)
     except:
-        st.write('File not selected yet')    
+        st.markdown("**Retailer map column headings:** Clicks Product Number,SMD CODE,SMD DESC,RSP")
+        st.markdown("**Retailer data column headings:** Store Description, Clicks Product Number, Product Description, Store Stock Qty, Sales Qty LW TY")
+        st.markdown("Column headings are **case sensitive.** Please make sure they are correct")   
 
-    # try:
-    # Set date columns
-    df_clicks_merged['Start Date'] = Date_Start
+    try:
+        # Set date columns
+        df_clicks_merged['Start Date'] = Date_Start
 
-    # Total amount column
-    df_clicks_merged['Total Amt'] = df_clicks_merged['Sales Qty LW TY'] * df_clicks_merged['RSP']
+        # Total amount column
+        df_clicks_merged['Total Amt'] = df_clicks_merged['Sales Qty LW TY'] * df_clicks_merged['RSP']
 
-    # Add retailer column
-    df_clicks_merged['Forecast Group'] = 'Clicks'
+        # Add retailer column
+        df_clicks_merged['Forecast Group'] = 'Clicks'
 
-    # Rename columns
-    df_clicks_merged = df_clicks_merged.rename(columns={'Clicks Product Number': 'SKU No.'})
-    df_clicks_merged = df_clicks_merged.rename(columns={'SMD CODE': 'Product Code'})
-    df_clicks_merged = df_clicks_merged.rename(columns={'Store Description': 'Store Name'})
-    df_clicks_merged = df_clicks_merged.rename(columns={'Store Stock Qty': 'SOH Qty'})
-    df_clicks_merged = df_clicks_merged.rename(columns={'Sales Qty LW TY': 'Sales Qty'})
+        # Rename columns
+        df_clicks_merged = df_clicks_merged.rename(columns={'Clicks Product Number': 'SKU No.'})
+        df_clicks_merged = df_clicks_merged.rename(columns={'SMD CODE': 'Product Code'})
+        df_clicks_merged = df_clicks_merged.rename(columns={'Store Description': 'Store Name'})
+        df_clicks_merged = df_clicks_merged.rename(columns={'Store Stock Qty': 'SOH Qty'})
+        df_clicks_merged = df_clicks_merged.rename(columns={'Sales Qty LW TY': 'Sales Qty'})
 
-    # Don't change these headings. Rather change the ones above
-    final_df_clicks = df_clicks_merged[['Start Date','SKU No.', 'Product Code', 'Forecast Group','Store Name','SOH Qty','Sales Qty','Total Amt']]
+        # Don't change these headings. Rather change the ones above
+        final_df_clicks = df_clicks_merged[['Start Date','SKU No.', 'Product Code', 'Forecast Group','Store Name','SOH Qty','Sales Qty','Total Amt']]
+        
+        # Show final df
+        total = final_df_clicks['Total Amt'].sum()
+        st.write('The total sales for the week are: ',locale.currency( total, grouping=True))
+        final_df_clicks
+
+        # Output to .xlsx
+        st.write('Please ensure that no products are missing before downloading!')
+        st.markdown(get_table_download_link(final_df_clicks), unsafe_allow_html=True)
     
-    # Show final df
-    total = final_df_clicks['Total Amt'].sum()
-    st.write('The total sales for the week are: ',locale.currency( total, grouping=True))
-    final_df_clicks
-
-    # Output to .xlsx
-    st.write('Please ensure that no products are missing before downloading!')
-    st.markdown(get_table_download_link(final_df_clicks), unsafe_allow_html=True)
- 
-    # except:
-    #     st.write('Check data')   
+    except:
+        st.write('Check data')   
 
 # Incredible Connection
 
