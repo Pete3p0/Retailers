@@ -40,7 +40,7 @@ Short_Date_Dict = {1:'Jan', 2:'Feb', 3:'Mar',4:'Apr',5:'May',6:'Jun',7:'Jul',8:'
 
 option = st.selectbox(
     'Please select a retailer:',
-    ('Please select','Bradlows/Russels','Clicks','Checkers','Makro', 'Musica','Takealot','TFG'))
+    ('Please select','Bradlows/Russels','Clicks','Checkers','Incredible Connection','Makro', 'Musica','Takealot','TFG'))
 st.write('You selected:', option)
 
 st.write("")
@@ -104,7 +104,9 @@ if option == 'Bradlows/Russels':
         st.table(df_missing_unique_2)
         
     except:
-        st.write('File not selected yet')
+        st.markdown("**Retailer map column headings:** Article number, Product Code & RSP")
+        st.markdown("**Retailer data column headings:** Cluster, Article, Description, Site, Site Name, Valuated Stock Qty(Total), Sales Qty*")
+        st.markdown("Column headings are **case sensitive**")
 
     try:
         # Set date columns
@@ -274,6 +276,88 @@ elif option == 'Clicks':
  
     except:
         st.write('Check data')   
+
+# Incredible Connection
+
+elif option == 'Incredible Connection':
+    try:
+        Units_Sold = ('Qty Sold '+ str(Month) + '.' + Year)
+
+        # Get retailers map
+        df_ic_retailers_map = df_map
+        
+
+        # Get previous week
+        ic_data_prev = st.file_uploader('Previous week', type='xlsx')
+        if ic_data_prev:
+            df_ic_data_prev = pd.read_excel(ic_data_prev)
+        df_ic_data_prev['Lookup'] = df_ic_data_prev['Article'].astype(str) + df_ic_data_prev['Site']
+        df_ic_data_prev = df_ic_data_prev.rename(columns={Units_Sold: 'Prev Sales'})
+        df_ic_data_prev_final = df_ic_data_prev[['Lookup','Prev Sales']]
+
+        # Get current week
+        df_ic_data = df_data
+        df_ic_data['Lookup'] = df_ic_data['Article'].astype(str) + df_ic_data['Site']
+
+        # Rename columns
+        df_ic_retailers_map = df_ic_retailers_map.rename(columns={'RRP': 'RSP'})
+
+        # Merge with retailer map and previous week
+        df_ic_data_merge_curr = df_ic_data.merge(df_ic_data_prev_final, how='left', on='Lookup')
+        df_ic_merged = df_ic_data_merge_curr.merge(df_ic_retailers_map, how='left', on='Article')
+
+        missing_model_ic = df_ic_merged['SMD Code'].isnull()
+        df_ic_missing_model = df_ic_merged[missing_model_ic]
+        df_missing = df_ic_missing_model[['Article','Article Name']]
+        df_missing_unique = df_missing.drop_duplicates()
+        st.write("The following products are missing the SMD code on the map: ")
+        st.table(df_missing_unique)
+
+        st.write(" ")
+        missing_rsp_ic = df_ic_merged['RSP'].isnull()
+        df_ic_missing_rsp = df_ic_merged[missing_rsp_ic]
+        df_missing_2 = df_ic_missing_rsp[['Article','Article Name']]
+        df_missing_unique_2 = df_missing_2.drop_duplicates()
+        st.write("The following products are missing the RSP on the map: ")
+        st.table(df_missing_unique_2)
+
+    except:
+        st.markdown("**Retailer map column headings:** Article, SMD Code & RRP")
+        st.markdown("**Retailer data column headings:** Article, Article Name, Site, Site Name, Total SOH Qty & "+Units_Sold)
+        st.markdown("Column headings are **case sensitive**")
+
+    try:
+        # Set date columns
+        df_ic_merged['Start Date'] = Date_Start
+
+        # Add Total Amount column
+        df_ic_merged['Sales Qty'] = df_ic_merged[Units_Sold] - df_ic_merged['Prev Sales']
+        df_ic_merged['Total Amt'] = df_ic_merged['Sales Qty'] * df_ic_merged['RSP']
+
+        # Add column for retailer and SOH
+        df_ic_merged['Forecast Group'] = 'Incredible Connection'
+
+        # Rename columns
+        df_ic_merged = df_ic_merged.rename(columns={'Article': 'SKU No.'})
+        df_ic_merged = df_ic_merged.rename(columns={'Total SOH Qty': 'SOH Qty'})
+        df_ic_merged = df_ic_merged.rename(columns={'SMD Code': 'Product Code'})
+        df_ic_merged = df_ic_merged.rename(columns={'Site Name': 'Store Name'})
+
+        # Final df. Don't change these headings. Rather change the ones above
+        final_df_ic_sales = df_ic_merged[['Start Date','SKU No.', 'Product Code', 'Forecast Group','Store Name','SOH Qty','Sales Qty','Total Amt']]
+
+        # Show final df
+        total = final_df_ic_sales['Total Amt'].sum()
+        st.write('The total sales for the week are: ',locale.currency( total, grouping=True))
+        final_df_ic_sales
+
+        # Output to .xlsx
+        st.write('Please ensure that no products are missing before downloading!')
+        st.markdown(get_table_download_link(final_df_ic_sales), unsafe_allow_html=True)
+
+    except:
+        st.write('Check data')
+
 
 # Makro
 
@@ -526,3 +610,6 @@ elif option == 'TFG':
         st.markdown(get_table_download_link(df_tfg_merged), unsafe_allow_html=True)
     except:
         st.write('Check data')
+
+else:
+    st.write('File not selected yet')
