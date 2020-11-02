@@ -23,7 +23,7 @@ def get_table_download_link(df):
     """
     val = to_excel(df)
     b64 = base64.b64encode(val)
-    return f'<a href="data:application/octet-stream;base64,{b64.decode()}" download="Sales.xlsx">Download Excel file</a>' # decode b'abc' => abc
+    return f'<a href="data:application/octet-stream;base64,{b64.decode()}" download='+option+'_'+Year+str(Month)+Day+".xlsx"'>Download Excel file</a>' # decode b'abc' => abc
 
 st.title('Retailer Sales Reports')
 
@@ -245,37 +245,37 @@ elif option == 'Clicks':
     except:
         st.write('File not selected yet')    
 
-    try:
-        # Set date columns
-        df_clicks_merged['Start Date'] = Date_Start
+    # try:
+    # Set date columns
+    df_clicks_merged['Start Date'] = Date_Start
 
-        # Total amount column
-        df_clicks_merged['Total Amt'] = df_clicks_merged['Sales Qty LW TY'] * df_clicks_merged['RSP']
+    # Total amount column
+    df_clicks_merged['Total Amt'] = df_clicks_merged['Sales Qty LW TY'] * df_clicks_merged['RSP']
 
-        # Add retailer column
-        df_clicks_merged['Forecast Group'] = 'Clicks'
+    # Add retailer column
+    df_clicks_merged['Forecast Group'] = 'Clicks'
 
-        # Rename columns
-        df_clicks_merged = df_clicks_merged.rename(columns={'Clicks Product Number': 'SKU No.'})
-        df_clicks_merged = df_clicks_merged.rename(columns={'SMD CODE': 'Product Code'})
-        df_clicks_merged = df_clicks_merged.rename(columns={'Store Description': 'Store Name'})
-        df_clicks_merged = df_clicks_merged.rename(columns={'Store Stock Qty': 'SOH Qty'})
-        df_clicks_merged = df_clicks_merged.rename(columns={'Sales Qty LW TY': 'Sales Qty'})
+    # Rename columns
+    df_clicks_merged = df_clicks_merged.rename(columns={'Clicks Product Number': 'SKU No.'})
+    df_clicks_merged = df_clicks_merged.rename(columns={'SMD CODE': 'Product Code'})
+    df_clicks_merged = df_clicks_merged.rename(columns={'Store Description': 'Store Name'})
+    df_clicks_merged = df_clicks_merged.rename(columns={'Store Stock Qty': 'SOH Qty'})
+    df_clicks_merged = df_clicks_merged.rename(columns={'Sales Qty LW TY': 'Sales Qty'})
 
-        # Don't change these headings. Rather change the ones above
-        final_df_clicks = df_clicks_merged[['Start Date','SKU No.', 'Product Code', 'Forecast Group','Store Name','SOH Qty','Sales Qty','Total Amt']]
-        
-        # Show final df
-        total = final_df_clicks['Total Amt'].sum()
-        st.write('The total sales for the week are: ',locale.currency( total, grouping=True))
-        final_df_clicks
+    # Don't change these headings. Rather change the ones above
+    final_df_clicks = df_clicks_merged[['Start Date','SKU No.', 'Product Code', 'Forecast Group','Store Name','SOH Qty','Sales Qty','Total Amt']]
+    
+    # Show final df
+    total = final_df_clicks['Total Amt'].sum()
+    st.write('The total sales for the week are: ',locale.currency( total, grouping=True))
+    final_df_clicks
 
-        # Output to .xlsx
-        st.write('Please ensure that no products are missing before downloading!')
-        st.markdown(get_table_download_link(final_df_clicks), unsafe_allow_html=True)
+    # Output to .xlsx
+    st.write('Please ensure that no products are missing before downloading!')
+    st.markdown(get_table_download_link(final_df_clicks), unsafe_allow_html=True)
  
-    except:
-        st.write('Check data')   
+    # except:
+    #     st.write('Check data')   
 
 # Incredible Connection
 
@@ -285,7 +285,7 @@ elif option == 'Incredible Connection':
 
         # Get retailers map
         df_ic_retailers_map = df_map
-
+        
 
         # Get previous week
         ic_data_prev = st.file_uploader('Previous week', type='xlsx')
