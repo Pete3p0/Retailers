@@ -132,7 +132,7 @@ if option == 'Ackermans':
 
 
 # Bradlows/Russels
-if option == 'Bradlows/Russels':
+elif option == 'Bradlows/Russels':
     try:
         # Get retailers map
         df_br_retailers_map = df_map
