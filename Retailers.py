@@ -40,7 +40,7 @@ Short_Date_Dict = {1:'Jan', 2:'Feb', 3:'Mar',4:'Apr',5:'May',6:'Jun',7:'Jul',8:'
 
 option = st.selectbox(
     'Please select a retailer:',
-    ('Please select','Bradlows/Russels','Clicks','Checkers','Incredible Connection','Makro', 'Musica','Takealot','TFG'))
+    ('Please select','Ackermans','Bradlows/Russels','Clicks','Checkers','Incredible Connection','Makro', 'Musica','Takealot','TFG'))
 st.write('You selected:', option)
 
 st.write("")
@@ -53,6 +53,83 @@ if map_file:
 data_file = st.file_uploader('Weekly Sales Data',type='xlsx')
 if data_file:
     df_data = pd.read_excel(data_file)
+
+# Ackermans
+if option == 'Ackermans':
+
+    Units_Sold = 'Sales: ' + Day + '/' + str(Month) + '/' + Year
+    CSOH = 'CSOH: ' + Day + '/' + str(Month) + '/' + Year
+
+    try:
+        # Get retailers map
+        df_ackermans_retailers_map = df_map
+        df_ackermans_retailers_map.columns = df_ackermans_retailers_map.iloc[1]
+        df_ackermans_retailers_map = df_ackermans_retailers_map.iloc[2:]
+        df_ackermans_retailers_map = df_ackermans_retailers_map.rename(columns={'Style Code': 'SKU No.'})
+        df_ackermans_retailers_map_final = df_ackermans_retailers_map[['SKU No.','SMD Product Code','SMD RSP']]
+
+        # Get retailer data
+        df_ackermans_data = df_data
+        df_ackermans_data.columns = df_ackermans_data.iloc[6]
+        df_ackermans_data = df_ackermans_data.iloc[7:]
+
+        # Merge with retailer map
+        df_ackermans_data['SKU No.'] = df_ackermans_data['Style Code'].astype(int)
+        df_ackermans_merged = df_ackermans_data.merge(df_ackermans_retailers_map_final, how='left', on='SKU No.')
+
+        # Find missing data
+        missing_model_ackermans = df_ackermans_merged['SMD Product Code'].isnull()
+        df_ackermans_missing_model = df_ackermans_merged[missing_model_ackermans]
+        df_missing = df_ackermans_missing_model[['SKU No.','Style Description']]
+        df_missing_unique = df_missing.drop_duplicates()
+        st.write("The following products are missing the SMD code on the map: ")
+        st.table(df_missing_unique)
+        st.write(" ")
+
+        missing_rsp_ackermans = df_ackermans_merged['SMD RSP'].isnull()
+        df_ackermans_missing_rsp = df_ackermans_merged[missing_rsp_ackermans]
+        df_missing_2 = df_ackermans_missing_rsp[['SKU No.','Style Description']]
+        df_missing_unique_2 = df_missing_2.drop_duplicates()
+        st.write("The following products are missing the RSP on the map: ")
+        st.table(df_missing_unique_2)
+
+    except:
+        st.markdown("**Retailer map column headings:** Style Code, SMD Product Code & SMD RSP")
+        st.markdown("**Retailer data column headings:** Style Code, Style Description, " + CSOH +", "+ Units_Sold)
+        st.markdown("Column headings are **case sensitive.** Please make sure they are correct") 
+
+        
+    try:
+        # Set date columns
+        df_ackermans_merged['Start Date'] = Date_Start
+
+        # Total amount column
+        df_ackermans_merged['Total Amt'] = df_ackermans_merged[Units_Sold].astype(int) * df_ackermans_merged['SMD RSP']
+
+        # Add retailer column and store column
+        df_ackermans_merged['Forecast Group'] = 'Ackermans'
+        df_ackermans_merged['Store Name'] = ''
+
+        # Rename columns
+        df_ackermans_merged = df_ackermans_merged.rename(columns={CSOH: 'SOH Qty'})
+        df_ackermans_merged = df_ackermans_merged.rename(columns={Units_Sold: 'Sales Qty'})
+        df_ackermans_merged = df_ackermans_merged.rename(columns={'SMD Product Code': 'Product Code'})
+
+        # Don't change these headings. Rather change the ones above
+        final_df_ackermans = df_ackermans_merged[['Start Date','SKU No.', 'Product Code', 'Forecast Group','Store Name','SOH Qty','Sales Qty','Total Amt']]
+
+        # Show final df
+        total = final_df_ackermans['Total Amt'].sum()
+        st.write('The total sales for the week are: ',locale.currency( total, grouping=True))
+        final_df_ackermans
+
+        # Output to .xlsx
+        st.write('Please ensure that no products are missing before downloading!')
+        st.markdown(get_table_download_link(final_df_ackermans), unsafe_allow_html=True)
+
+    except:
+        st.write('Check data')
+
 
 # Bradlows/Russels
 if option == 'Bradlows/Russels':
