@@ -5,8 +5,8 @@ import pandas as pd
 import base64
 from io import BytesIO
 import datetime as dt
-import locale
-locale.setlocale( locale.LC_ALL, 'en_ZA.UTF-8' )
+# import locale
+# locale.setlocale( locale.LC_ALL, 'en_ZA.UTF-8' )
 
 def to_excel(df):
     output = BytesIO()
@@ -99,36 +99,36 @@ if option == 'Ackermans':
         st.markdown("Column headings are **case sensitive.** Please make sure they are correct") 
 
         
-    try:
-        # Set date columns
-        df_ackermans_merged['Start Date'] = Date_Start
+    # try:
+    # Set date columns
+    df_ackermans_merged['Start Date'] = Date_Start
 
-        # Total amount column
-        df_ackermans_merged['Total Amt'] = df_ackermans_merged[Units_Sold].astype(int) * df_ackermans_merged['SMD RSP']
+    # Total amount column
+    df_ackermans_merged['Total Amt'] = df_ackermans_merged[Units_Sold].astype(int) * df_ackermans_merged['SMD RSP']
 
-        # Add retailer column and store column
-        df_ackermans_merged['Forecast Group'] = 'Ackermans'
-        df_ackermans_merged['Store Name'] = ''
+    # Add retailer column and store column
+    df_ackermans_merged['Forecast Group'] = 'Ackermans'
+    df_ackermans_merged['Store Name'] = ''
 
-        # Rename columns
-        df_ackermans_merged = df_ackermans_merged.rename(columns={CSOH: 'SOH Qty'})
-        df_ackermans_merged = df_ackermans_merged.rename(columns={Units_Sold: 'Sales Qty'})
-        df_ackermans_merged = df_ackermans_merged.rename(columns={'SMD Product Code': 'Product Code'})
+    # Rename columns
+    df_ackermans_merged = df_ackermans_merged.rename(columns={CSOH: 'SOH Qty'})
+    df_ackermans_merged = df_ackermans_merged.rename(columns={Units_Sold: 'Sales Qty'})
+    df_ackermans_merged = df_ackermans_merged.rename(columns={'SMD Product Code': 'Product Code'})
 
-        # Don't change these headings. Rather change the ones above
-        final_df_ackermans = df_ackermans_merged[['Start Date','SKU No.', 'Product Code', 'Forecast Group','Store Name','SOH Qty','Sales Qty','Total Amt']]
+    # Don't change these headings. Rather change the ones above
+    final_df_ackermans = df_ackermans_merged[['Start Date','SKU No.', 'Product Code', 'Forecast Group','Store Name','SOH Qty','Sales Qty','Total Amt']]
 
-        # Show final df
-        total = final_df_ackermans['Total Amt'].sum()
-        st.write('The total sales for the week are: ',locale.currency( total, grouping=True))
-        final_df_ackermans
+    # Show final df
+    total = final_df_ackermans['Total Amt'].sum()
+    st.write('The total sales for the week are: R',"{:0,.2f}".format(total).replace(',', ' '))
+    final_df_ackermans
 
-        # Output to .xlsx
-        st.write('Please ensure that no products are missing before downloading!')
-        st.markdown(get_table_download_link(final_df_ackermans), unsafe_allow_html=True)
+    # Output to .xlsx
+    st.write('Please ensure that no products are missing before downloading!')
+    st.markdown(get_table_download_link(final_df_ackermans), unsafe_allow_html=True)
 
-    except:
-        st.write('Check data')
+    # except:
+    #     st.write('Check data')
 
 
 # Bradlows/Russels
@@ -206,7 +206,7 @@ elif option == 'Bradlows/Russels':
 
         # Show final df
         total = final_df_br['Total Amt'].sum()
-        st.write('The total sales for the week are: ',locale.currency( total, grouping=True))
+        st.write('The total sales for the week are: R',"{:0,.2f}".format(total).replace(',', ' '))
         final_df_br
 
         # Output to .xlsx
@@ -279,7 +279,7 @@ elif option == 'Checkers':
 
         # Show final df
         total = final_df_checkers_sales['Total Amt'].sum()
-        st.write('The total sales for the week are: ',locale.currency( total, grouping=True))
+        st.write('The total sales for the week are: R',"{:0,.2f}".format(total).replace(',', ' '))
         final_df_checkers_sales
 
         # Output to .xlsx
@@ -350,7 +350,7 @@ elif option == 'Clicks':
         
         # Show final df
         total = final_df_clicks['Total Amt'].sum()
-        st.write('The total sales for the week are: ',locale.currency( total, grouping=True))
+        st.write('The total sales for the week are: R',"{:0,.2f}".format(total).replace(',', ' '))
         final_df_clicks
 
         # Output to .xlsx
@@ -431,7 +431,7 @@ elif option == 'Incredible Connection':
 
         # Show final df
         total = final_df_ic_sales['Total Amt'].sum()
-        st.write('The total sales for the week are: ',locale.currency( total, grouping=True))
+        st.write('The total sales for the week are: R',"{:0,.2f}".format(total).replace(',', ' '))
         final_df_ic_sales
 
         # Output to .xlsx
@@ -507,7 +507,7 @@ elif option == 'Makro':
 
         # Show final df
         total = final_df_makro['Total Amt'].sum()
-        st.write('The total sales for the week are: ',locale.currency( total, grouping=True))
+        st.write('The total sales for the week are: R',"{:0,.2f}".format(total).replace(',', ' '))
         final_df_makro
 
         # Output to .xlsx
@@ -570,7 +570,7 @@ elif option == 'Musica':
 
         # Show final df
         total = final_df_musica['Total Amt'].sum()
-        st.write('The total sales for the week are: ',locale.currency( total, grouping=True))
+        st.write('The total sales for the week are: R',"{:0,.2f}".format(total).replace(',', ' '))
         final_df_musica
 
         # Output to .xlsx
@@ -630,7 +630,7 @@ elif option == 'Takealot':
 
         # Show final df
         total = final_df_takealot['Total Amt'].sum()
-        st.write('The total sales for the week are: ',locale.currency( total, grouping=True))
+        st.write('The total sales for the week are: R',"{:0,.2f}".format(total).replace(',', ' '))
         final_df_takealot
 
         # Output to .xlsx
@@ -695,7 +695,7 @@ elif option == 'TFG':
 
         # Show final df
         total = df_tfg_merged['Total Amt'].sum()
-        st.write('The total sales for the week are: ',locale.currency( total, grouping=True))
+        st.write('The total sales for the week are: R',"{:0,.2f}".format(total).replace(',', ' '))
         df_tfg_merged
 
         # Output to .xlsx
