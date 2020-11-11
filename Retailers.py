@@ -225,71 +225,72 @@ elif option == 'Builders Warehouse':
     if bw_stores:
         df_bw_stores = pd.read_excel(bw_stores)
    
-    # try:
-    # Get retailers map
-    df_bw_retailers_map = df_map
-    df_retailers_map_bw_final = df_bw_retailers_map[['Article','SMD Product Code']]
+    try:
+        # Get retailers map
+        df_bw_retailers_map = df_map
+        df_retailers_map_bw_final = df_bw_retailers_map[['Article','SMD Product Code']]
 
-    # Get retailer data
-    df_bw_data = df_data
-    df_bw_data.columns = df_bw_data.iloc[6]
-    df_bw_data = df_bw_data.iloc[8:]
-    df_bw_data = df_bw_data.rename(columns={'  Incl SP': 'RSP'})
-    
-    # Merge with retailer map 
-    df_bw_merged = df_bw_data.merge(df_retailers_map_bw_final, how='left', on='Article')
-
-    # Merge with stores
-    df_bw_merged = df_bw_merged.merge(df_bw_stores, how='left', on='Site')
-    
-    # Find missing data
-    missing_model_bw = df_bw_merged['SMD Product Code'].isnull()
-    df_bw_missing_model = df_bw_merged[missing_model_bw]
-    df_missing = df_bw_missing_model[['Article','Article Description']]
-    df_missing_unique = df_missing.drop_duplicates()
-    st.write("The following products are missing the SMD code on the map: ")
-    st.table(df_missing_unique)
-
-    st.write(" ")
-    missing_rsp_bw = df_bw_merged['RSP'].isnull()
-    df_bw_missing_rsp = df_bw_merged[missing_rsp_bw]  
-    df_missing_2 = df_bw_missing_rsp[['Article','Article Description']]
-    df_missing_unique_2 = df_missing_2.drop_duplicates()
-    st.write("The following products are missing the RSP on the map: ")
-    st.table(df_missing_unique_2)
-
-    # except:
-    #     st.markdown("**Retailer map column headings:** Article, SMD Product Code")
-    #     st.markdown("**Retailer data column headings:** Article, Article Desc, Site, Store Name (in Stores.xlsx), SOH, "+weekly_sales)
-    #     st.markdown("Column headings are **case sensitive.** Please make sure they are correct")
-
-    # try:
-    #     # Set date columns
-    #     df_makro_merged['Start Date'] = Date_Start
-
-    #     # Total amount column
-    #     df_makro_merged['Total Amt'] = df_makro_merged[weekly_sales] * df_makro_merged['RSP']
+        # Get retailer data
+        df_bw_data = df_data
+        df_bw_data.columns = df_bw_data.iloc[6]
+        df_bw_data = df_bw_data.iloc[8:]
+        df_bw_data = df_bw_data.rename(columns={'  Incl SP': 'RSP'})
+        df_bw_data = df_bw_data[df_bw_data['Article Description'].notna()]
         
-    #     # Add retailer column
-    #     df_makro_merged['Forecast Group'] = 'Makro'
+        # Merge with retailer map 
+        df_bw_merged = df_bw_data.merge(df_retailers_map_bw_final, how='left', on='Article')
 
-    #     # Rename columns
-    #     df_makro_merged = df_makro_merged.rename(columns={'Article': 'SKU No.'})
-    #     df_makro_merged = df_makro_merged.rename(columns={'SMD Product Code': 'Product Code'})
-    #     df_makro_merged = df_makro_merged.rename(columns={'SOH': 'SOH Qty'})
-    #     df_makro_merged = df_makro_merged.rename(columns={weekly_sales: 'Sales Qty'})
+        # Merge with stores
+        df_bw_merged = df_bw_merged.merge(df_bw_stores, how='left', on='Site')
+        
+        # Find missing data
+        missing_model_bw = df_bw_merged['SMD Product Code'].isnull()
+        df_bw_missing_model = df_bw_merged[missing_model_bw]
+        df_missing = df_bw_missing_model[['Article','Article Description']]
+        df_missing_unique = df_missing.drop_duplicates()
+        st.write("The following products are missing the SMD code on the map: ")
+        st.table(df_missing_unique)
 
-    #     # Don't change these headings. Rather change the ones above
-    #     final_df_makro = df_makro_merged[['Start Date','SKU No.', 'Product Code', 'Forecast Group','Store Name','SOH Qty','Sales Qty','Total Amt']]
+        st.write(" ")
+        missing_rsp_bw = df_bw_merged['RSP'].isnull()
+        df_bw_missing_rsp = df_bw_merged[missing_rsp_bw]  
+        df_missing_2 = df_bw_missing_rsp[['Article','Article Description']]
+        df_missing_unique_2 = df_missing_2.drop_duplicates()
+        st.write("The following products are missing the RSP on the map: ")
+        st.table(df_missing_unique_2)
 
-    #     # Show final df
-    #     total = final_df_makro['Total Amt'].sum()
-    #     st.write('The total sales for the week are: R',"{:0,.2f}".format(total).replace(',', ' '))
-    #     final_df_makro
+    except:
+        st.markdown("**Retailer map column headings:** Article, SMD Product Code")
+        st.markdown("**Retailer data column headings:** Article, Article Desc, Site, Store Name (in Stores.xlsx), SOH, "+weekly_sales)
+        st.markdown("Column headings are **case sensitive.** Please make sure they are correct")
 
-    #     # Output to .xlsx
-    #     st.write('Please ensure that no products are missing before downloading!')
-    #     st.markdown(get_table_download_link(final_df_makro), unsafe_allow_html=True)
+    # try:
+    # Set date columns
+    df_bw_merged['Start Date'] = Date_Start
+
+    # Total amount column
+    df_bw_merged['Total Amt'] = df_bw_merged[weekly_sales] * df_bw_merged['RSP']
+    
+    # Add retailer column
+    df_bw_merged['Forecast Group'] = 'Builders Warehouse'
+
+    # Rename columns
+    df_bw_merged = df_bw_merged.rename(columns={'Article': 'SKU No.'})
+    df_bw_merged = df_bw_merged.rename(columns={'SMD Product Code': 'Product Code'})
+    df_bw_merged = df_bw_merged.rename(columns={'SOH': 'SOH Qty'})
+    df_bw_merged = df_bw_merged.rename(columns={weekly_sales: 'Sales Qty'})
+
+    # Don't change these headings. Rather change the ones above
+    final_df_bw = df_bw_merged[['Start Date','SKU No.', 'Product Code', 'Forecast Group','Store Name','SOH Qty','Sales Qty','Total Amt']]
+
+    # Show final df
+    total = final_df_bw['Total Amt'].sum()
+    st.write('The total sales for the week are: R',"{:0,.2f}".format(total).replace(',', ' '))
+    final_df_bw
+
+    # Output to .xlsx
+    st.write('Please ensure that no products are missing before downloading!')
+    st.markdown(get_table_download_link(final_df_bw), unsafe_allow_html=True)
 
     # except:
     #     st.write('Check data')
