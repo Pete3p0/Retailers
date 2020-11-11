@@ -277,7 +277,7 @@ elif option == 'Builders Warehouse':
     # Rename columns
     df_bw_merged = df_bw_merged.rename(columns={'Article': 'SKU No.'})
     df_bw_merged = df_bw_merged.rename(columns={'SMD Product Code': 'Product Code'})
-    df_bw_merged = df_bw_merged.rename(columns={'SOH': 'SOH Qty'})
+    df_bw_merged = df_bw_merged.rename(columns={' SOH': 'SOH Qty'})
     df_bw_merged = df_bw_merged.rename(columns={weekly_sales: 'Sales Qty'})
 
     # Don't change these headings. Rather change the ones above
