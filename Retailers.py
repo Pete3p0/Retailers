@@ -225,43 +225,43 @@ elif option == 'Builders Warehouse':
     if bw_stores:
         df_bw_stores = pd.read_excel(bw_stores)
    
-    try:
-        # Get retailers map
-        df_bw_retailers_map = pd.read_excel('Builders Retailers Map.xlsx')
-        df_retailers_map_bw_final = df_bw_retailers_map[['Article','SMD Product Code']]
+    # try:
+    # Get retailers map
+    df_bw_retailers_map = pd.read_excel('Builders Retailers Map.xlsx')
+    df_retailers_map_bw_final = df_bw_retailers_map[['Article','SMD Product Code']]
 
-        # Get retailer data
-        df_bw_data = pd.read_excel('Builders Wk46.xlsx')
-        df_bw_data.columns = df_bw_data.iloc[6]
-        df_bw_data = df_bw_data.iloc[8:]
-        df_bw_data = df_bw_data.rename(columns={'  Incl SP': 'RSP'})
-        
-        # Merge with retailer map 
-        df_bw_merged = df_bw_data.merge(df_retailers_map_bw_final, how='left', on='Article')
+    # Get retailer data
+    df_bw_data = pd.read_excel('Builders Wk46.xlsx')
+    df_bw_data.columns = df_bw_data.iloc[6]
+    df_bw_data = df_bw_data.iloc[8:]
+    df_bw_data = df_bw_data.rename(columns={'  Incl SP': 'RSP'})
+    
+    # Merge with retailer map 
+    df_bw_merged = df_bw_data.merge(df_retailers_map_bw_final, how='left', on='Article')
 
-        # Merge with stores
-        df_bw_merged = df_bw_merged.merge(df_bw_stores, how='left', on='Site')
-        
-        # Find missing data
-        missing_model_bw = df_bw_merged['SMD Product Code'].isnull()
-        df_bw_missing_model = df_bw_merged[missing_model_bw]
-        df_missing = df_bw_missing_model[['Article','Article Description']]
-        df_missing_unique = df_missing.drop_duplicates()
-        st.write("The following products are missing the SMD code on the map: ")
-        st.table(df_missing_unique)
+    # Merge with stores
+    df_bw_merged = df_bw_merged.merge(df_bw_stores, how='left', on='Site')
+    
+    # Find missing data
+    missing_model_bw = df_bw_merged['SMD Product Code'].isnull()
+    df_bw_missing_model = df_bw_merged[missing_model_bw]
+    df_missing = df_bw_missing_model[['Article','Article Description']]
+    df_missing_unique = df_missing.drop_duplicates()
+    st.write("The following products are missing the SMD code on the map: ")
+    st.table(df_missing_unique)
 
-        st.write(" ")
-        missing_rsp_bw = df_bw_merged['RSP'].isnull()
-        df_bw_missing_rsp = df_bw_merged[missing_rsp_bw]  
-        df_missing_2 = df_bw_missing_rsp[['Article','Article Description']]
-        df_missing_unique_2 = df_missing_2.drop_duplicates()
-        st.write("The following products are missing the RSP on the map: ")
-        st.table(df_missing_unique_2)
+    st.write(" ")
+    missing_rsp_bw = df_bw_merged['RSP'].isnull()
+    df_bw_missing_rsp = df_bw_merged[missing_rsp_bw]  
+    df_missing_2 = df_bw_missing_rsp[['Article','Article Description']]
+    df_missing_unique_2 = df_missing_2.drop_duplicates()
+    st.write("The following products are missing the RSP on the map: ")
+    st.table(df_missing_unique_2)
 
-    except:
-        st.markdown("**Retailer map column headings:** Article, SMD Product Code")
-        st.markdown("**Retailer data column headings:** Article, Article Desc, Site, Store Name (in Stores.xlsx), SOH, "+weekly_sales)
-        st.markdown("Column headings are **case sensitive.** Please make sure they are correct")
+    # except:
+    #     st.markdown("**Retailer map column headings:** Article, SMD Product Code")
+    #     st.markdown("**Retailer data column headings:** Article, Article Desc, Site, Store Name (in Stores.xlsx), SOH, "+weekly_sales)
+    #     st.markdown("Column headings are **case sensitive.** Please make sure they are correct")
 
     # try:
     #     # Set date columns
