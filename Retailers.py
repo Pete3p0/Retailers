@@ -236,6 +236,8 @@ elif option == 'Builders Warehouse':
         df_bw_data = df_bw_data.iloc[8:]
         df_bw_data = df_bw_data.rename(columns={'  Incl SP': 'RSP'})
         df_bw_data = df_bw_data[df_bw_data['Article Description'].notna()]
+        df_bw_data['RSP'] = df_bw_data['RSP'].replace(',','', regex=True)
+        df_bw_data['RSP'] = df_bw_data['RSP'].astype(float)
         
         # Merge with retailer map 
         df_bw_merged = df_bw_data.merge(df_retailers_map_bw_final, how='left', on='Article')
@@ -269,8 +271,8 @@ elif option == 'Builders Warehouse':
     df_bw_merged['Start Date'] = Date_Start
 
     # Total amount column
-    df_bw_merged[weekly_sales] = df_bw_merged[weekly_sales].astype(int)
-    df_bw_merged['Total Amt'] = df_bw_merged[weekly_sales] * df_bw_merged['RSP']
+    df_bw_merged[weekly_sales] = df_bw_merged[weekly_sales].astype(float)
+    df_bw_merged['Total Amt'] = df_bw_merged[weekly_sales].astype(float) * df_bw_merged['RSP'].astype(float)
     
     # Add retailer column
     df_bw_merged['Forecast Group'] = 'Builders Warehouse'
