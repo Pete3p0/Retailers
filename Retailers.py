@@ -227,11 +227,11 @@ elif option == 'Builders Warehouse':
    
     # try:
     # Get retailers map
-    df_bw_retailers_map = pd.read_excel('Builders Retailers Map.xlsx')
+    df_bw_retailers_map = df_map
     df_retailers_map_bw_final = df_bw_retailers_map[['Article','SMD Product Code']]
 
     # Get retailer data
-    df_bw_data = pd.read_excel('Builders Wk46.xlsx')
+    df_bw_data = df_data
     df_bw_data.columns = df_bw_data.iloc[6]
     df_bw_data = df_bw_data.iloc[8:]
     df_bw_data = df_bw_data.rename(columns={'  Incl SP': 'RSP'})
