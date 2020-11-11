@@ -28,7 +28,7 @@ def get_table_download_link(df):
 st.title('Retailer Sales Reports')
 
 Date_End = st.date_input("Week ending: ")
-Date_Start = Date_End - dt.timedelta(days=7)
+Date_Start = Date_End - dt.timedelta(days=6)
 
 if Date_End.day < 10:
     Day = '0'+str(Date_End.day)
