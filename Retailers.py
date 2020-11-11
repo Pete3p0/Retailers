@@ -40,7 +40,7 @@ Short_Date_Dict = {1:'Jan', 2:'Feb', 3:'Mar',4:'Apr',5:'May',6:'Jun',7:'Jul',8:'
 
 option = st.selectbox(
     'Please select a retailer:',
-    ('Please select','Ackermans','Bradlows/Russels','Builders Warehouse','Clicks','Checkers','Incredible Connection','Makro', 'Musica','Takealot','TFG'))
+    ('Please select','Ackermans','Bradlows/Russels','Builders','Clicks','Checkers','Incredible Connection','Makro', 'Musica','Takealot','TFG'))
 st.write('You selected:', option)
 
 st.write("")
@@ -218,7 +218,7 @@ elif option == 'Bradlows/Russels':
 
 # Builders Warehouse
 
-elif option == 'Builders Warehouse':
+elif option == 'Builders':
     Week = st.text_input("Enter week number: ")
     weekly_sales = Week+'-'+Year[-1:]
     bw_stores = st.file_uploader('Stores', type='xlsx')
