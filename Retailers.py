@@ -266,37 +266,37 @@ elif option == 'Builders Warehouse':
         st.markdown("**Retailer data column headings:** Article, Article Desc, Site, Store Name (in Stores.xlsx), SOH, "+weekly_sales)
         st.markdown("Column headings are **case sensitive.** Please make sure they are correct")
 
-    # try:
-    # Set date columns
-    df_bw_merged['Start Date'] = Date_Start
+    try:
+        # Set date columns
+        df_bw_merged['Start Date'] = Date_Start
 
-    # Total amount column
-    df_bw_merged[weekly_sales] = df_bw_merged[weekly_sales].astype(float)
-    df_bw_merged['Total Amt'] = df_bw_merged[weekly_sales].astype(float) * df_bw_merged['RSP'].astype(float)
-    
-    # Add retailer column
-    df_bw_merged['Forecast Group'] = 'Builders Warehouse'
+        # Total amount column
+        df_bw_merged[weekly_sales] = df_bw_merged[weekly_sales].astype(float)
+        df_bw_merged['Total Amt'] = df_bw_merged[weekly_sales].astype(float) * df_bw_merged['RSP'].astype(float)
+        
+        # Add retailer column
+        df_bw_merged['Forecast Group'] = 'Builders Warehouse'
 
-    # Rename columns
-    df_bw_merged = df_bw_merged.rename(columns={'Article': 'SKU No.'})
-    df_bw_merged = df_bw_merged.rename(columns={'SMD Product Code': 'Product Code'})
-    df_bw_merged = df_bw_merged.rename(columns={' SOH': 'SOH Qty'})
-    df_bw_merged = df_bw_merged.rename(columns={weekly_sales: 'Sales Qty'})
+        # Rename columns
+        df_bw_merged = df_bw_merged.rename(columns={'Article': 'SKU No.'})
+        df_bw_merged = df_bw_merged.rename(columns={'SMD Product Code': 'Product Code'})
+        df_bw_merged = df_bw_merged.rename(columns={' SOH': 'SOH Qty'})
+        df_bw_merged = df_bw_merged.rename(columns={weekly_sales: 'Sales Qty'})
 
-    # Don't change these headings. Rather change the ones above
-    final_df_bw = df_bw_merged[['Start Date','SKU No.', 'Product Code', 'Forecast Group','Store Name','SOH Qty','Sales Qty','Total Amt']]
+        # Don't change these headings. Rather change the ones above
+        final_df_bw = df_bw_merged[['Start Date','SKU No.', 'Product Code', 'Forecast Group','Store Name','SOH Qty','Sales Qty','Total Amt']]
 
-    # Show final df
-    total = final_df_bw['Total Amt'].sum()
-    st.write('The total sales for the week are: R',"{:0,.2f}".format(total).replace(',', ' '))
-    final_df_bw
+        # Show final df
+        total = final_df_bw['Total Amt'].sum()
+        st.write('The total sales for the week are: R',"{:0,.2f}".format(total).replace(',', ' '))
+        final_df_bw
 
-    # Output to .xlsx
-    st.write('Please ensure that no products are missing before downloading!')
-    st.markdown(get_table_download_link(final_df_bw), unsafe_allow_html=True)
+        # Output to .xlsx
+        st.write('Please ensure that no products are missing before downloading!')
+        st.markdown(get_table_download_link(final_df_bw), unsafe_allow_html=True)
 
-    # except:
-    #     st.write('Check data')
+    except:
+        st.write('Check data')
 
 # Checkers
 
