@@ -454,10 +454,11 @@ elif option == 'Makro':
     try:
         # Get retailers map
         df_makro_retailers_map = df_map
-        df_retailers_map_makro_final = df_makro_retailers_map[['Article','SMD Product Code','SMD Description','RSP']]
+        df_retailers_map_makro_final = df_makro_retailers_map[['Article','SMD Product Code']]
 
         # Get retailer data
         df_makro_data = df_data
+        df_makro_data = df_makro_data.rename(columns={'Incl SP': 'RSP'})
 
         # Merge with retailer map 
         df_makro_merged = df_makro_data.merge(df_retailers_map_makro_final, how='left', on='Article')
