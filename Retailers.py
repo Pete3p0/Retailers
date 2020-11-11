@@ -269,7 +269,7 @@ elif option == 'Builders Warehouse':
     df_bw_merged['Start Date'] = Date_Start
 
     # Total amount column
-    df_bw_merged[Week+'-'+Year] = df_bw_merged[Week+'-'+Year].astype(int)
+    df_bw_merged[weekly_sales] = df_bw_merged[weekly_sales].astype(int)
     df_bw_merged['Total Amt'] = df_bw_merged[weekly_sales] * df_bw_merged['RSP']
     
     # Add retailer column
