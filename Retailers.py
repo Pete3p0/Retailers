@@ -483,7 +483,7 @@ elif option == 'Makro':
         st.table(df_missing_unique_2)
 
     except:
-        st.markdown("**Retailer map column headings:** Article, SMD Product Code, RSP")
+        st.markdown("**Retailer map column headings:** Article, SMD Product Code")
         st.markdown("**Retailer data column headings:** Article, Article Desc, Site, Store Name (in Stores.xlsx), SOH, "+weekly_sales)
         st.markdown("Column headings are **case sensitive.** Please make sure they are correct")
 
