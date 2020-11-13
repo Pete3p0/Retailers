@@ -40,7 +40,7 @@ Short_Date_Dict = {1:'Jan', 2:'Feb', 3:'Mar',4:'Apr',5:'May',6:'Jun',7:'Jul',8:'
 
 option = st.selectbox(
     'Please select a retailer:',
-    ('Please select','Ackermans','Bradlows/Russels','Builders','Checkers','Clicks','Dis-Chem','Incredible Connection','Makro', 'Musica','Takealot','TFG'))
+    ('Please select','Ackermans','Bradlows/Russels','Builders','Checkers','Clicks','Dis-Chem','Dis-Chem-Pharmacies','Incredible Connection','Makro', 'Musica','Takealot','TFG'))
 st.write('You selected:', option)
 
 st.write("")
@@ -493,6 +493,73 @@ elif option == 'Dis-Chem':
 
         # Add column for retailer and SOH
         df_dischem_merged['Forecast Group'] = 'Dis-Chem'
+
+        # Final df. Don't change these headings. Rather change the ones above
+        final_df_dischem_sales = df_dischem_merged[['Start Date','SKU No.', 'Product Code', 'Forecast Group','Store Name','SOH Qty','Sales Qty','Total Amt']]
+
+        # Show final df
+        total = final_df_dischem_sales['Total Amt'].sum()
+        st.write('The total sales for the week are: R',"{:0,.2f}".format(total).replace(',', ' '))
+        final_df_dischem_sales
+
+        # Output to .xlsx
+        st.write('Please ensure that no products are missing before downloading!')
+        st.markdown(get_table_download_link(final_df_dischem_sales), unsafe_allow_html=True)
+
+    except:
+        st.write('Check data') 
+
+# Dis-Chem-Pharmacies
+
+elif option == 'Dis-Chem-Pharmacies':
+    try:
+        Units_Sold = (Short_Date_Dict[Month] + ' ' + Year)
+        
+        # Get retailers map
+        df_dischem_retailers_map = df_map
+        df_retailers_map_dischem_final = df_dischem_retailers_map[['Article Code','SMD Code','RSP']]
+
+        # Get retailer data
+        df_dischem_data = df_data
+
+        # Merge with retailer map
+        df_dischem_merged = df_dischem_data.merge(df_retailers_map_dischem_final, how='left', on='Article Code')
+
+        # Rename columns
+        df_dischem_merged = df_dischem_merged.rename(columns={'Article Code': 'SKU No.'})
+        df_dischem_merged = df_dischem_merged.rename(columns={'Oct 2020': 'Sales Qty'})
+        df_dischem_merged = df_dischem_merged.rename(columns={'SMD Code': 'Product Code'})
+
+        # Find missing data
+        missing_model_dischem = df_dischem_merged['Product Code'].isnull()
+        df_dischem_missing_model = df_dischem_merged[missing_model_dischem]
+        df_missing = df_dischem_missing_model[['SKU No.','Article']]
+        df_missing_unique = df_missing.drop_duplicates()
+        st.write("The following products are missing the SMD code on the map: ")
+        st.table(df_missing_unique)
+
+        st.write(" ")
+        missing_rsp_dischem = df_dischem_merged['RSP'].isnull()
+        df_dischem_missing_rsp = df_dischem_merged[missing_rsp_dischem]
+        df_missing_2 = df_dischem_missing_rsp[['SKU No.','Article']]
+        df_missing_unique_2 = df_missing_2.drop_duplicates()
+        st.write("The following products are missing the RSP on the map: ")
+        st.table(df_missing_unique_2)
+
+    except:
+        st.markdown("**Retailer map column headings:** Article Code, SMD Code & RSP")
+        st.markdown("**Retailer data column headings:** Article Code, Article, Store Name, SOH Qty & "+Units_Sold)
+        st.markdown("Column headings are **case sensitive.** Please make sure they are correct")
+
+    try:
+        # Set date columns
+        df_dischem_merged['Start Date'] = Date_Start
+
+        # Add Total Amount column
+        df_dischem_merged['Total Amt'] = df_dischem_merged['Sales Qty'] * df_dischem_merged['RSP']
+
+        # Add column for retailer and SOH
+        df_dischem_merged['Forecast Group'] = 'Dis-Chem Pharmacies'
 
         # Final df. Don't change these headings. Rather change the ones above
         final_df_dischem_sales = df_dischem_merged[['Start Date','SKU No.', 'Product Code', 'Forecast Group','Store Name','SOH Qty','Sales Qty','Total Amt']]
