@@ -40,7 +40,7 @@ Short_Date_Dict = {1:'Jan', 2:'Feb', 3:'Mar',4:'Apr',5:'May',6:'Jun',7:'Jul',8:'
 
 option = st.selectbox(
     'Please select a retailer:',
-    ('Please select','Ackermans','Bradlows/Russels','Builders','Checkers','Clicks','Dis-Chem','Dis-Chem-Pharmacies','Incredible Connection','Makro', 'Musica','Takealot','TFG'))
+    ('Please select','Ackermans','Bradlows/Russels','Builders','Checkers','Clicks','Dis-Chem','Dis-Chem-Pharmacies','Incredible-Connection','Makro', 'Musica','Outdoor-Warehouse','Takealot','TFG'))
 st.write('You selected:', option)
 
 st.write("")
@@ -578,7 +578,7 @@ elif option == 'Dis-Chem-Pharmacies':
 
 # Incredible Connection
 
-elif option == 'Incredible Connection':
+elif option == 'Incredible-Connection':
     try:
         Units_Sold = ('Qty Sold '+ str(Month) + '.' + Year)
 
@@ -795,6 +795,116 @@ elif option == 'Musica':
         st.markdown(get_table_download_link(final_df_musica), unsafe_allow_html=True)
     except:
         st.write('Check data')
+
+# Outdoor Warehouse
+elif option == 'Outdoor-Warehouse':
+
+    st.markdown("**Stock on hand needs to be in a separate sheet**")
+
+    ow_soh = st.file_uploader('SOH', type='xlsx')
+    if ow_soh:
+        df_ow_soh = pd.read_excel(ow_soh)
+
+    try:
+        # Get retailers map
+        df_ow_retailers_map = df_map
+        df_retailers_map_ow_final = df_ow_retailers_map[['Article Code','SMD Code','RSP']]
+
+        # Get retailer data
+        df_ow_data = df_data
+        df_ow_data = df_ow_data.iloc[1:]
+
+        # Get rid of extra columns
+        del df_ow_data['Code']
+        del df_ow_data['Size']
+        del df_ow_data['Colour']
+        del df_ow_data['Total']
+
+        # Melt data
+        df_ow_data = pd.melt(df_ow_data, id_vars=['Product', 'SKUCode'])
+
+        # Rename columns
+        df_ow_data = df_ow_data.rename(columns={'variable': 'Store Name'})
+        df_ow_data = df_ow_data.rename(columns={'value': 'Sales Qty'})
+        df_ow_data = df_ow_data.rename(columns={'SKUCode': 'Article Code'})
+
+        # Get rid of commas
+        df_ow_data['Sales Qty'] = df_ow_data['Sales Qty'].replace(',','', regex=True)
+        df_ow_data['Sales Qty'] = df_ow_data['Sales Qty'].astype(float)
+
+        # Lookup column
+        df_ow_data['Lookup'] = df_ow_data['Article Code'].astype(str) + df_ow_data['Store Name']
+
+        # Get stock on hand
+        df_ow_soh = df_ow_soh.iloc[1:]
+        del df_ow_soh['Code']
+        del df_ow_soh['Size']
+        del df_ow_soh['Colour']
+        del df_ow_soh['Total']
+        df_ow_soh = pd.melt(df_ow_soh, id_vars=['Product', 'SKUCode'])
+        df_ow_soh = df_ow_soh.rename(columns={'variable': 'Store Name'})
+        df_ow_soh = df_ow_soh.rename(columns={'value': 'SOH Qty'})
+        df_ow_soh['SOH Qty'] = df_ow_soh['SOH Qty'].replace(',','', regex=True)
+        df_ow_soh['SOH Qty'] = df_ow_soh['SOH Qty'].astype(float)
+        df_ow_soh['Lookup'] = df_ow_soh['SKUCode'].astype(str) + df_ow_soh['Store Name']
+        df_ow_soh_final = df_ow_soh[['Lookup','SOH Qty']]
+
+        # Merge with SOH
+        df_ow_data = df_ow_data.merge(df_ow_soh_final, how='left', on='Lookup')
+
+        # Merge with retailer map
+        df_ow_merged = df_ow_data.merge(df_retailers_map_ow_final, how='left', on='Article Code')
+
+        # Rename columns
+        df_ow_merged = df_ow_merged.rename(columns={'Article Code': 'SKU No.'})
+        df_ow_merged = df_ow_merged.rename(columns={'SMD Code': 'Product Code'})
+
+        # Find missing data
+        missing_model = df_ow_merged['Product Code'].isnull()
+        df_ow_missing_model = df_ow_merged[missing_model]
+        df_missing = df_ow_missing_model[['SKU No.','Product']]
+        df_missing_unique = df_missing.drop_duplicates()
+        st.write("The following products are missing the SMD code on the map: ")
+        st.table(df_missing_unique)
+
+        st.write(" ")
+        missing_rsp = df_ow_merged['RSP'].isnull()
+        df_ow_missing_rsp = df_ow_merged[missing_rsp]
+        df_missing_2 = df_ow_missing_rsp[['SKU No.','Product']]
+        df_missing_unique_2 = df_missing_2.drop_duplicates()
+        st.write("The following products are missing the RSP on the map: ")
+        st.table(df_missing_unique_2)
+
+    except:
+        st.markdown("**Retailer map column headings:** Article Code,SMD Code,RSP")
+        st.markdown("**Retailer data column headings:** Code, Product, SKUCode")
+        st.markdown("Column headings are **case sensitive.** Please make sure they are correct")
+
+
+    try:
+        # Set date columns
+        df_ow_merged['Start Date'] = Date_Start
+
+        # Total amount column
+        df_ow_merged['Total Amt'] = df_ow_merged['Sales Qty'] * df_ow_merged['RSP']
+
+        # Add retailer and store column
+        df_ow_merged['Forecast Group'] = 'Outdoor Warehouse'
+
+        # Don't change these headings. Rather change the ones above
+        final_df_ow = df_ow_merged[['Start Date','SKU No.', 'Product Code', 'Forecast Group','Store Name','SOH Qty','Sales Qty','Total Amt']]
+
+        # Show final df
+        total = final_df_ow['Total Amt'].sum()
+        st.write('The total sales for the week are: R',"{:0,.2f}".format(total).replace(',', ' '))
+        final_df_ow
+
+        # Output to .xlsx
+        st.write('Please ensure that no products are missing before downloading!')
+        st.markdown(get_table_download_link(final_df_ow), unsafe_allow_html=True)
+    except:
+        st.write('Check data')    
+
 
 # Takealot
 elif option == 'Takealot':
