@@ -99,36 +99,36 @@ if option == 'Ackermans':
         st.markdown("Column headings are **case sensitive.** Please make sure they are correct") 
 
         
-    # try:
-    # Set date columns
-    df_ackermans_merged['Start Date'] = Date_Start
+    try:
+        # Set date columns
+        df_ackermans_merged['Start Date'] = Date_Start
 
-    # Total amount column
-    df_ackermans_merged['Total Amt'] = df_ackermans_merged[Units_Sold].astype(int) * df_ackermans_merged['SMD RSP']
+        # Total amount column
+        df_ackermans_merged['Total Amt'] = df_ackermans_merged[Units_Sold].astype(int) * df_ackermans_merged['SMD RSP']
 
-    # Add retailer column and store column
-    df_ackermans_merged['Forecast Group'] = 'Ackermans'
-    df_ackermans_merged['Store Name'] = ''
+        # Add retailer column and store column
+        df_ackermans_merged['Forecast Group'] = 'Ackermans'
+        df_ackermans_merged['Store Name'] = ''
 
-    # Rename columns
-    df_ackermans_merged = df_ackermans_merged.rename(columns={CSOH: 'SOH Qty'})
-    df_ackermans_merged = df_ackermans_merged.rename(columns={Units_Sold: 'Sales Qty'})
-    df_ackermans_merged = df_ackermans_merged.rename(columns={'SMD Product Code': 'Product Code'})
+        # Rename columns
+        df_ackermans_merged = df_ackermans_merged.rename(columns={CSOH: 'SOH Qty'})
+        df_ackermans_merged = df_ackermans_merged.rename(columns={Units_Sold: 'Sales Qty'})
+        df_ackermans_merged = df_ackermans_merged.rename(columns={'SMD Product Code': 'Product Code'})
 
-    # Don't change these headings. Rather change the ones above
-    final_df_ackermans = df_ackermans_merged[['Start Date','SKU No.', 'Product Code', 'Forecast Group','Store Name','SOH Qty','Sales Qty','Total Amt']]
+        # Don't change these headings. Rather change the ones above
+        final_df_ackermans = df_ackermans_merged[['Start Date','SKU No.', 'Product Code', 'Forecast Group','Store Name','SOH Qty','Sales Qty','Total Amt']]
 
-    # Show final df
-    total = final_df_ackermans['Total Amt'].sum()
-    st.write('The total sales for the week are: R',"{:0,.2f}".format(total).replace(',', ' '))
-    final_df_ackermans
+        # Show final df
+        total = final_df_ackermans['Total Amt'].sum()
+        st.write('The total sales for the week are: R',"{:0,.2f}".format(total).replace(',', ' '))
+        final_df_ackermans
 
-    # Output to .xlsx
-    st.write('Please ensure that no products are missing before downloading!')
-    st.markdown(get_table_download_link(final_df_ackermans), unsafe_allow_html=True)
+        # Output to .xlsx
+        st.write('Please ensure that no products are missing before downloading!')
+        st.markdown(get_table_download_link(final_df_ackermans), unsafe_allow_html=True)
 
-    # except:
-    #     st.write('Check data')
+    except:
+        st.write('Check data')
 
 
 # Bradlows/Russels
@@ -516,32 +516,32 @@ elif option == 'Dis-Chem-Pharmacies':
         Units_Sold = (Short_Date_Dict[Month] + ' ' + Year)
         
         # Get retailers map
-        df_dischem_retailers_map = df_map
-        df_retailers_map_dischem_final = df_dischem_retailers_map[['Article Code','SMD Code','RSP']]
+        df_dischemp_retailers_map = df_map
+        df_retailers_map_dischemp_final = df_dischemp_retailers_map[['Article Code','SMD Code','RSP']]
 
         # Get retailer data
-        df_dischem_data = df_data
+        df_dischemp_data = df_data
 
         # Merge with retailer map
-        df_dischem_merged = df_dischem_data.merge(df_retailers_map_dischem_final, how='left', on='Article Code')
+        df_dischemp_merged = df_dischemp_data.merge(df_retailers_map_dischemp_final, how='left', on='Article Code')
 
         # Rename columns
-        df_dischem_merged = df_dischem_merged.rename(columns={'Article Code': 'SKU No.'})
-        df_dischem_merged = df_dischem_merged.rename(columns={'Oct 2020': 'Sales Qty'})
-        df_dischem_merged = df_dischem_merged.rename(columns={'SMD Code': 'Product Code'})
+        df_dischemp_merged = df_dischemp_merged.rename(columns={'Article Code': 'SKU No.'})
+        df_dischemp_merged = df_dischemp_merged.rename(columns={'Oct 2020': 'Sales Qty'})
+        df_dischemp_merged = df_dischemp_merged.rename(columns={'SMD Code': 'Product Code'})
 
         # Find missing data
-        missing_model_dischem = df_dischem_merged['Product Code'].isnull()
-        df_dischem_missing_model = df_dischem_merged[missing_model_dischem]
-        df_missing = df_dischem_missing_model[['SKU No.','Article']]
+        missing_model_dischemp = df_dischemp_merged['Product Code'].isnull()
+        df_dischemp_missing_model = df_dischemp_merged[missing_model_dischemp]
+        df_missing = df_dischemp_missing_model[['SKU No.','Article']]
         df_missing_unique = df_missing.drop_duplicates()
         st.write("The following products are missing the SMD code on the map: ")
         st.table(df_missing_unique)
 
         st.write(" ")
-        missing_rsp_dischem = df_dischem_merged['RSP'].isnull()
-        df_dischem_missing_rsp = df_dischem_merged[missing_rsp_dischem]
-        df_missing_2 = df_dischem_missing_rsp[['SKU No.','Article']]
+        missing_rsp_dischemp = df_dischemp_merged['RSP'].isnull()
+        df_dischemp_missing_rsp = df_dischemp_merged[missing_rsp_dischem]
+        df_missing_2 = df_dischemp_missing_rsp[['SKU No.','Article']]
         df_missing_unique_2 = df_missing_2.drop_duplicates()
         st.write("The following products are missing the RSP on the map: ")
         st.table(df_missing_unique_2)
@@ -553,25 +553,25 @@ elif option == 'Dis-Chem-Pharmacies':
 
     try:
         # Set date columns
-        df_dischem_merged['Start Date'] = Date_Start
+        df_dischemp_merged['Start Date'] = Date_Start
 
         # Add Total Amount column
-        df_dischem_merged['Total Amt'] = df_dischem_merged['Sales Qty'] * df_dischem_merged['RSP']
+        df_dischemp_merged['Total Amt'] = df_dischemp_merged['Sales Qty'] * df_dischemp_merged['RSP']
 
         # Add column for retailer and SOH
-        df_dischem_merged['Forecast Group'] = 'Dis-Chem Pharmacies'
+        df_dischemp_merged['Forecast Group'] = 'Dis-Chem Pharmacies'
 
         # Final df. Don't change these headings. Rather change the ones above
-        final_df_dischem_sales = df_dischem_merged[['Start Date','SKU No.', 'Product Code', 'Forecast Group','Store Name','SOH Qty','Sales Qty','Total Amt']]
+        final_df_dischemp_sales = df_dischemp_merged[['Start Date','SKU No.', 'Product Code', 'Forecast Group','Store Name','SOH Qty','Sales Qty','Total Amt']]
 
         # Show final df
-        total = final_df_dischem_sales['Total Amt'].sum()
+        total = final_df_dischemp_sales['Total Amt'].sum()
         st.write('The total sales for the week are: R',"{:0,.2f}".format(total).replace(',', ' '))
-        final_df_dischem_sales
+        final_df_dischemp_sales
 
         # Output to .xlsx
         st.write('Please ensure that no products are missing before downloading!')
-        st.markdown(get_table_download_link(final_df_dischem_sales), unsafe_allow_html=True)
+        st.markdown(get_table_download_link(final_df_dischemp_sales), unsafe_allow_html=True)
 
     except:
         st.write('Check data') 
