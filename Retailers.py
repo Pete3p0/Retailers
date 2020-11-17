@@ -911,6 +911,7 @@ elif option == 'Outdoor-Warehouse':
 elif option == 'Sportsmans-Warehouse':
 
     st.markdown("**Stock on hand needs to be in a separate sheet**")
+    st.markdown("**Please delete the size column in both data sheets**")
 
     sw_soh = st.file_uploader('SOH', type='xlsx')
     if sw_soh:
