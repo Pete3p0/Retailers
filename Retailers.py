@@ -928,7 +928,6 @@ elif option == 'Sportsmans-Warehouse':
 
         # Get rid of extra columns
         del df_sw_data['Code']
-        del df_sw_data['Size']
         del df_sw_data['Colour']
         del df_sw_data['Total']
 
@@ -950,7 +949,6 @@ elif option == 'Sportsmans-Warehouse':
         # Get stock on hand
         df_sw_soh = df_sw_soh.iloc[1:]
         del df_sw_soh['Code']
-        del df_sw_soh['Size']
         del df_sw_soh['Colour']
         del df_sw_soh['Total']
         df_sw_soh = pd.melt(df_sw_soh, id_vars=['Product', 'SKUCode'])
