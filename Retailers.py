@@ -37,10 +37,11 @@ else:
 Month = Date_End.month
 Year = str(Date_End.year)
 Short_Date_Dict = {1:'Jan', 2:'Feb', 3:'Mar',4:'Apr',5:'May',6:'Jun',7:'Jul',8:'Aug',9:'Sep',10:'Oct',11:'Nov',12:'Dec'}
+Long_Date_Dict = {1:'January', 2:'February', 3:'March',4:'April',5:'May',6:'June',7:'July',8:'August',9:'September',10:'October',11:'November',12:'December'}
 
 option = st.selectbox(
     'Please select a retailer:',
-    ('Please select','Ackermans','Bradlows/Russels','Builders','Checkers','Clicks','Dis-Chem','Dis-Chem-Pharmacies','Incredible-Connection','Makro', 'Musica','Outdoor-Warehouse','Sportsmans-Warehouse','Takealot','TFG'))
+    ('Please select','Ackermans','Bradlows/Russels','Builders','Checkers','Clicks','Dealz','Dis-Chem','Dis-Chem-Pharmacies','Incredible-Connection','Makro', 'Musica','Outdoor-Warehouse','Sportsmans-Warehouse','Takealot','TFG'))
 st.write('You selected:', option)
 
 st.write("")
@@ -441,6 +442,78 @@ elif option == 'Clicks':
     
     except:
         st.write('Check data')
+
+# Dealz
+elif option == 'Dealz':
+
+    units_sold = Long_Date_Dict[Month]
+
+    try:
+        # Get retailers map
+        df_dealz_retailers_map = df_map
+        df_retailers_map_dealz_final = df_dealz_retailers_map[['Style Code','Product Code']]
+
+        # Get retailer data
+        df_dealz_data = df_data
+        df_dealz_data.columns = df_dealz_data.iloc[5]
+        df_dealz_data = df_dealz_data.iloc[6:]
+        s = pd.Series(df_dealz_data.columns)
+        s = s.fillna('Unnamed: ' + (s.groupby(s.isnull()).cumcount() + 1).astype(str))
+        df_dealz_data.columns = s
+
+        # Create SOH
+        df_dealz_data['SOH Qty'] = df_dealz_data['Unnamed: 3'].astype(float) + df_dealz_data['Unnamed: 4'].astype(float)
+
+        # Merge with Retailers Map
+        df_dealz_merged = df_dealz_data.merge(df_retailers_map_dealz_final, how='left', on='Style Code')
+
+        # Find missing data
+        missing_model = df_dealz_merged['Product Code'].isnull()
+        df_dealz_missing_model = df_dealz_merged[missing_model]
+        df_missing = df_dealz_missing_model[['Style Code','Style Desc']]
+        df_missing_unique = df_missing.drop_duplicates()
+        st.write("The following products are missing the SMD code on the map: ")
+        st.table(df_missing_unique)
+
+
+
+    except:
+        st.markdown("**Retailer map column headings:** Style Code, Product Code")
+        st.markdown("**Retailer data column headings:** Style Code, Style Desc, "+units_sold)
+        st.markdown("Column headings are **case sensitive.** Please make sure they are correct") 
+
+    try:
+        # Set date columns
+        df_dealz_merged['Start Date'] = Date_Start
+
+        # Add Total Amount column
+        df_dealz_merged['Total Amt'] = df_dealz_merged[units_sold] * df_dealz_merged['Price']
+
+        # Add column for retailer and store name
+        df_dealz_merged['Forecast Group'] = 'Dealz'
+        df_dealz_merged['Store Name'] = ''
+
+        # Rename columns
+        df_dealz_merged = df_dealz_merged.rename(columns={'Style Code': 'SKU No.'})
+        df_dealz_merged = df_dealz_merged.rename(columns={units_sold: 'Sales Qty'})
+        df_dealz_merged = df_dealz_merged.rename(columns={'Price': 'RSP'})
+
+        # Final df. Don't change these headings. Rather change the ones above
+        final_df_dealz_sales = df_dealz_merged[['Start Date','SKU No.', 'Product Code', 'Forecast Group','Store Name','SOH Qty','Sales Qty','Total Amt']]
+
+        # Show final df
+        total = final_df_dealz_sales['Total Amt'].sum()
+        st.write('The total sales for the week are: R',"{:0,.2f}".format(total).replace(',', ' '))
+        final_df_dealz_sales
+
+        # Output to .xlsx
+        st.write('Please ensure that no products are missing before downloading!')
+        st.markdown(get_table_download_link(final_df_dealz_sales), unsafe_allow_html=True)
+
+    except:
+        st.write('Check data')
+
+
 
 # Dis-Chem
 
