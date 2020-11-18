@@ -41,7 +41,7 @@ Long_Date_Dict = {1:'January', 2:'February', 3:'March',4:'April',5:'May',6:'June
 
 option = st.selectbox(
     'Please select a retailer:',
-    ('Please select','Ackermans','Bradlows/Russels','Builders','Checkers','Clicks','Dealz','Dis-Chem','Dis-Chem-Pharmacies','Incredible-Connection','Makro', 'Musica','Outdoor-Warehouse','PnP','Sportsmans-Warehouse','Takealot','TFG'))
+    ('Please select','Ackermans','Bradlows/Russels','Builders','Checkers','Clicks','Dealz','Dis-Chem','Dis-Chem-Pharmacies','HiFi','Incredible-Connection','Makro', 'Musica','Outdoor-Warehouse','PnP','Sportsmans-Warehouse','Takealot','TFG'))
 st.write('You selected:', option)
 
 st.write("")
@@ -648,6 +648,84 @@ elif option == 'Dis-Chem-Pharmacies':
 
     except:
         st.write('Check data') 
+
+# HiFi Corp
+
+elif option == 'HiFi':
+    try:
+        Units_Sold = ('Qty Sold '+ str(Month) + '.' + Year)
+
+        # Get retailers map
+        df_hifi_retailer_map = df_map
+        
+
+        # Get previous week
+        hifi_data_prev = st.file_uploader('Previous week', type='xlsx')
+        if hifi_data_prev:
+            df_hifi_data_prev = pd.read_excel(hifi_data_prev)
+        df_hifi_data_prev['Lookup'] = df_hifi_data_prev['Material'].astype(str) + df_hifi_data_prev['Plant']
+        df_hifi_data_prev = df_hifi_data_prev.rename(columns={Units_Sold: 'Prev Sales'})
+        df_hifi_data_prev = df_hifi_data_prev[['Lookup','Prev Sales']]
+
+        # Get current week
+        df_hifi_data = df_data
+        df_hifi_data['Lookup'] = df_hifi_data['Material'].astype(str) + df_hifi_data['Plant']
+
+        # Merge with retailer map and previous week
+        df_hifi_data_merge_curr = df_hifi_data.merge(df_hifi_data_prev, how='left', on='Lookup')
+        df_hifi_merged = df_hifi_data_merge_curr.merge(df_hifi_retailer_map, how='left', on='Material')
+
+        missing_model_hifi = df_hifi_merged['SMD Code'].isnull()
+        df_hifi_missing_model = df_hifi_merged[missing_model_hifi]
+        df_missing = df_hifi_missing_model[['Material','Material Desc']]
+        df_missing_unique = df_missing.drop_duplicates()
+        st.write("The following products are missing the SMD code on the map: ")
+        st.table(df_missing_unique)
+
+        st.write(" ")
+        missing_rsp_hifi = df_hifi_merged['RSP'].isnull()
+        df_hifi_missing_rsp = df_hifi_merged[missing_rsp_hifi]
+        df_missing_2 = df_hifi_missing_rsp[['Material','Material Desc']]
+        df_missing_unique_2 = df_missing_2.drop_duplicates()
+        st.write("The following products are missing the RSP on the map: ")
+        st.table(df_missing_unique_2)
+
+    except:
+        st.markdown("**Retailer map column headings:** Material, SMD Code & RSP")
+        st.markdown("**Retailer data column headings:** Material, Material Desc, Plant, Plant Description, Total SOH Qty & "+Units_Sold)
+        st.markdown("Column headings are **case sensitive.** Please make sure they are correct")
+
+    try:
+        # Set date columns
+        df_hifi_merged['Start Date'] = Date_Start
+
+        # Add Total Amount column
+        df_hifi_merged['Sales Qty'] = df_hifi_merged[Units_Sold] - df_hifi_merged['Prev Sales']
+        df_hifi_merged['Total Amt'] = df_hifi_merged['Sales Qty'] * df_hifi_merged['RSP']
+
+        # Add column for retailer and SOH
+        df_hifi_merged['Forecast Group'] = 'HiFi Corp'
+
+        # Rename columns
+        df_hifi_merged = df_hifi_merged.rename(columns={'Material': 'SKU No.'})
+        df_hifi_merged = df_hifi_merged.rename(columns={'Total SOH Qty': 'SOH Qty'})
+        df_hifi_merged = df_hifi_merged.rename(columns={'SMD Code': 'Product Code'})
+        df_hifi_merged = df_hifi_merged.rename(columns={'Plant Description': 'Store Name'})
+
+        # Final df. Don't change these headings. Rather change the ones above
+        final_df_hifi_sales = df_hifi_merged[['Start Date','SKU No.', 'Product Code', 'Forecast Group','Store Name','SOH Qty','Sales Qty','Total Amt']]
+
+        # Show final df
+        total = final_df_hifi_sales['Total Amt'].sum()
+        st.write('The total sales for the week are: R',"{:0,.2f}".format(total).replace(',', ' '))
+        final_df_hifi_sales
+
+        # Output to .xlsx
+        st.write('Please ensure that no products are missing before downloading!')
+        st.markdown(get_table_download_link(final_df_hifi_sales), unsafe_allow_html=True)
+
+    except:
+        st.write('Check data')
 
 # Incredible Connection
 
