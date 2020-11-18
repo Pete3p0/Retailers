@@ -41,7 +41,7 @@ Long_Date_Dict = {1:'January', 2:'February', 3:'March',4:'April',5:'May',6:'June
 
 option = st.selectbox(
     'Please select a retailer:',
-    ('Please select','Ackermans','Bradlows/Russels','Builders','Checkers','Clicks','Dealz','Dis-Chem','Dis-Chem-Pharmacies','Incredible-Connection','Makro', 'Musica','Outdoor-Warehouse','Sportsmans-Warehouse','Takealot','TFG'))
+    ('Please select','Ackermans','Bradlows/Russels','Builders','Checkers','Clicks','Dealz','Dis-Chem','Dis-Chem-Pharmacies','Incredible-Connection','Makro', 'Musica','Outdoor-Warehouse','PnP','Sportsmans-Warehouse','Takealot','TFG'))
 st.write('You selected:', option)
 
 st.write("")
@@ -977,7 +977,89 @@ elif option == 'Outdoor-Warehouse':
         st.write('Please ensure that no products are missing before downloading!')
         st.markdown(get_table_download_link(final_df_ow), unsafe_allow_html=True)
     except:
-        st.write('Check data')    
+        st.write('Check data') 
+
+
+# Pick n Pay
+elif option == 'PnP':
+
+    pnp_soh = st.file_uploader('SOH', type='xlsx')
+    if pnp_soh:
+        df_pnp_soh = pd.read_excel(pnp_soh)
+
+    try:
+        # Get retailers map
+        df_pnp_retailers_map = df_map
+        df_retailers_map_pnp_final = df_pnp_retailers_map[['Article Number','SMD code','RSP']]
+
+        # Get retailer data
+        df_pnp_data = df_data
+        df_pnp_data = df_pnp_data.rename(columns={'PnP ArticleNumber': 'Article Number'})
+        df_pnp_data = df_pnp_data.rename(columns={'Store': 'Store Name'})
+
+        # Lookup column
+        df_pnp_data['Lookup'] = df_pnp_data['Article Number'].astype(str) + df_pnp_data['Store ID']
+
+        # Get stock on hand
+        df_pnp_soh['Lookup'] = df_pnp_soh['Article Number'].astype(str) + df_pnp_soh['Site Code']
+        df_pnp_soh_final = df_pnp_soh[['Lookup','SOH Qty']]
+
+        # Merge with SOH
+        df_pnp_data = df_pnp_data.merge(df_pnp_soh_final, how='left', on='Lookup')
+
+        # Merge with retailer map
+        df_pnp_merged = df_pnp_data.merge(df_retailers_map_pnp_final, how='left', on='Article Number')
+
+        # Rename columns
+        df_pnp_merged = df_pnp_merged.rename(columns={'Article Number': 'SKU No.'})
+        df_pnp_merged = df_pnp_merged.rename(columns={'SMD code': 'Product Code'})
+        df_pnp_merged = df_pnp_merged.rename(columns={'Units': 'Sales Qty'})
+
+        # Find missing data
+        missing_model = df_pnp_merged['Product Code'].isnull()
+        df_pnp_missing_model = df_pnp_merged[missing_model]
+        df_missing = df_pnp_missing_model[['SKU No.','Product Description']]
+        df_missing_unique = df_missing.drop_duplicates()
+        st.write("The following products are missing the SMD code on the map: ")
+        st.table(df_missing_unique)
+
+        st.write(" ") 
+        missing_rsp = df_pnp_merged['RSP'].isnull()
+        df_pnp_missing_rsp = df_pnp_merged[missing_rsp] 
+        df_missing_2 = df_pnp_missing_rsp[['SKU No.','Product Description']]
+        df_missing_unique_2 = df_missing_2.drop_duplicates()
+        st.write("The following products are missing the RSP on the map: ")
+        st.table(df_missing_unique_2)
+
+    except:
+        st.markdown("**Retailer map column headings:** Article Number,SMD code,RSP")
+        st.markdown("**Retailer data column headings:** Product Description, Store ID, Store, Units, PnP ArticleNumber")
+        st.markdown("**Retailer SOH column headings:** Site Code, Article Number, SOH Qty")
+        st.markdown("Column headings are **case sensitive.** Please make sure they are correct")
+
+    try:
+        # Set date columns
+        df_pnp_merged['Start Date'] = Date_Start
+
+        # Total amount column
+        df_pnp_merged['Total Amt'] = df_pnp_merged['Sales Qty'] * df_pnp_merged['RSP']
+
+        # Add retailer and store column
+        df_pnp_merged['Forecast Group'] = 'Pick n Pay'
+
+        # Don't change these headings. Rather change the ones above
+        final_df_pnp = df_pnp_merged[['Start Date','SKU No.', 'Product Code', 'Forecast Group','Store Name','SOH Qty','Sales Qty','Total Amt']]
+
+        # Show final df
+        total = final_df_pnp['Total Amt'].sum()
+        st.write('The total sales for the week are: R',"{:0,.2f}".format(total).replace(',', ' '))
+        final_df_pnp
+
+        # Output to .xlsx
+        st.write('Please ensure that no products are missing before downloading!')
+        st.markdown(get_table_download_link(final_df_pnp), unsafe_allow_html=True)
+    except:
+        st.write('Check data') 
 
 
 # Sportsmans Warehouse
@@ -1046,7 +1128,7 @@ elif option == 'Sportsmans-Warehouse':
         # Find missing data
         missing_model = df_sw_merged['Product Code'].isnull()
         df_sw_missing_model = df_sw_merged[missing_model]
-        df_missing = df_sw_missing_model[['Product','SKU No.']]
+        df_missing = df_sw_missing_model[['SKU No.','Product']]
         df_missing_unique = df_missing.drop_duplicates()
         st.write("The following products are missing the SMD code on the map: ")
         st.table(df_missing_unique)
@@ -1054,7 +1136,7 @@ elif option == 'Sportsmans-Warehouse':
         st.write(" ")    
         missing_rsp = df_sw_merged['RSP'].isnull()
         df_sw_missing_rsp = df_sw_merged[missing_rsp]
-        df_missing_2 = df_sw_missing_rsp[['Product','SKU No.']]
+        df_missing_2 = df_sw_missing_rsp[['SKU No.','Product']]
         df_missing_unique_2 = df_missing_2.drop_duplicates()
         st.write("The following products are missing the RSP on the map: ")
         st.table(df_missing_unique_2)
