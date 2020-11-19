@@ -137,11 +137,12 @@ elif option == 'Bradlows/Russels':
     try:
         # Get retailers map
         df_br_retailers_map = df_map
-        df_br_retailers_map = df_br_retailers_map.rename(columns={'Article number':'SKU No. B&R'})
+        df_br_retailers_map = df_br_retailers_map.rename(columns={'Article Number':'SKU No. B&R'})
         df_br_retailers_map = df_br_retailers_map[['SKU No. B&R','Product Code','RSP']]
 
         # Get retailer data
         df_br_data = df_data
+        df_br_data
         df_br_data.columns = df_br_data.iloc[1]
         df_br_data = df_br_data.iloc[2:]
 
@@ -182,7 +183,7 @@ elif option == 'Bradlows/Russels':
         st.table(df_missing_unique_2)
         
     except:
-        st.markdown("**Retailer map column headings:** Article number, Product Code & RSP")
+        st.markdown("**Retailer map column headings:** Article Number, Product Code & RSP")
         st.markdown("**Retailer data column headings:** Cluster, Article, Description, Site, Site Name, Valuated Stock Qty(Total), Sales Qty*")
         st.markdown("Column headings are **case sensitive.** Please make sure they are correct") 
 
@@ -1318,12 +1319,12 @@ elif option == 'TFG':
         # Get retailer data
         df_tfg_data = df_data
         # Apply the split string method on the Style code to get the SKU No. out
-        df_tfg_data['Article Code'] = df_tfg_data['Style'].str.split(' ').str[0]
+        df_tfg_data['Article Code'] = df_tfg_data['Style'].astype(str).str.split(' ').str[0]
         # Convert to float
         df_tfg_data['Article Code'] = df_tfg_data['Article Code'].astype(float)
         # Merge with retailer map 
         df_tfg_merged = df_tfg_data.merge(df_retailers_map_tfg_final, how='left', on='Article Code')
-
+        df_tfg_merged
         # Find missing data
         missing_model_tfg = df_tfg_merged['Code'].isnull()
         df_tfg_missing_model = df_tfg_merged[missing_model_tfg]
