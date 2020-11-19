@@ -467,6 +467,7 @@ elif option == 'Dealz':
 
         # Merge with Retailers Map
         df_dealz_merged = df_dealz_data.merge(df_retailers_map_dealz_final, how='left', on='Style Code')
+        df_dealz_merged = df_dealz_merged[df_dealz_merged['Style Code'].notna()]
 
         # Find missing data
         missing_model = df_dealz_merged['Product Code'].isnull()
