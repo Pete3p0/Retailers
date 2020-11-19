@@ -705,7 +705,7 @@ elif option == 'HiFi':
         df_hifi_merged['Total Amt'] = df_hifi_merged['Sales Qty'] * df_hifi_merged['RSP']
 
         # Add column for retailer and SOH
-        df_hifi_merged['Forecast Group'] = 'HiFi Corp'
+        df_hifi_merged['Forecast Group'] = 'HIFI Corp'
 
         # Rename columns
         df_hifi_merged = df_hifi_merged.rename(columns={'Material': 'SKU No.'})
