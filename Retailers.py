@@ -41,7 +41,7 @@ Long_Date_Dict = {1:'January', 2:'February', 3:'March',4:'April',5:'May',6:'June
 
 option = st.selectbox(
     'Please select a retailer:',
-    ('Please select','Ackermans','Bradlows/Russels','Builders','Checkers','Clicks','Dealz','Dis-Chem','Dis-Chem-Pharmacies','HiFi','Incredible-Connection','Makro', 'Musica','Outdoor-Warehouse','PnP','Sportsmans-Warehouse','Takealot','TFG'))
+    ('Please select','Ackermans','Bradlows/Russels','Builders','Checkers','Clicks','Dealz','Dis-Chem','Dis-Chem-Pharmacies','HiFi','Incredible-Connection','Makro', 'Musica','Outdoor-Warehouse','Pep-SA','PnP','Sportsmans-Warehouse','Takealot','TFG'))
 st.write('You selected:', option)
 
 st.write("")
@@ -1059,6 +1059,10 @@ elif option == 'Outdoor-Warehouse':
     except:
         st.write('Check data') 
 
+# #Pep South Africa
+# elif option == 'Pep-SA':
+
+
 
 # Pick n Pay
 elif option == 'PnP':
@@ -1287,7 +1291,7 @@ elif option == 'Takealot':
         df_takealot_merged['Start Date'] = Date_Start
 
         # Total amount column
-        df_takealot_merged['Total Amt'] = df_takealot_merged['Units Sold Qty'] * df_takealot_merged['RSP']
+        df_takealot_merged['Total Amt'] = df_takealot_merged['Units Sold Value'] * 1.15
 
         # Add retailer and store column
         df_takealot_merged['Forecast Group'] = 'Takealot'
