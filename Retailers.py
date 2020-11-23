@@ -1059,9 +1059,105 @@ elif option == 'Outdoor-Warehouse':
     except:
         st.write('Check data') 
 
-# #Pep South Africa
-# elif option == 'Pep-SA':
+#Pep South Africa
+elif option == 'Pep-SA':
 
+       
+    try:
+        Wk = int(st.text_input("Enter week number: "))
+
+        # Get retailers map
+        df_pep_retailers_map = df_map
+
+        # Get retailer data
+        df_pep_data = df_data
+        df_pep_data['SKU Number'] = df_pep_data.apply(lambda x: 'Wk '+ str(x['Unnamed: 1']) if x['Unnamed: 1'] == Wk else x['SKU Number'], axis = 1)
+        
+        # Get rid of extra columns
+        del df_pep_data['Accessories']
+        del df_pep_data['Accessories.1']
+        del df_pep_data['Accessories.2']
+        del df_pep_data['Accessories.3']
+        del df_pep_data['Total']
+        del df_pep_data['Total.1']
+
+        # Rename trash then delete trash
+        df_pep_data = df_pep_data.rename(columns={df_pep_data.filter(regex='Unnamed:*').columns[0]:'Unnamed'})
+        del df_pep_data['Unnamed']
+
+        df_pep_data = df_pep_data.rename(columns={df_pep_data.filter(regex='Unnamed:*').columns[0]:'Unnamed'})
+        del df_pep_data['Unnamed']
+
+        df_pep_data = df_pep_data.rename(columns={df_pep_data.filter(regex='Unnamed:*').columns[0]:'Unnamed'})
+        del df_pep_data['Unnamed']
+
+        # Transpose data
+        df_pep_data = df_pep_data.T
+
+        # Get column headings
+        df_pep_data.columns = df_pep_data.iloc[0]
+        df_pep_data = df_pep_data.iloc[1:]
+
+
+        # Rename columns
+        df_pep_data = df_pep_data.rename(columns={'Month': 'Description'})
+
+
+
+        # Merge with retailer map
+        df_pep_merged = df_pep_data.merge(df_pep_retailers_map, how='left', on='Style Code')
+
+        # Rename columns
+        df_pep_merged = df_pep_merged.rename(columns={'Style Code': 'SKU No.'})
+        df_pep_merged = df_pep_merged.rename(columns={'Total Company Stock': 'SOH Qty'})
+        df_pep_merged = df_pep_merged.rename(columns={'Wk '+str(Wk): 'Sales Qty'})
+        
+        # Find missing data
+        missing_model = df_pep_merged['Product Code'].isnull()
+        df_pep_missing_model = df_pep_merged[missing_model]
+        df_missing = df_pep_missing_model[['SKU No.','Description']]
+        df_missing_unique = df_missing.drop_duplicates()
+        st.write("The following products are missing the SMD code on the map: ")
+        st.table(df_missing_unique)
+
+        st.write(" ") 
+        missing_rsp = df_pep_merged['RSP'].isnull()
+        df_pep_missing_rsp = df_pep_merged[missing_rsp]
+        df_missing_2 = df_pep_missing_rsp[['SKU No.','Description']]
+        df_missing_unique_2 = df_missing_2.drop_duplicates()
+        st.write("The following products are missing the RSP on the map: ")
+        st.table(df_missing_unique_2)
+
+    except:
+        st.markdown("**Retailer map column headings:** Style Code, Product Code, RSP")
+        st.markdown("**Retailer data column headings:** Style Code, Month, Total Company Stock, "+str(Wk))
+        st.markdown("Column headings are **case sensitive.** Please make sure they are correct")
+
+    try:
+        # Set date columns
+        df_pep_merged['Start Date'] = Date_Start
+
+        # Total amount column
+        df_pep_merged['Total Amt'] = df_pep_merged['Sales Qty'] * df_pep_merged['RSP']
+        df_pep_merged['Total Amt'] = df_pep_merged['Total Amt'].apply(lambda x: round(x,2))
+
+        # Add retailer and store column
+        df_pep_merged['Forecast Group'] = 'Pep South Africa'
+        df_pep_merged['Store Name'] = ''
+
+        # Don't change these headings. Rather change the ones above
+        final_df_pep = df_pep_merged[['Start Date','SKU No.', 'Product Code', 'Forecast Group','Store Name','SOH Qty','Sales Qty','Total Amt']]
+
+        # Show final df
+        total = final_df_pep['Total Amt'].sum()
+        st.write('The total sales for the week are: R',"{:0,.2f}".format(total).replace(',', ' '))
+        final_df_pep
+
+        # Output to .xlsx
+        st.write('Please ensure that no products are missing before downloading!')
+        st.markdown(get_table_download_link(final_df_pep), unsafe_allow_html=True)
+    except:
+        st.write('Check data') 
 
 
 # Pick n Pay
