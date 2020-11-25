@@ -1584,7 +1584,7 @@ elif option == 'TFG':
         df_tfg_merged['Store Name'] = ''
 
         # Don't change these headings. Rather change the ones above
-        df_tfg_merged = df_tfg_merged[['Start Date','SKU No.', 'Product Code', 'Forecast Group','Store Name','SOH Qty','Sales Qty','Total Amt']]
+        final_df_tfg = df_tfg_merged[['Start Date','SKU No.', 'Product Code', 'Forecast Group','Store Name','SOH Qty','Sales Qty','Total Amt']]
         final_df_tfg_p = df_tfg_merged[['Product Description','Total Amt']]
         final_df_tfg_s = df_tfg_merged[['Store Name','Total Amt']]
 
@@ -1613,7 +1613,7 @@ elif option == 'TFG':
         st.table(grouped_df_final_sb)
 
         st.write('Final Dataframe:')
-        df_tfg_merged
+        final_df_tfg
 
         # Output to .xlsx
         st.write('Please ensure that no products are missing before downloading!')
