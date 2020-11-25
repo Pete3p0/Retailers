@@ -542,8 +542,8 @@ elif option == 'Clicks':
         st.table(grouped_df_final_pt)
         st.write('')
         st.write('Top 10 stores for the week:')
-        grouped_df_s = final_df_clicks_s.groupby("Store Name").sum().sort_values("Total Amt", ascending=False)
-        grouped_df_final_st = grouped_df_s[['Total Amt']].head(10)
+        grouped_df_st = final_df_clicks_s.groupby("Store Name").sum().sort_values("Total Amt", ascending=False)
+        grouped_df_final_st = grouped_df_st[['Total Amt']].head(10)
         st.table(grouped_df_final_st)
         st.write('')
         st.write('Bottom 10 products for the week:')
@@ -552,7 +552,8 @@ elif option == 'Clicks':
         st.table(grouped_df_final_pb)
         st.write('')
         st.write('Bottom 10 stores for the week:')
-        grouped_df_final_sb = grouped_df_s[['Total Amt']].tail(10)
+        grouped_df_sb = final_df_clicks_s.groupby("Store Name").sum().sort_values("Total Amt", ascending=False)
+        grouped_df_final_sb = grouped_df_sb[['Total Amt']].tail(10)
         st.table(grouped_df_final_sb)
         st.write('Final Dataframe:')
         final_df_clicks
@@ -572,7 +573,7 @@ elif option == 'Dealz':
     try:
         # Get retailers map
         df_dealz_retailers_map = df_map
-        df_retailers_map_dealz_final = df_dealz_retailers_map[['Style Code','Product Code']]
+        df_retailers_map_dealz_final = df_dealz_retailers_map[['Style Code','Product Code','Product Description']]
 
         # Get retailer data
         df_dealz_data = df_data
@@ -600,7 +601,7 @@ elif option == 'Dealz':
 
 
     except:
-        st.markdown("**Retailer map column headings:** Style Code, Product Code")
+        st.markdown("**Retailer map column headings:** Style Code, Product Code, Product Description")
         st.markdown("**Retailer data column headings:** Style Code, Style Desc, "+units_sold)
         st.markdown("Column headings are **case sensitive.** Please make sure they are correct") 
 
@@ -622,10 +623,33 @@ elif option == 'Dealz':
 
         # Final df. Don't change these headings. Rather change the ones above
         final_df_dealz_sales = df_dealz_merged[['Start Date','SKU No.', 'Product Code', 'Forecast Group','Store Name','SOH Qty','Sales Qty','Total Amt']]
+        final_df_dealz_p = df_dealz_merged[['Product Code','Product Description','Total Amt']]
+        final_df_dealz_s = df_dealz_merged[['Store Name','Total Amt']]
 
         # Show final df
         total = final_df_dealz_sales['Total Amt'].sum()
         st.write('The total sales for the week are: R',"{:0,.2f}".format(total).replace(',', ' '))
+        st.write('')
+        st.write('Top 10 products for the week:')
+        grouped_df_pt = final_df_dealz_p.groupby("Product Description").sum().sort_values("Total Amt", ascending=False)
+        grouped_df_final_pt = grouped_df_pt[['Total Amt']].head(10)
+        st.table(grouped_df_final_pt)
+        st.write('')
+        st.write('Top 10 stores for the week:')
+        grouped_df_st = final_df_dealz_s.groupby("Store Name").sum().sort_values("Total Amt", ascending=False)
+        grouped_df_final_st = grouped_df_st[['Total Amt']].head(10)
+        st.table(grouped_df_final_st)
+        st.write('')
+        st.write('Bottom 10 products for the week:')
+        grouped_df_pb = final_df_dealz_p.groupby("Product Description").sum().sort_values("Total Amt", ascending=False)
+        grouped_df_final_pb = grouped_df_pb[['Total Amt']].head(10)
+        st.table(grouped_df_final_pb)
+        st.write('')
+        st.write('Top 10 stores for the week:')
+        grouped_df_sb = final_df_dealz_s.groupby("Store Name").sum().sort_values("Total Amt", ascending=False)
+        grouped_df_final_sb = grouped_df_sb[['Total Amt']].head(10)
+        st.table(grouped_df_final_sb)
+        st.write('Final Dataframe:')
         final_df_dealz_sales
 
         # Output to .xlsx
@@ -1585,7 +1609,7 @@ elif option == 'TFG':
 
         # Don't change these headings. Rather change the ones above
         final_df_tfg = df_tfg_merged[['Start Date','SKU No.', 'Product Code', 'Forecast Group','Store Name','SOH Qty','Sales Qty','Total Amt']]
-        final_df_tfg_p = df_tfg_merged[['Product Description','Total Amt']]
+        final_df_tfg_p = df_tfg_merged[['Product Code','Product Description','Total Amt']]
         final_df_tfg_s = df_tfg_merged[['Store Name','Total Amt']]
 
         # Show final df
