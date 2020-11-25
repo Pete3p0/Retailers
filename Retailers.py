@@ -669,7 +669,8 @@ elif option == 'Dis-Chem':
         
         # Get retailers map
         df_dischem_retailers_map = df_map
-        df_retailers_map_dischem_final = df_dischem_retailers_map[['Article Code','SMD Code','RSP']]
+        df_dischem_retailers_map = df_dischem_retailers_map.rename(columns={'Description': 'Product Description'})
+        df_retailers_map_dischem_final = df_dischem_retailers_map[['Article Code','SMD Code','Product Description','RSP']]
 
         # Get retailer data
         df_dischem_data = df_data
@@ -699,7 +700,7 @@ elif option == 'Dis-Chem':
         st.table(df_missing_unique_2)
 
     except:
-        st.markdown("**Retailer map column headings:** Article Code, SMD Code & RSP")
+        st.markdown("**Retailer map column headings:** Article Code, SMD Code, Description & RSP")
         st.markdown("**Retailer data column headings:** Article Code, Article, Store Name, SOH Qty & "+Units_Sold)
         st.markdown("Column headings are **case sensitive.** Please make sure they are correct")
 
@@ -715,10 +716,33 @@ elif option == 'Dis-Chem':
 
         # Final df. Don't change these headings. Rather change the ones above
         final_df_dischem_sales = df_dischem_merged[['Start Date','SKU No.', 'Product Code', 'Forecast Group','Store Name','SOH Qty','Sales Qty','Total Amt']]
+        final_df_dischem_p = df_dischem_merged[['Product Code','Product Description','Total Amt']]
+        final_df_dischem_s = df_dischem_merged[['Store Name','Total Amt']]
 
         # Show final df
         total = final_df_dischem_sales['Total Amt'].sum()
         st.write('The total sales for the week are: R',"{:0,.2f}".format(total).replace(',', ' '))
+        st.write('')
+        st.write('Top 10 products for the week:')
+        grouped_df_pt = final_df_dischem_p.groupby("Product Description").sum().sort_values("Total Amt", ascending=False)
+        grouped_df_final_pt = grouped_df_pt[['Total Amt']].head(10)
+        st.table(grouped_df_final_pt)
+        st.write('')
+        st.write('Top 10 stores for the week:')
+        grouped_df_st = final_df_dischem_s.groupby("Store Name").sum().sort_values("Total Amt", ascending=False)
+        grouped_df_final_st = grouped_df_st[['Total Amt']].head(10)
+        st.table(grouped_df_final_st)
+        st.write('')
+        st.write('Bottom 10 products for the week:')
+        grouped_df_pb = final_df_dischem_p.groupby("Product Description").sum().sort_values("Total Amt", ascending=False)
+        grouped_df_final_pb = grouped_df_pb[['Total Amt']].head(10)
+        st.table(grouped_df_final_pb)
+        st.write('')
+        st.write('Top 10 stores for the week:')
+        grouped_df_sb = final_df_dischem_s.groupby("Store Name").sum().sort_values("Total Amt", ascending=False)
+        grouped_df_final_sb = grouped_df_sb[['Total Amt']].head(10)
+        st.table(grouped_df_final_sb)
+        st.write('Final Dataframe:')
         final_df_dischem_sales
 
         # Output to .xlsx
