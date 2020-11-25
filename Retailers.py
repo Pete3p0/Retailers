@@ -127,14 +127,24 @@ if option == 'Ackermans':
         st.write('The total sales for the week are: R',"{:0,.2f}".format(total).replace(',', ' '))
         st.write('')
         st.write('Top 10 products for the week:')
-        grouped_df_p = final_df_ackermans_p.groupby("Product Description").sum().sort_values("Total Amt", ascending=False)
-        grouped_df_final_p = grouped_df_p[['Total Amt']].head(10)
-        st.table(grouped_df_final_p)
+        grouped_df_pt = final_df_ackermans_p.groupby("Product Description").sum().sort_values("Total Amt", ascending=False)
+        grouped_df_final_pt = grouped_df_pt[['Total Amt']].head(10)
+        st.table(grouped_df_final_pt)
         st.write('')
         st.write('Top 10 stores for the week:')
-        grouped_df_s = final_df_ackermans_s.groupby("Store Name").sum().sort_values("Total Amt", ascending=False)
-        grouped_df_final_s = grouped_df_s[['Total Amt']].head(10)
-        st.table(grouped_df_final_s)
+        grouped_df_st = final_df_ackermans_s.groupby("Store Name").sum().sort_values("Total Amt", ascending=False)
+        grouped_df_final_st = grouped_df_st[['Total Amt']].head(10)
+        st.table(grouped_df_final_st)
+        st.write('')
+        st.write('Bottom 10 products for the week:')
+        grouped_df_pb = final_df_ackermans_p.groupby("Product Description").sum().sort_values("Total Amt", ascending=False)
+        grouped_df_final_pb = grouped_df_pb[['Total Amt']].tail(10)
+        st.table(grouped_df_final_pb)
+        st.write('')
+        st.write('Bottom 10 stores for the week:')
+        grouped_df_sb = final_df_ackermans_s.groupby("Store Name").sum().sort_values("Total Amt", ascending=False)
+        grouped_df_final_sb = grouped_df_sb[['Total Amt']].tail(10)
+        st.table(grouped_df_final_sb)
 
         st.write('Final Dataframe:')
         final_df_ackermans
@@ -153,11 +163,10 @@ elif option == 'Bradlows/Russels':
         # Get retailers map
         df_br_retailers_map = df_map
         df_br_retailers_map = df_br_retailers_map.rename(columns={'Article Number':'SKU No. B&R'})
-        df_br_retailers_map = df_br_retailers_map[['SKU No. B&R','Product Code','RSP']]
+        df_br_retailers_map = df_br_retailers_map[['SKU No. B&R','Product Code','Product Description','RSP']]
 
         # Get retailer data
         df_br_data = df_data
-        df_br_data
         df_br_data.columns = df_br_data.iloc[1]
         df_br_data = df_br_data.iloc[2:]
 
@@ -198,7 +207,7 @@ elif option == 'Bradlows/Russels':
         st.table(df_missing_unique_2)
         
     except:
-        st.markdown("**Retailer map column headings:** Article Number, Product Code & RSP")
+        st.markdown("**Retailer map column headings:** Article Number, Product Code, Product Description & RSP")
         st.markdown("**Retailer data column headings:** Cluster, Article, Description, Site, Site Name, Valuated Stock Qty(Total), Sales Qty*")
         st.markdown("Column headings are **case sensitive.** Please make sure they are correct") 
 
@@ -220,10 +229,34 @@ elif option == 'Bradlows/Russels':
 
         # Don't change these headings. Rather change the ones above
         final_df_br = df_br_data_merged[['Start Date','SKU No.', 'Product Code', 'Forecast Group','Store Name','SOH Qty','Sales Qty','Total Amt']]
+        final_df_br_p = df_br_data_merged[['Product Code','Product Description','Total Amt']]
+        final_df_br_s = df_br_data_merged[['Store Name','Total Amt']]
 
         # Show final df
         total = final_df_br['Total Amt'].sum()
         st.write('The total sales for the week are: R',"{:0,.2f}".format(total).replace(',', ' '))
+        st.write('')
+        st.write('Top 10 products for the week:')
+        grouped_df_pt = final_df_br_p.groupby("Product Description").sum().sort_values("Total Amt", ascending=False)
+        grouped_df_final_pt = grouped_df_pt[['Total Amt']].head(10)
+        st.table(grouped_df_final_pt)
+        st.write('')
+        st.write('Top 10 stores for the week:')
+        grouped_df_st = final_df_br_s.groupby("Store Name").sum().sort_values("Total Amt", ascending=False)
+        grouped_df_final_st = grouped_df_st[['Total Amt']].head(10)
+        st.table(grouped_df_final_st)
+        st.write('')
+        st.write('Bottom 10 products for the week:')
+        grouped_df_pb = final_df_br_p.groupby("Product Description").sum().sort_values("Total Amt", ascending=False)
+        grouped_df_final_pb = grouped_df_pb[['Total Amt']].tail(10)
+        st.table(grouped_df_final_pb)
+        st.write('')
+        st.write('Bottom 10 stores for the week:')
+        grouped_df_sb = final_df_br_s.groupby("Store Name").sum().sort_values("Total Amt", ascending=False)
+        grouped_df_final_sb = grouped_df_sb[['Total Amt']].tail(10)
+        st.table(grouped_df_final_sb)
+
+        st.write('Final Dataframe:')
         final_df_br
 
         # Output to .xlsx
