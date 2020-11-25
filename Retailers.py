@@ -1536,7 +1536,9 @@ elif option == 'TFG':
     try:
         # Get retailers map
         df_tfg_retailers_map = df_map
-        df_retailers_map_tfg_final = df_tfg_retailers_map[['Article Code','Code','RSP']]
+        df_tfg_retailers_map = df_tfg_retailers_map.rename(columns={'DES':'Product Description'})
+        df_retailers_map_tfg_final = df_tfg_retailers_map[['Article Code','Code','Product Description','RSP']]
+        
         # Get retailer data
         df_tfg_data = df_data
         # Apply the split string method on the Style code to get the SKU No. out
@@ -1545,7 +1547,7 @@ elif option == 'TFG':
         df_tfg_data['Article Code'] = df_tfg_data['Article Code'].astype(float)
         # Merge with retailer map 
         df_tfg_merged = df_tfg_data.merge(df_retailers_map_tfg_final, how='left', on='Article Code')
-        df_tfg_merged
+        
         # Find missing data
         missing_model_tfg = df_tfg_merged['Code'].isnull()
         df_tfg_missing_model = df_tfg_merged[missing_model_tfg]
@@ -1563,7 +1565,7 @@ elif option == 'TFG':
         st.table(df_missing_unique_2)
 
     except:
-        st.markdown("**Retailer map column headings:** Article Code, Code, RSP")
+        st.markdown("**Retailer map column headings:** Article Code, Code, DES, RSP")
         st.markdown("**Retailer data column headings:** Style, Sls (U), CSOH Incl IT (U)")
         st.markdown("Column headings are **case sensitive.** Please make sure they are correct")
 
@@ -1571,22 +1573,46 @@ elif option == 'TFG':
         # Set date columns
         df_tfg_merged['Start Date'] = Date_Start
 
+        # Rename columns
+        df_tfg_merged = df_tfg_merged.rename(columns={'Article Code': 'SKU No.','Sls (U)' :'Sales Qty', 'CSOH Incl IT (U)':'SOH Qty', 'Code' : 'Product Code' })
+
         # Total amount column
-        df_tfg_merged['Total Amt'] = df_tfg_merged['Sls (U)'] * df_tfg_merged['RSP']
+        df_tfg_merged['Total Amt'] = df_tfg_merged['Sales Qty'] * df_tfg_merged['RSP']
 
         # Add retailer and store column
         df_tfg_merged['Forecast Group'] = 'TFG'
         df_tfg_merged['Store Name'] = ''
 
-        # Rename columns
-        df_tfg_merged = df_tfg_merged.rename(columns={'Article Code': 'SKU No.','Sls (U)' :'Sales Qty', 'CSOH Incl IT (U)':'SOH Qty', 'Code' : 'Product Code' })
-
         # Don't change these headings. Rather change the ones above
         df_tfg_merged = df_tfg_merged[['Start Date','SKU No.', 'Product Code', 'Forecast Group','Store Name','SOH Qty','Sales Qty','Total Amt']]
+        final_df_tfg_p = df_tfg_merged[['Product Description','Total Amt']]
+        final_df_tfg_s = df_tfg_merged[['Store Name','Total Amt']]
 
         # Show final df
         total = df_tfg_merged['Total Amt'].sum()
         st.write('The total sales for the week are: R',"{:0,.2f}".format(total).replace(',', ' '))
+        st.write('')
+        st.write('Top 10 products for the week:')
+        grouped_df_pt = final_df_tfg_p.groupby("Product Description").sum().sort_values("Total Amt", ascending=False)
+        grouped_df_final_pt = grouped_df_pt[['Total Amt']].head(10)
+        st.table(grouped_df_final_pt)
+        st.write('')
+        st.write('Top 10 stores for the week:')
+        grouped_df_st = final_df_tfg_s.groupby("Store Name").sum().sort_values("Total Amt", ascending=False)
+        grouped_df_final_st = grouped_df_st[['Total Amt']].head(10)
+        st.table(grouped_df_final_st)
+        st.write('')
+        st.write('Bottom 10 products for the week:')
+        grouped_df_pb = final_df_tfg_p.groupby("Product Description").sum().sort_values("Total Amt", ascending=False)
+        grouped_df_final_pb = grouped_df_pb[['Total Amt']].tail(10)
+        st.table(grouped_df_final_pb)
+        st.write('')
+        st.write('Bottom 10 stores for the week:')
+        grouped_df_sb = final_df_tfg_s.groupby("Store Name").sum().sort_values("Total Amt", ascending=False)
+        grouped_df_final_sb = grouped_df_sb[['Total Amt']].tail(10)
+        st.table(grouped_df_final_sb)
+
+        st.write('Final Dataframe:')
         df_tfg_merged
 
         # Output to .xlsx
