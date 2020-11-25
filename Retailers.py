@@ -278,7 +278,8 @@ elif option == 'Builders':
     try:
         # Get retailers map
         df_bw_retailers_map = df_map
-        df_retailers_map_bw_final = df_bw_retailers_map[['Article','SMD Product Code']]
+        df_bw_retailers_map = df_bw_retailers_map.rename(columns={'SMD Description':'Product Description'})
+        df_retailers_map_bw_final = df_bw_retailers_map[['Article','SMD Product Code','Product Description']]
 
         # Get retailer data
         df_bw_data = df_data
@@ -335,9 +336,33 @@ elif option == 'Builders':
 
         # Don't change these headings. Rather change the ones above
         final_df_bw = df_bw_merged[['Start Date','SKU No.', 'Product Code', 'Forecast Group','Store Name','SOH Qty','Sales Qty','Total Amt']]
+        final_df_bw_p = df_bw_merged[['Product Code','Product Description','Total Amt']]
+        final_df_bw_s = df_bw_merged[['Store Name','Total Amt']]
 
         # Show final df
         total = final_df_bw['Total Amt'].sum()
+        st.write('')
+        st.write('Top 10 products for the week:')
+        grouped_df_pt = final_df_bw_p.groupby("Product Description").sum().sort_values("Total Amt", ascending=False)
+        grouped_df_final_pt = grouped_df_pt[['Total Amt']].head(10)
+        st.table(grouped_df_final_pt)
+        st.write('')
+        st.write('Top 10 stores for the week:')
+        grouped_df_st = final_df_bw_s.groupby("Store Name").sum().sort_values("Total Amt", ascending=False)
+        grouped_df_final_st = grouped_df_st[['Total Amt']].head(10)
+        st.table(grouped_df_final_st)
+        st.write('')
+        st.write('Bottom 10 products for the week:')
+        grouped_df_pb = final_df_bw_p.groupby("Product Description").sum().sort_values("Total Amt", ascending=False)
+        grouped_df_final_pb = grouped_df_pb[['Total Amt']].tail(10)
+        st.table(grouped_df_final_pb)
+        st.write('')
+        st.write('Bottom 10 stores for the week:')
+        grouped_df_sb = final_df_bw_s.groupby("Store Name").sum().sort_values("Total Amt", ascending=False)
+        grouped_df_final_sb = grouped_df_sb[['Total Amt']].tail(10)
+        st.table(grouped_df_final_sb)
+
+        st.write('Final Dataframe:')
         st.write('The total sales for the week are: R',"{:0,.2f}".format(total).replace(',', ' '))
         final_df_bw
 
