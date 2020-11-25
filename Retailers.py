@@ -67,7 +67,7 @@ if option == 'Ackermans':
         df_ackermans_retailers_map.columns = df_ackermans_retailers_map.iloc[1]
         df_ackermans_retailers_map = df_ackermans_retailers_map.iloc[2:]
         df_ackermans_retailers_map = df_ackermans_retailers_map.rename(columns={'Style Code': 'SKU No.'})
-        df_ackermans_retailers_map_final = df_ackermans_retailers_map[['SKU No.','SMD Product Code','SMD RSP']]
+        df_ackermans_retailers_map_final = df_ackermans_retailers_map[['SKU No.','Product Description','SMD Product Code','SMD RSP']]
 
         # Get retailer data
         df_ackermans_data = df_data
@@ -95,7 +95,7 @@ if option == 'Ackermans':
         st.table(df_missing_unique_2)
 
     except:
-        st.markdown("**Retailer map column headings:** Style Code, SMD Product Code & SMD RSP")
+        st.markdown("**Retailer map column headings:** Style Code, Product Description, SMD Product Code & SMD RSP")
         st.markdown("**Retailer data column headings:** Style Code, Style Description, " + CSOH +", "+ Units_Sold)
         st.markdown("Column headings are **case sensitive.** Please make sure they are correct") 
 
@@ -110,6 +110,7 @@ if option == 'Ackermans':
         # Add retailer column and store column
         df_ackermans_merged['Forecast Group'] = 'Ackermans'
         df_ackermans_merged['Store Name'] = ''
+        df_ackermans_merged['Style Description'] = df_ackermans_merged['Style Description'].str.title() 
 
         # Rename columns
         df_ackermans_merged = df_ackermans_merged.rename(columns={CSOH: 'SOH Qty'})
@@ -118,10 +119,24 @@ if option == 'Ackermans':
 
         # Don't change these headings. Rather change the ones above
         final_df_ackermans = df_ackermans_merged[['Start Date','SKU No.', 'Product Code', 'Forecast Group','Store Name','SOH Qty','Sales Qty','Total Amt']]
+        final_df_ackermans_p = df_ackermans_merged[['Product Code','Product Description','Total Amt']]
+        final_df_ackermans_s = df_ackermans_merged[['Store Name','Total Amt']]
 
         # Show final df
         total = final_df_ackermans['Total Amt'].sum()
         st.write('The total sales for the week are: R',"{:0,.2f}".format(total).replace(',', ' '))
+        st.write('')
+        st.write('Top 10 products for the week:')
+        grouped_df_p = final_df_ackermans_p.groupby("Product Description").sum().sort_values("Total Amt", ascending=False)
+        grouped_df_final_p = grouped_df_p[['Total Amt']].head(10)
+        st.table(grouped_df_final_p)
+        st.write('')
+        st.write('Top 10 stores for the week:')
+        grouped_df_s = final_df_ackermans_s.groupby("Store Name").sum().sort_values("Total Amt", ascending=False)
+        grouped_df_final_s = grouped_df_s[['Total Amt']].head(10)
+        st.table(grouped_df_final_s)
+
+        st.write('Final Dataframe:')
         final_df_ackermans
 
         # Output to .xlsx
@@ -425,16 +440,31 @@ elif option == 'Clicks':
         # Rename columns
         df_clicks_merged = df_clicks_merged.rename(columns={'Clicks Product Number': 'SKU No.'})
         df_clicks_merged = df_clicks_merged.rename(columns={'SMD CODE': 'Product Code'})
+        df_clicks_merged = df_clicks_merged.rename(columns={'SMD DESC': 'Product Desc'})
         df_clicks_merged = df_clicks_merged.rename(columns={'Store Description': 'Store Name'})
         df_clicks_merged = df_clicks_merged.rename(columns={'Store Stock Qty': 'SOH Qty'})
         df_clicks_merged = df_clicks_merged.rename(columns={'Sales Qty LW TY': 'Sales Qty'})
 
         # Don't change these headings. Rather change the ones above
         final_df_clicks = df_clicks_merged[['Start Date','SKU No.', 'Product Code', 'Forecast Group','Store Name','SOH Qty','Sales Qty','Total Amt']]
-        
+        final_df_clicks_p = df_clicks_merged[['Product Code','Product Desc','Total Amt']]
+        final_df_clicks_s = df_clicks_merged[['Store Name','Total Amt']]
+
         # Show final df
         total = final_df_clicks['Total Amt'].sum()
         st.write('The total sales for the week are: R',"{:0,.2f}".format(total).replace(',', ' '))
+        st.write('')
+        st.write('Top 10 products for the week:')
+        grouped_df_p = final_df_clicks_p.groupby("Product Desc").sum().sort_values("Total Amt", ascending=False)
+        grouped_df_final_p = grouped_df_p[['Total Amt']].head(10)
+        st.table(grouped_df_final_p)
+        st.write('')
+        st.write('Top 10 stores for the week:')
+        grouped_df_s = final_df_clicks_s.groupby("Store Name").sum().sort_values("Total Amt", ascending=False)
+        grouped_df_final_s = grouped_df_s[['Total Amt']].head(10)
+        st.table(grouped_df_final_s)
+
+        st.write('Final Dataframe:')
         final_df_clicks
 
         # Output to .xlsx
