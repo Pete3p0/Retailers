@@ -761,7 +761,7 @@ elif option == 'Dis-Chem-Pharmacies':
         
         # Get retailers map
         df_dischemp_retailers_map = df_map
-        df_retailers_map_dischemp_final = df_dischemp_retailers_map[['Article Code','SMD Code','RSP']]
+        df_retailers_map_dischemp_final = df_dischemp_retailers_map[['Article Code','SMD Code','Product Description','RSP']]
 
         # Get retailer data
         df_dischemp_data = df_data
@@ -791,7 +791,7 @@ elif option == 'Dis-Chem-Pharmacies':
         st.table(df_missing_unique_2)
 
     except:
-        st.markdown("**Retailer map column headings:** Article Code, SMD Code & RSP")
+        st.markdown("**Retailer map column headings:** Article Code, SMD Code, Description & RSP")
         st.markdown("**Retailer data column headings:** Article Code, Article, Store Name, SOH Qty & "+Units_Sold)
         st.markdown("Column headings are **case sensitive.** Please make sure they are correct")
 
@@ -807,10 +807,33 @@ elif option == 'Dis-Chem-Pharmacies':
 
         # Final df. Don't change these headings. Rather change the ones above
         final_df_dischemp_sales = df_dischemp_merged[['Start Date','SKU No.', 'Product Code', 'Forecast Group','Store Name','SOH Qty','Sales Qty','Total Amt']]
+        final_df_dischemp_p = df_dischem_merged[['Product Code','Product Description','Total Amt']]
+        final_df_dischemp_s = df_dischem_merged[['Store Name','Total Amt']]
 
         # Show final df
         total = final_df_dischemp_sales['Total Amt'].sum()
         st.write('The total sales for the week are: R',"{:0,.2f}".format(total).replace(',', ' '))
+        st.write('')
+        st.write('Top 10 products for the week:')
+        grouped_df_pt = final_df_dischemp_p.groupby("Product Description").sum().sort_values("Total Amt", ascending=False)
+        grouped_df_final_pt = grouped_df_pt[['Total Amt']].head(10)
+        st.dataframe(grouped_df_final_pt.style.set_precision(2).format('R{0:,.2f}'),width=5000)
+        st.write('')
+        st.write('Top 10 stores for the week:')
+        grouped_df_st = final_df_dischemp_s.groupby("Store Name").sum().sort_values("Total Amt", ascending=False)
+        grouped_df_final_st = grouped_df_st[['Total Amt']].head(10)
+        st.dataframe(grouped_df_final_st.style.set_precision(2).format('R{0:,.2f}'),width=5000)
+        st.write('')
+        st.write('Bottom 10 products for the week:')
+        grouped_df_pb = final_df_dischemp_p.groupby("Product Description").sum().sort_values("Total Amt", ascending=False)
+        grouped_df_final_pb = grouped_df_pb[['Total Amt']].tail(10)
+        st.dataframe(grouped_df_final_pb.style.set_precision(2).format('R{0:,.2f}'),width=5000)
+        st.write('')
+        st.write('Bottom 10 stores for the week:')
+        grouped_df_sb = final_df_dischemp_s.groupby("Store Name").sum().sort_values("Total Amt", ascending=False)
+        grouped_df_final_sb = grouped_df_sb[['Total Amt']].tail(10)
+        st.dataframe(grouped_df_final_sb.style.set_precision(2).format('R{0:,.2f}'),width=5000)
+        st.write('Final Dataframe:')        
         final_df_dischemp_sales
 
         # Output to .xlsx
@@ -828,7 +851,7 @@ elif option == 'HiFi':
 
         # Get retailers map
         df_hifi_retailer_map = df_map
-        
+               
 
         # Get previous week
         hifi_data_prev = st.file_uploader('Previous week', type='xlsx')
@@ -862,7 +885,7 @@ elif option == 'HiFi':
         st.table(df_missing_unique_2)
 
     except:
-        st.markdown("**Retailer map column headings:** Material, SMD Code & RSP")
+        st.markdown("**Retailer map column headings:** Material, SMD Code, Product Description & RSP")
         st.markdown("**Retailer data column headings:** Material, Material Desc, Plant, Plant Description, Total SOH Qty & "+Units_Sold)
         st.markdown("Column headings are **case sensitive.** Please make sure they are correct")
 
@@ -885,10 +908,33 @@ elif option == 'HiFi':
 
         # Final df. Don't change these headings. Rather change the ones above
         final_df_hifi_sales = df_hifi_merged[['Start Date','SKU No.', 'Product Code', 'Forecast Group','Store Name','SOH Qty','Sales Qty','Total Amt']]
+        final_df_hifi_p = df_hifi_merged[['Product Code','Product Description','Total Amt']]
+        final_df_hifi_s = df_hifi_merged[['Store Name','Total Amt']]
 
         # Show final df
         total = final_df_hifi_sales['Total Amt'].sum()
         st.write('The total sales for the week are: R',"{:0,.2f}".format(total).replace(',', ' '))
+        st.write('')
+        st.write('Top 10 products for the week:')
+        grouped_df_pt = final_df_hifi_p.groupby("Product Description").sum().sort_values("Total Amt", ascending=False)
+        grouped_df_final_pt = grouped_df_pt[['Total Amt']].head(10)
+        st.dataframe(grouped_df_final_pt.style.set_precision(2).format('R{0:,.2f}'),width=5000)
+        st.write('')
+        st.write('Top 10 stores for the week:')
+        grouped_df_st = final_df_hifi_s.groupby("Store Name").sum().sort_values("Total Amt", ascending=False)
+        grouped_df_final_st = grouped_df_st[['Total Amt']].head(10)
+        st.dataframe(grouped_df_final_st.style.set_precision(2).format('R{0:,.2f}'),width=5000)
+        st.write('')
+        st.write('Bottom 10 products for the week:')
+        grouped_df_pb = final_df_hifi_p.groupby("Product Description").sum().sort_values("Total Amt", ascending=False)
+        grouped_df_final_pb = grouped_df_pb[['Total Amt']].tail(10)
+        st.dataframe(grouped_df_final_pb.style.set_precision(2).format('R{0:,.2f}'),width=5000)
+        st.write('')
+        st.write('Bottom 10 stores for the week:')
+        grouped_df_sb = final_df_hifi_s.groupby("Store Name").sum().sort_values("Total Amt", ascending=False)
+        grouped_df_final_sb = grouped_df_sb[['Total Amt']].tail(10)
+        st.dataframe(grouped_df_final_sb.style.set_precision(2).format('R{0:,.2f}'),width=5000)
+        st.write('Final Dataframe:')          
         final_df_hifi_sales
 
         # Output to .xlsx
@@ -943,7 +989,7 @@ elif option == 'Incredible-Connection':
         st.table(df_missing_unique_2)
 
     except:
-        st.markdown("**Retailer map column headings:** Article, SMD Code & RRP")
+        st.markdown("**Retailer map column headings:** Article, SMD Code, Product Description & RRP")
         st.markdown("**Retailer data column headings:** Article, Article Name, Site, Site Name, Total SOH Qty & "+Units_Sold)
         st.markdown("Column headings are **case sensitive.** Please make sure they are correct")
 
@@ -966,10 +1012,33 @@ elif option == 'Incredible-Connection':
 
         # Final df. Don't change these headings. Rather change the ones above
         final_df_ic_sales = df_ic_merged[['Start Date','SKU No.', 'Product Code', 'Forecast Group','Store Name','SOH Qty','Sales Qty','Total Amt']]
+        final_df_ic_p = df_ic_merged[['Product Code','Product Description','Total Amt']]
+        final_df_ic_s = df_ic_merged[['Store Name','Total Amt']]
 
         # Show final df
         total = final_df_ic_sales['Total Amt'].sum()
         st.write('The total sales for the week are: R',"{:0,.2f}".format(total).replace(',', ' '))
+        st.write('')
+        st.write('Top 10 products for the week:')
+        grouped_df_pt = final_df_ic_p.groupby("Product Description").sum().sort_values("Total Amt", ascending=False)
+        grouped_df_final_pt = grouped_df_pt[['Total Amt']].head(10)
+        st.dataframe(grouped_df_final_pt.style.set_precision(2).format('R{0:,.2f}'),width=5000)
+        st.write('')
+        st.write('Top 10 stores for the week:')
+        grouped_df_st = final_df_ic_s.groupby("Store Name").sum().sort_values("Total Amt", ascending=False)
+        grouped_df_final_st = grouped_df_st[['Total Amt']].head(10)
+        st.dataframe(grouped_df_final_st.style.set_precision(2).format('R{0:,.2f}'),width=5000)
+        st.write('')
+        st.write('Bottom 10 products for the week:')
+        grouped_df_pb = final_df_ic_p.groupby("Product Description").sum().sort_values("Total Amt", ascending=False)
+        grouped_df_final_pb = grouped_df_pb[['Total Amt']].tail(10)
+        st.dataframe(grouped_df_final_pb.style.set_precision(2).format('R{0:,.2f}'),width=5000)
+        st.write('')
+        st.write('Bottom 10 stores for the week:')
+        grouped_df_sb = final_df_ic_s.groupby("Store Name").sum().sort_values("Total Amt", ascending=False)
+        grouped_df_final_sb = grouped_df_sb[['Total Amt']].tail(10)
+        st.dataframe(grouped_df_final_sb.style.set_precision(2).format('R{0:,.2f}'),width=5000)
+        st.write('Final Dataframe:')    
         final_df_ic_sales
 
         # Output to .xlsx
