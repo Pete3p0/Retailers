@@ -1061,7 +1061,8 @@ elif option == 'Makro':
     try:
         # Get retailers map
         df_makro_retailers_map = df_map
-        df_retailers_map_makro_final = df_makro_retailers_map[['Article','SMD Product Code']]
+        df_makro_retailers_map = df_makro_retailers_map.rename(columns={'SMD Description': 'Product Description'})
+        df_retailers_map_makro_final = df_makro_retailers_map[['Article','SMD Product Code','Product Description']]
 
         # Get retailer data
         df_makro_data = df_data
@@ -1090,7 +1091,7 @@ elif option == 'Makro':
         st.table(df_missing_unique_2)
 
     except:
-        st.markdown("**Retailer map column headings:** Article, SMD Product Code")
+        st.markdown("**Retailer map column headings:** Article, SMD Product Code, SMD Description")
         st.markdown("**Retailer data column headings:** Article, Article Desc, Site, Store Name (in Stores.xlsx), SOH, "+weekly_sales)
         st.markdown("Column headings are **case sensitive.** Please make sure they are correct")
 
@@ -1112,10 +1113,33 @@ elif option == 'Makro':
 
         # Don't change these headings. Rather change the ones above
         final_df_makro = df_makro_merged[['Start Date','SKU No.', 'Product Code', 'Forecast Group','Store Name','SOH Qty','Sales Qty','Total Amt']]
+        final_df_makro_p = df_makro_merged[['Product Code','Product Description','Total Amt']]
+        final_df_makro_s = df_makro_merged[['Store Name','Total Amt']]
 
         # Show final df
         total = final_df_makro['Total Amt'].sum()
         st.write('The total sales for the week are: R',"{:0,.2f}".format(total).replace(',', ' '))
+        st.write('')
+        st.write('Top 10 products for the week:')
+        grouped_df_pt = final_df_makro_p.groupby("Product Description").sum().sort_values("Total Amt", ascending=False)
+        grouped_df_final_pt = grouped_df_pt[['Total Amt']].head(10)
+        st.dataframe(grouped_df_final_pt.style.set_precision(2).format('R{0:,.2f}'),width=5000)
+        st.write('')
+        st.write('Top 10 stores for the week:')
+        grouped_df_st = final_df_makro_s.groupby("Store Name").sum().sort_values("Total Amt", ascending=False)
+        grouped_df_final_st = grouped_df_st[['Total Amt']].head(10)
+        st.dataframe(grouped_df_final_st.style.set_precision(2).format('R{0:,.2f}'),width=5000)
+        st.write('')
+        st.write('Bottom 10 products for the week:')
+        grouped_df_pb = final_df_makro_p.groupby("Product Description").sum().sort_values("Total Amt", ascending=False)
+        grouped_df_final_pb = grouped_df_pb[['Total Amt']].tail(10)
+        st.dataframe(grouped_df_final_pb.style.set_precision(2).format('R{0:,.2f}'),width=5000)
+        st.write('')
+        st.write('Bottom 10 stores for the week:')
+        grouped_df_sb = final_df_makro_s.groupby("Store Name").sum().sort_values("Total Amt", ascending=False)
+        grouped_df_final_sb = grouped_df_sb[['Total Amt']].tail(10)
+        st.dataframe(grouped_df_final_sb.style.set_precision(2).format('R{0:,.2f}'),width=5000)
+        st.write('Final Dataframe:')          
         final_df_makro
 
         # Output to .xlsx
@@ -1130,7 +1154,8 @@ elif option == 'Musica':
     try:
         # Get retailers map
         df_musica_retailers_map = df_map
-        df_retailers_map_musica_final = df_musica_retailers_map[['Musica Code','SMD code','RSP']]
+        df_musica_retailers_map = df_musica_retailers_map.rename(columns={'SMD Desc': 'Product Description'})
+        df_retailers_map_musica_final = df_musica_retailers_map[['Musica Code','SMD code','Product Description','RSP']]
 
         # Get retailer data
         df_musica_data = df_data
@@ -1155,7 +1180,7 @@ elif option == 'Musica':
         st.table(df_missing_unique_2)
 
     except:
-        st.markdown("**Retailer map column headings:** Musica Code, SMD code, RSP")
+        st.markdown("**Retailer map column headings:** Musica Code, SMD code, SMD Desc, RSP")
         st.markdown("**Retailer data column headings:** Store Name, SKU No., Title Desc, Sales.Qty, SOH Qty")
         st.markdown("Column headings are **case sensitive.** Please make sure they are correct")
 
@@ -1175,10 +1200,33 @@ elif option == 'Musica':
 
         # Don't change these headings. Rather change the ones above
         final_df_musica = df_musica_merged[['Start Date','SKU No.', 'Product Code', 'Forecast Group','Store Name','SOH Qty','Sales Qty','Total Amt']]
+        final_df_musica_p = df_musica_merged[['Product Code','Product Description','Total Amt']]
+        final_df_musica_s = df_musica_merged[['Store Name','Total Amt']]        
 
         # Show final df
         total = final_df_musica['Total Amt'].sum()
         st.write('The total sales for the week are: R',"{:0,.2f}".format(total).replace(',', ' '))
+        st.write('')
+        st.write('Top 10 products for the week:')
+        grouped_df_pt = final_df_musica_p.groupby("Product Description").sum().sort_values("Total Amt", ascending=False)
+        grouped_df_final_pt = grouped_df_pt[['Total Amt']].head(10)
+        st.dataframe(grouped_df_final_pt.style.set_precision(2).format('R{0:,.2f}'),width=5000)
+        st.write('')
+        st.write('Top 10 stores for the week:')
+        grouped_df_st = final_df_musica_s.groupby("Store Name").sum().sort_values("Total Amt", ascending=False)
+        grouped_df_final_st = grouped_df_st[['Total Amt']].head(10)
+        st.dataframe(grouped_df_final_st.style.set_precision(2).format('R{0:,.2f}'),width=5000)
+        st.write('')
+        st.write('Bottom 10 products for the week:')
+        grouped_df_pb = final_df_musica_p.groupby("Product Description").sum().sort_values("Total Amt", ascending=False)
+        grouped_df_final_pb = grouped_df_pb[['Total Amt']].tail(10)
+        st.dataframe(grouped_df_final_pb.style.set_precision(2).format('R{0:,.2f}'),width=5000)
+        st.write('')
+        st.write('Bottom 10 stores for the week:')
+        grouped_df_sb = final_df_musica_s.groupby("Store Name").sum().sort_values("Total Amt", ascending=False)
+        grouped_df_final_sb = grouped_df_sb[['Total Amt']].tail(10)
+        st.dataframe(grouped_df_final_sb.style.set_precision(2).format('R{0:,.2f}'),width=5000)
+        st.write('Final Dataframe:')          
         final_df_musica
 
         # Output to .xlsx
