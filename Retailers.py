@@ -1371,8 +1371,7 @@ elif option == 'Outdoor-Warehouse':
 
 #Pep South Africa
 elif option == 'Pep-SA':
-
-       
+      
     try:
         Wk = int(st.text_input("Enter week number: "))
 
@@ -1457,10 +1456,33 @@ elif option == 'Pep-SA':
 
         # Don't change these headings. Rather change the ones above
         final_df_pep = df_pep_merged[['Start Date','SKU No.', 'Product Code', 'Forecast Group','Store Name','SOH Qty','Sales Qty','Total Amt']]
+        final_df_pep_p = df_pep_merged[['Product Code','Product Description','Total Amt']]
+        final_df_pep_s = df_pep_merged[['Store Name','Total Amt']]   
 
         # Show final df
         total = final_df_pep['Total Amt'].sum()
         st.write('The total sales for the week are: R',"{:0,.2f}".format(total).replace(',', ' '))
+        st.write('')
+        st.write('Top 10 products for the week:')
+        grouped_df_pt = final_df_pep_p.groupby("Product Description").sum().sort_values("Total Amt", ascending=False)
+        grouped_df_final_pt = grouped_df_pt[['Total Amt']].head(10)
+        st.dataframe(grouped_df_final_pt.style.set_precision(2).format('R{0:,.2f}'),width=5000)
+        st.write('')
+        st.write('Top 10 stores for the week:')
+        grouped_df_st = final_df_pep_s.groupby("Store Name").sum().sort_values("Total Amt", ascending=False)
+        grouped_df_final_st = grouped_df_st[['Total Amt']].head(10)
+        st.dataframe(grouped_df_final_st.style.set_precision(2).format('R{0:,.2f}'),width=5000)
+        st.write('')
+        st.write('Bottom 10 products for the week:')
+        grouped_df_pb = final_df_pep_p.groupby("Product Description").sum().sort_values("Total Amt", ascending=False)
+        grouped_df_final_pb = grouped_df_pb[['Total Amt']].tail(10)
+        st.dataframe(grouped_df_final_pb.style.set_precision(2).format('R{0:,.2f}'),width=5000)
+        st.write('')
+        st.write('Bottom 10 stores for the week:')
+        grouped_df_sb = final_df_pep_s.groupby("Store Name").sum().sort_values("Total Amt", ascending=False)
+        grouped_df_final_sb = grouped_df_sb[['Total Amt']].tail(10)
+        st.dataframe(grouped_df_final_sb.style.set_precision(2).format('R{0:,.2f}'),width=5000)
+        st.write('Final Dataframe:')  
         final_df_pep
 
         # Output to .xlsx
