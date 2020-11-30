@@ -1735,7 +1735,8 @@ elif option == 'Takealot':
     try:
         # Get retailers map
         df_takealot_retailers_map = df_map
-        df_retailers_map_takealot_final = df_takealot_retailers_map[['idProduct','Description','Manufacturer','SMD Code','RSP']]
+        df_takealot_retailers_map = df_takealot_retailers_map.rename(columns={'Description': 'Product Description'})
+        df_retailers_map_takealot_final = df_takealot_retailers_map[['idProduct','Product Description','Manufacturer','SMD Code','RSP']]
         # Get retailer data
         df_takealot_data = df_data
         df_takealot_data = df_takealot_data.iloc[1:]
@@ -1778,10 +1779,33 @@ elif option == 'Takealot':
 
         # Don't change these headings. Rather change the ones above
         final_df_takealot = df_takealot_merged[['Start Date','SKU No.', 'Product Code', 'Forecast Group','Store Name','SOH Qty','Sales Qty','Total Amt']]
+        final_df_takealot_p = df_takealot_merged[['Product Code','Product Description','Total Amt']]
+        final_df_takealot_s = df_takealot_merged[['Store Name','Total Amt']]  
 
         # Show final df
         total = final_df_takealot['Total Amt'].sum()
         st.write('The total sales for the week are: R',"{:0,.2f}".format(total).replace(',', ' '))
+        st.write('')
+        st.write('Top 10 products for the week:')
+        grouped_df_pt = final_df_takealot_p.groupby("Product Description").sum().sort_values("Total Amt", ascending=False)
+        grouped_df_final_pt = grouped_df_pt[['Total Amt']].head(10)
+        st.dataframe(grouped_df_final_pt.style.set_precision(2).format('R{0:,.2f}'),width=5000)
+        st.write('')
+        st.write('Top 10 stores for the week:')
+        grouped_df_st = final_df_takealot_s.groupby("Store Name").sum().sort_values("Total Amt", ascending=False)
+        grouped_df_final_st = grouped_df_st[['Total Amt']].head(10)
+        st.dataframe(grouped_df_final_st.style.set_precision(2).format('R{0:,.2f}'),width=5000)
+        st.write('')
+        st.write('Bottom 10 products for the week:')
+        grouped_df_pb = final_df_takealot_p.groupby("Product Description").sum().sort_values("Total Amt", ascending=False)
+        grouped_df_final_pb = grouped_df_pb[['Total Amt']].tail(10)
+        st.dataframe(grouped_df_final_pb.style.set_precision(2).format('R{0:,.2f}'),width=5000)
+        st.write('')
+        st.write('Bottom 10 stores for the week:')
+        grouped_df_sb = final_df_takealot_s.groupby("Store Name").sum().sort_values("Total Amt", ascending=False)
+        grouped_df_final_sb = grouped_df_sb[['Total Amt']].tail(10)
+        st.dataframe(grouped_df_final_sb.style.set_precision(2).format('R{0:,.2f}'),width=5000)
+        st.write('Final Dataframe:')         
         final_df_takealot
 
         # Output to .xlsx
