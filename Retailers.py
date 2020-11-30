@@ -1438,7 +1438,7 @@ elif option == 'Pep-SA':
         st.table(df_missing_unique_2)
 
     except:
-        st.markdown("**Retailer map column headings:** Style Code, Product Code, RSP")
+        st.markdown("**Retailer map column headings:** Style Code, Product Code, Product Description, RSP")
         st.markdown("**Retailer data column headings:** Style Code, Month, Total Company Stock, "+str(Wk))
         st.markdown("Column headings are **case sensitive.** Please make sure they are correct")
 
@@ -1502,11 +1502,12 @@ elif option == 'PnP':
     try:
         # Get retailers map
         df_pnp_retailers_map = df_map
-        df_retailers_map_pnp_final = df_pnp_retailers_map[['Article Number','SMD code','RSP']]
-
+        df_retailers_map_pnp_final = df_pnp_retailers_map[['Article Number','SMD code','Product Description', 'RSP']]
+        df_retailers_map_pnp_final
         # Get retailer data
         df_pnp_data = df_data
         df_pnp_data = df_pnp_data.rename(columns={'PnP ArticleNumber': 'Article Number'})
+        df_pnp_data = df_pnp_data.rename(columns={'Product Description': 'Article Desc'})
         df_pnp_data = df_pnp_data.rename(columns={'Store': 'Store Name'})
 
         # Lookup column
@@ -1530,7 +1531,7 @@ elif option == 'PnP':
         # Find missing data
         missing_model = df_pnp_merged['Product Code'].isnull()
         df_pnp_missing_model = df_pnp_merged[missing_model]
-        df_missing = df_pnp_missing_model[['SKU No.','Product Description']]
+        df_missing = df_pnp_missing_model[['SKU No.','Article Desc']]
         df_missing_unique = df_missing.drop_duplicates()
         st.write("The following products are missing the SMD code on the map: ")
         st.table(df_missing_unique)
@@ -1538,13 +1539,13 @@ elif option == 'PnP':
         st.write(" ") 
         missing_rsp = df_pnp_merged['RSP'].isnull()
         df_pnp_missing_rsp = df_pnp_merged[missing_rsp] 
-        df_missing_2 = df_pnp_missing_rsp[['SKU No.','Product Description']]
+        df_missing_2 = df_pnp_missing_rsp[['SKU No.','Article Desc']]
         df_missing_unique_2 = df_missing_2.drop_duplicates()
         st.write("The following products are missing the RSP on the map: ")
         st.table(df_missing_unique_2)
 
     except:
-        st.markdown("**Retailer map column headings:** Article Number,SMD code,RSP")
+        st.markdown("**Retailer map column headings:** Article Number, SMD code, Product Description, RSP")
         st.markdown("**Retailer data column headings:** Product Description, Store ID, Store, Units, PnP ArticleNumber")
         st.markdown("**Retailer SOH column headings:** Site Code, Article Number, SOH Qty")
         st.markdown("Column headings are **case sensitive.** Please make sure they are correct")
@@ -1561,10 +1562,33 @@ elif option == 'PnP':
 
         # Don't change these headings. Rather change the ones above
         final_df_pnp = df_pnp_merged[['Start Date','SKU No.', 'Product Code', 'Forecast Group','Store Name','SOH Qty','Sales Qty','Total Amt']]
+        final_df_pnp_p = df_pnp_merged[['Product Code','Product Description','Total Amt']]
+        final_df_pnp_s = df_pnp_merged[['Store Name','Total Amt']]  
 
         # Show final df
         total = final_df_pnp['Total Amt'].sum()
         st.write('The total sales for the week are: R',"{:0,.2f}".format(total).replace(',', ' '))
+        st.write('')
+        st.write('Top 10 products for the week:')
+        grouped_df_pt = final_df_pnp_p.groupby("Product Description").sum().sort_values("Total Amt", ascending=False)
+        grouped_df_final_pt = grouped_df_pt[['Total Amt']].head(10)
+        st.dataframe(grouped_df_final_pt.style.set_precision(2).format('R{0:,.2f}'),width=5000)
+        st.write('')
+        st.write('Top 10 stores for the week:')
+        grouped_df_st = final_df_pnp_s.groupby("Store Name").sum().sort_values("Total Amt", ascending=False)
+        grouped_df_final_st = grouped_df_st[['Total Amt']].head(10)
+        st.dataframe(grouped_df_final_st.style.set_precision(2).format('R{0:,.2f}'),width=5000)
+        st.write('')
+        st.write('Bottom 10 products for the week:')
+        grouped_df_pb = final_df_pnp_p.groupby("Product Description").sum().sort_values("Total Amt", ascending=False)
+        grouped_df_final_pb = grouped_df_pb[['Total Amt']].tail(10)
+        st.dataframe(grouped_df_final_pb.style.set_precision(2).format('R{0:,.2f}'),width=5000)
+        st.write('')
+        st.write('Bottom 10 stores for the week:')
+        grouped_df_sb = final_df_pnp_s.groupby("Store Name").sum().sort_values("Total Amt", ascending=False)
+        grouped_df_final_sb = grouped_df_sb[['Total Amt']].tail(10)
+        st.dataframe(grouped_df_final_sb.style.set_precision(2).format('R{0:,.2f}'),width=5000)
+        st.write('Final Dataframe:')          
         final_df_pnp
 
         # Output to .xlsx
