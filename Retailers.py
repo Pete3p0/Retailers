@@ -1436,7 +1436,7 @@ elif option == 'Outdoor-Warehouse':
         # Get retailers map
         df_ow_retailers_map = df_map
         df_ow_retailers_map = df_ow_retailers_map.rename(columns={'SKUCode': 'Article Code'})
-        df_ow_retailers_map = df_ow_retailers_map.rename(columns={'Description': 'Product Description'})
+        df_ow_retailers_map = df_ow_retailers_map.rename(columns={'SMD Desc': 'Product Description'})
         df_retailers_map_ow_final = df_ow_retailers_map[['Article Code','SMD Code','Product Description','RSP']]
 
         # Get retailer data
@@ -1505,7 +1505,7 @@ elif option == 'Outdoor-Warehouse':
         st.table(df_missing_unique_2)
 
     except:
-        st.markdown("**Retailer map column headings:** Article Code, SMD Code, Description ,RSP")
+        st.markdown("**Retailer map column headings:** Article Code, SMD Code, SMD Desc ,RSP")
         st.markdown("**Retailer data column headings:** Code, Product, SKUCode")
         st.markdown("Column headings are **case sensitive.** Please make sure they are correct")
 
