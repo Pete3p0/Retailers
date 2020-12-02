@@ -394,7 +394,7 @@ elif option == 'Checkers':
         df_checkers_merged = df_checkers_data.merge(df_checkers_retailers_map, how='left', on='Article')
         
         # Find missing data
-        missing_model_checkers = df_checkers_merged['SMD Code'].isnull()
+        missing_model_checkers = df_checkers_merged['SMD Product Code'].isnull()
         df_checkers_missing_model = df_checkers_merged[missing_model_checkers]
         df_missing = df_checkers_missing_model[['Article','Description']]
         df_missing_unique = df_missing.drop_duplicates()
@@ -410,7 +410,7 @@ elif option == 'Checkers':
         st.table(df_missing_unique_2)
 
     except:
-        st.markdown("**Retailer map column headings:** Article, SMD Code & RSP")
+        st.markdown("**Retailer map column headings:** Article, SMD Product Code, SMD Description & RSP")
         st.markdown("**Retailer data column headings:** Item Code, Description, "+Units_Sold)
         st.markdown("Column headings are **case sensitive.** Please make sure they are correct") 
 
@@ -428,8 +428,9 @@ elif option == 'Checkers':
         # Rename columns
         df_checkers_merged = df_checkers_merged.rename(columns={'Article': 'SKU No.'})
         df_checkers_merged = df_checkers_merged.rename(columns={Units_Sold: 'Sales Qty'})
-        df_checkers_merged = df_checkers_merged.rename(columns={'SMD Code': 'Product Code'})
+        df_checkers_merged = df_checkers_merged.rename(columns={'SMD Product Code': 'Product Code'})
         df_checkers_merged = df_checkers_merged.rename(columns={'Branch': 'Store Name'})
+        df_checkers_merged = df_checkers_merged.rename(columns={'SMD Description': 'Product Description'})
 
         # Final df. Don't change these headings. Rather change the ones above
         final_df_checkers_sales = df_checkers_merged[['Start Date','SKU No.', 'Product Code', 'Forecast Group','Store Name','SOH Qty','Sales Qty','Total Amt']]
