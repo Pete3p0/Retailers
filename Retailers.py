@@ -762,6 +762,7 @@ elif option == 'Dis-Chem-Pharmacies':
         
         # Get retailers map
         df_dischemp_retailers_map = df_map
+        df_dischemp_retailers_map = df_dischemp_retailers_map.rename(columns={'Description': 'Product Description'})
         df_retailers_map_dischemp_final = df_dischemp_retailers_map[['Article Code','SMD Code','Product Description','RSP']]
 
         # Get retailer data
@@ -785,7 +786,7 @@ elif option == 'Dis-Chem-Pharmacies':
 
         st.write(" ")
         missing_rsp_dischemp = df_dischemp_merged['RSP'].isnull()
-        df_dischemp_missing_rsp = df_dischemp_merged[missing_rsp_dischem]
+        df_dischemp_missing_rsp = df_dischemp_merged[missing_rsp_dischemp]
         df_missing_2 = df_dischemp_missing_rsp[['SKU No.','Article']]
         df_missing_unique_2 = df_missing_2.drop_duplicates()
         st.write("The following products are missing the RSP on the map: ")
@@ -808,8 +809,8 @@ elif option == 'Dis-Chem-Pharmacies':
 
         # Final df. Don't change these headings. Rather change the ones above
         final_df_dischemp_sales = df_dischemp_merged[['Start Date','SKU No.', 'Product Code', 'Forecast Group','Store Name','SOH Qty','Sales Qty','Total Amt']]
-        final_df_dischemp_p = df_dischem_merged[['Product Code','Product Description','Total Amt']]
-        final_df_dischemp_s = df_dischem_merged[['Store Name','Total Amt']]
+        final_df_dischemp_p = df_dischemp_merged[['Product Code','Product Description','Total Amt']]
+        final_df_dischemp_s = df_dischemp_merged[['Store Name','Total Amt']]
 
         # Show final df
         total = final_df_dischemp_sales['Total Amt'].sum()
