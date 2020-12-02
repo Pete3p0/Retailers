@@ -978,7 +978,7 @@ elif option == 'H&H':
         st.table(df_missing)
 
     except:
-        st.markdown("**Retailer msfhdap column headings:** SKU Number, SMD Product Code & SMD Description")
+        st.markdown("**Retailer map column headings:** SKU Number, SMD Product Code & SMD Description")
         st.markdown("**Retailer data column headings:** Brn No, Brn Description, SKU Number, SKU Description, Qty Sold, Sold RSP, Qty On Hand")
         st.markdown("Column headings are **case sensitive.** Please make sure they are correct")
 
