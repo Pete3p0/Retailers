@@ -124,7 +124,9 @@ if option == 'Ackermans':
 
         # Show final df
         total = final_df_ackermans['Total Amt'].sum()
+        total_units = final_df_ackermans['Sales Qty'].sum()
         st.write('The total sales for the week are: R',"{:0,.2f}".format(total).replace(',', ' '))
+        st.write('Number of units sold: '"{:0,.0f}".format(total_units).replace(',', ' '))
         st.write('')
         st.write('Top 10 products for the week:')
         grouped_df_pt = final_df_ackermans_p.groupby("Product Description").sum().sort_values("Total Amt", ascending=False)
@@ -234,7 +236,9 @@ elif option == 'Bradlows/Russels':
 
         # Show final df
         total = final_df_br['Total Amt'].sum()
+        total_units = final_df_br['Sales Qty'].sum()
         st.write('The total sales for the week are: R',"{:0,.2f}".format(total).replace(',', ' '))
+        st.write('Number of units sold: '"{:0,.0f}".format(total_units).replace(',', ' '))
         st.write('')
         st.write('Top 10 products for the week:')
         grouped_df_pt = final_df_br_p.groupby("Product Description").sum().sort_values("Total Amt", ascending=False)
@@ -341,7 +345,9 @@ elif option == 'Builders':
 
         # Show final df
         total = final_df_bw['Total Amt'].sum()
+        total_units = final_df_bw['Sales Qty'].sum()
         st.write('The total sales for the week are: R',"{:0,.2f}".format(total).replace(',', ' '))
+        st.write('Number of units sold: '"{:0,.0f}".format(total_units).replace(',', ' '))
         st.write('')
         st.write('Top 10 products for the week:')
         grouped_df_pt = final_df_bw_p.groupby("Product Description").sum().sort_values("Total Amt", ascending=False)
@@ -439,7 +445,9 @@ elif option == 'Checkers':
 
         # Show final df
         total = final_df_checkers_sales['Total Amt'].sum()
+        total_units = final_df_checkers_sales['Sales Qty'].sum()
         st.write('The total sales for the week are: R',"{:0,.2f}".format(total).replace(',', ' '))
+        st.write('Number of units sold: '"{:0,.0f}".format(total_units).replace(',', ' '))
         st.write('')
         st.write('Top 10 products for the week:')
         grouped_df_pt = final_df_checkers_p.groupby("Product Description").sum().sort_values("Total Amt", ascending=False)
@@ -535,7 +543,9 @@ elif option == 'Clicks':
 
         # Show final df
         total = final_df_clicks['Total Amt'].sum()
+        total_units = final_df_clicks['Sales Qty'].sum()
         st.write('The total sales for the week are: R',"{:0,.2f}".format(total).replace(',', ' '))
+        st.write('Number of units sold: '"{:0,.0f}".format(total_units).replace(',', ' '))
         st.write('')
         st.write('Top 10 products for the week:')
         grouped_df_pt = final_df_clicks_p.groupby("Product Desc").sum().sort_values("Total Amt", ascending=False)
@@ -629,7 +639,9 @@ elif option == 'Dealz':
 
         # Show final df
         total = final_df_dealz_sales['Total Amt'].sum()
+        total_units = final_df_dealz_sales['Sales Qty'].sum()
         st.write('The total sales for the week are: R',"{:0,.2f}".format(total).replace(',', ' '))
+        st.write('Number of units sold: '"{:0,.0f}".format(total_units).replace(',', ' '))
         st.write('')
         st.write('Top 10 products for the week:')
         grouped_df_pt = final_df_dealz_p.groupby("Product Description").sum().sort_values("Total Amt", ascending=False)
@@ -723,7 +735,9 @@ elif option == 'Dis-Chem':
 
         # Show final df
         total = final_df_dischem_sales['Total Amt'].sum()
+        total_units = final_df_dischem_sales['Sales Qty'].sum()
         st.write('The total sales for the week are: R',"{:0,.2f}".format(total).replace(',', ' '))
+        st.write('Number of units sold: '"{:0,.0f}".format(total_units).replace(',', ' '))
         st.write('')
         st.write('Top 10 products for the week:')
         grouped_df_pt = final_df_dischem_p.groupby("Product Description").sum().sort_values("Total Amt", ascending=False)
@@ -814,7 +828,9 @@ elif option == 'Dis-Chem-Pharmacies':
 
         # Show final df
         total = final_df_dischemp_sales['Total Amt'].sum()
+        total_units = final_df_dischemp_sales['Sales Qty'].sum()
         st.write('The total sales for the week are: R',"{:0,.2f}".format(total).replace(',', ' '))
+        st.write('Number of units sold: '"{:0,.0f}".format(total_units).replace(',', ' '))
         st.write('')
         st.write('Top 10 products for the week:')
         grouped_df_pt = final_df_dischemp_p.groupby("Product Description").sum().sort_values("Total Amt", ascending=False)
@@ -915,7 +931,9 @@ elif option == 'HiFi':
 
         # Show final df
         total = final_df_hifi_sales['Total Amt'].sum()
+        total_units = final_df_hifi_sales['Sales Qty'].sum()
         st.write('The total sales for the week are: R',"{:0,.2f}".format(total).replace(',', ' '))
+        st.write('Number of units sold: '"{:0,.0f}".format(total_units).replace(',', ' '))
         st.write('')
         st.write('Top 10 products for the week:')
         grouped_df_pt = final_df_hifi_p.groupby("Product Description").sum().sort_values("Total Amt", ascending=False)
@@ -1009,7 +1027,9 @@ elif option == 'H&H':
 
         # Show final df
         total = final_df_hh_sales['Total Amt'].sum()
+        total_units = final_df_hh_sales['Sales Qty'].sum()
         st.write('The total sales for the week are: R',"{:0,.2f}".format(total).replace(',', ' '))
+        st.write('Number of units sold: '"{:0,.0f}".format(total_units).replace(',', ' '))
         st.write('')
         st.write('Top 10 products for the week:')
         grouped_df_pt = final_df_hh_p.groupby("Product Description").sum().sort_values("Total Amt", ascending=False)
@@ -1112,7 +1132,9 @@ elif option == 'Incredible-Connection':
 
         # Show final df
         total = final_df_ic_sales['Total Amt'].sum()
+        total_units = final_df_ic_sales['Sales Qty'].sum()
         st.write('The total sales for the week are: R',"{:0,.2f}".format(total).replace(',', ' '))
+        st.write('Number of units sold: '"{:0,.0f}".format(total_units).replace(',', ' '))
         st.write('')
         st.write('Top 10 products for the week:')
         grouped_df_pt = final_df_ic_p.groupby("Product Description").sum().sort_values("Total Amt", ascending=False)
@@ -1213,7 +1235,9 @@ elif option == 'Makro':
 
         # Show final df
         total = final_df_makro['Total Amt'].sum()
+        total_units = final_df_makro['Sales Qty'].sum()
         st.write('The total sales for the week are: R',"{:0,.2f}".format(total).replace(',', ' '))
+        st.write('Number of units sold: '"{:0,.0f}".format(total_units).replace(',', ' '))
         st.write('')
         st.write('Top 10 products for the week:')
         grouped_df_pt = final_df_makro_p.groupby("Product Description").sum().sort_values("Total Amt", ascending=False)
@@ -1300,7 +1324,9 @@ elif option == 'Musica':
 
         # Show final df
         total = final_df_musica['Total Amt'].sum()
+        total_units = final_df_musica['Sales Qty'].sum()
         st.write('The total sales for the week are: R',"{:0,.2f}".format(total).replace(',', ' '))
+        st.write('Number of units sold: '"{:0,.0f}".format(total_units).replace(',', ' '))
         st.write('')
         st.write('Top 10 products for the week:')
         grouped_df_pt = final_df_musica_p.groupby("Product Description").sum().sort_values("Total Amt", ascending=False)
@@ -1393,7 +1419,9 @@ elif option == 'Ok-Furniture':
 
         # Show final df
         total = final_df_ok_sales['Total Amt'].sum()
+        total_units = final_df_ok_sales['Sales Qty'].sum()
         st.write('The total sales for the week are: R',"{:0,.2f}".format(total).replace(',', ' '))
+        st.write('Number of units sold: '"{:0,.0f}".format(total_units).replace(',', ' '))
         st.write('')
         st.write('Top 10 products for the week:')
         grouped_df_pt = final_df_okf_p.groupby("Product Description").sum().sort_values("Total Amt", ascending=False)
@@ -1528,7 +1556,9 @@ elif option == 'Outdoor-Warehouse':
 
         # Show final df
         total = final_df_ow['Total Amt'].sum()
+        total_units = final_df_ow['Sales Qty'].sum()
         st.write('The total sales for the week are: R',"{:0,.2f}".format(total).replace(',', ' '))
+        st.write('Number of units sold: '"{:0,.0f}".format(total_units).replace(',', ' '))
         st.write('')
         st.write('Top 10 products for the week:')
         grouped_df_pt = final_df_ow_p.groupby("Product Description").sum().sort_values("Total Amt", ascending=False)
@@ -1650,7 +1680,9 @@ elif option == 'Pep-SA':
 
         # Show final df
         total = final_df_pep['Total Amt'].sum()
+        total_units = final_df_pep['Sales Qty'].sum()
         st.write('The total sales for the week are: R',"{:0,.2f}".format(total).replace(',', ' '))
+        st.write('Number of units sold: '"{:0,.0f}".format(total_units).replace(',', ' '))
         st.write('')
         st.write('Top 10 products for the week:')
         grouped_df_pt = final_df_pep_p.groupby("Product Description").sum().sort_values("Total Amt", ascending=False)
@@ -1756,7 +1788,9 @@ elif option == 'PnP':
 
         # Show final df
         total = final_df_pnp['Total Amt'].sum()
+        total_units = final_df_pnp['Sales Qty'].sum()
         st.write('The total sales for the week are: R',"{:0,.2f}".format(total).replace(',', ' '))
+        st.write('Number of units sold: '"{:0,.0f}".format(total_units).replace(',', ' '))
         st.write('')
         st.write('Top 10 products for the week:')
         grouped_df_pt = final_df_pnp_p.groupby("Product Description").sum().sort_values("Total Amt", ascending=False)
@@ -1889,7 +1923,9 @@ elif option == 'Sportsmans-Warehouse':
 
         # Show final df
         total = final_df_sw['Total Amt'].sum()
+        total_units = final_df_sw['Sales Qty'].sum()
         st.write('The total sales for the week are: R',"{:0,.2f}".format(total).replace(',', ' '))
+        st.write('Number of units sold: '"{:0,.0f}".format(total_units).replace(',', ' '))
         st.write('')
         st.write('Top 10 products for the week:')
         grouped_df_pt = final_df_sw_p.groupby("Product Description").sum().sort_values("Total Amt", ascending=False)
@@ -1973,7 +2009,9 @@ elif option == 'Takealot':
 
         # Show final df
         total = final_df_takealot['Total Amt'].sum()
+        total_units = final_df_takealot['Sales Qty'].sum()
         st.write('The total sales for the week are: R',"{:0,.2f}".format(total).replace(',', ' '))
+        st.write('Number of units sold: '"{:0,.0f}".format(total_units).replace(',', ' '))
         st.write('')
         st.write('Top 10 products for the week:')
         grouped_df_pt = final_df_takealot_p.groupby("Product Description").sum().sort_values("Total Amt", ascending=False)
@@ -2063,7 +2101,9 @@ elif option == 'TFG':
 
         # Show final df
         total = df_tfg_merged['Total Amt'].sum()
+        total_units = final_df_tfg['Sales Qty'].sum()
         st.write('The total sales for the week are: R',"{:0,.2f}".format(total).replace(',', ' '))
+        st.write('Number of units sold: '"{:0,.0f}".format(total_units).replace(',', ' '))
         st.write('')
         st.write('Top 10 products for the week:')
         grouped_df_pt = final_df_tfg_p.groupby("Product Description").sum().sort_values("Total Amt", ascending=False)
