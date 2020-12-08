@@ -1658,7 +1658,7 @@ elif option == 'Pep-SA':
 
     except:
         st.markdown("**Retailer map column headings:** Style Code, Product Code, Product Description, RSP")
-        st.markdown("**Retailer data column headings:** Style Code, Month, Total Company Stock, "+str(Wk))
+        st.markdown("**Retailer data column headings:** Style Code, Month, Total Company Stock")
         st.markdown("Column headings are **case sensitive.** Please make sure they are correct")
 
     try:
