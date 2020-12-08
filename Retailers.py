@@ -383,7 +383,13 @@ elif option == 'Builders':
 
 elif option == 'Checkers':
 
+    checkers_soh = st.file_uploader('SOH', type='xlsx')
+    if checkers_soh:
+        df_checkers_soh = pd.read_excel(checkers_soh)
+
     Units_Sold = 'Units :'+ Day +' '+ Short_Date_Dict[Month] + ' ' + Year
+    Value_Sold = 'Value :'+ Day +' '+ Short_Date_Dict[Month] + ' ' + Year
+
     try:
         # Get retailers data
         df_checkers_retailers_map = df_map
@@ -392,11 +398,19 @@ elif option == 'Checkers':
         df_checkers_data = df_data
         df_checkers_data.columns = df_checkers_data.iloc[2]
         df_checkers_data = df_checkers_data.iloc[3:]
-
-        # Rename columns
         df_checkers_data = df_checkers_data.rename(columns={'Item Code': 'Article'})
+        df_checkers_data['Lookup'] = df_checkers_data['Article'].astype(str) + df_checkers_data['Branch']
+
+        # Get stock on hand
+        df_checkers_soh.columns = df_checkers_soh.iloc[2]
+        df_checkers_soh = df_checkers_soh.iloc[3:]
+        df_checkers_soh = df_checkers_soh.rename(columns={'Item Code': 'Article'})
+        df_checkers_soh = df_checkers_soh.rename(columns={'Stock Qty':'SOH Qty'})
+        df_checkers_soh['Lookup'] = df_checkers_soh['Article'].astype(str) + df_checkers_soh['Branch']
+        df_checkers_soh_final = df_checkers_soh[['Lookup','SOH Qty']]
         
         # Merge with Sony Range
+        df_checkers_data = df_checkers_data.merge(df_checkers_soh_final, how='left', on='Lookup')
         df_checkers_merged = df_checkers_data.merge(df_checkers_retailers_map, how='left', on='Article')
         
         # Find missing data
@@ -425,11 +439,10 @@ elif option == 'Checkers':
         df_checkers_merged['Start Date'] = Date_Start
 
         # Add Total Amount column
-        df_checkers_merged['Total Amt'] = df_checkers_merged[Units_Sold] * df_checkers_merged['RSP']
-
+        df_checkers_merged = df_checkers_merged.rename(columns={Value_Sold: 'Total Amt'})
+       
         # Add column for retailer and SOH
         df_checkers_merged['Forecast Group'] = 'Checkers'
-        df_checkers_merged['SOH Qty'] = 0
 
         # Rename columns
         df_checkers_merged = df_checkers_merged.rename(columns={'Article': 'SKU No.'})
@@ -1724,7 +1737,7 @@ elif option == 'PnP':
         # Get retailers map
         df_pnp_retailers_map = df_map
         df_retailers_map_pnp_final = df_pnp_retailers_map[['Article Number','SMD code','Product Description', 'RSP']]
-        df_retailers_map_pnp_final
+        
         # Get retailer data
         df_pnp_data = df_data
         df_pnp_data = df_pnp_data.rename(columns={'PnP ArticleNumber': 'Article Number'})
