@@ -552,7 +552,7 @@ elif option == 'Clicks':
 
         # Don't change these headings. Rather change the ones above
         final_df_clicks = df_clicks_merged[['Start Date','SKU No.', 'Product Code', 'Forecast Group','Store Name','SOH Qty','Sales Qty','Total Amt']]
-        final_df_clicks_p = df_clicks_merged[['Product Code','Product Desc','Total Amt']]
+        final_df_clicks_p = df_clicks_merged[['Product Code','Product Desc','Sales Qty', 'Total Amt']]
         final_df_clicks_s = df_clicks_merged[['Store Name','Total Amt']]
 
         # Show final df
