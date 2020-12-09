@@ -38,10 +38,11 @@ Month = Date_End.month
 Year = str(Date_End.year)
 Short_Date_Dict = {1:'Jan', 2:'Feb', 3:'Mar',4:'Apr',5:'May',6:'Jun',7:'Jul',8:'Aug',9:'Sep',10:'Oct',11:'Nov',12:'Dec'}
 Long_Date_Dict = {1:'January', 2:'February', 3:'March',4:'April',5:'May',6:'June',7:'July',8:'August',9:'September',10:'October',11:'November',12:'December'}
+Country_Dict = {'AO':'Angola', 'MW':'Malawi', 'MZ':'Mozambique', 'NG':'Nigeria', 'UG':'Uganda', 'ZA':'South Africa', 'ZM':'Zambia', 'ZW':'Zimbabwe'}
 
 option = st.selectbox(
     'Please select a retailer:',
-    ('Please select','Ackermans','Bradlows/Russels','Builders','Checkers','Clicks','Dealz','Dis-Chem','Dis-Chem-Pharmacies','HiFi', 'H&H','Incredible-Connection','Makro', 'Musica','Ok-Furniture', 'Outdoor-Warehouse','Pep-SA','PnP','Sportsmans-Warehouse','Takealot','TFG'))
+    ('Please select','Ackermans','Bradlows/Russels','Builders','Checkers','Clicks','Dealz','Dis-Chem','Dis-Chem-Pharmacies','HiFi', 'H&H','Incredible-Connection','Makro', 'Musica','Ok-Furniture', 'Outdoor-Warehouse','Pep-Africa','Pep-SA','PnP','Sportsmans-Warehouse','Takealot','TFG'))
 st.write('You selected:', option)
 
 st.write("")
@@ -409,7 +410,7 @@ elif option == 'Checkers':
         df_checkers_soh['Lookup'] = df_checkers_soh['Article'].astype(str) + df_checkers_soh['Branch']
         df_checkers_soh_final = df_checkers_soh[['Lookup','SOH Qty']]
         
-        # Merge with Sony Range
+        # Merge SOH and Retailer Map
         df_checkers_data = df_checkers_data.merge(df_checkers_soh_final, how='left', on='Lookup')
         df_checkers_merged = df_checkers_data.merge(df_checkers_retailers_map, how='left', on='Article')
         
@@ -1601,6 +1602,100 @@ elif option == 'Outdoor-Warehouse':
     except:
         st.write('Check data') 
 
+#Pep Africa
+elif option == 'Pep-Africa':
+      
+    try:
+        Wk = int(st.text_input("Enter week number: "))
+        Wk_sales = 'Wk ' + str(Wk)
+
+        # Get retailers map
+        df_pepaf_retailers_map = df_map
+
+        # Get retailer data
+        df_pepaf_data = df_data
+        df_pepaf_data.columns = df_pepaf_data.iloc[1]
+        df_pepaf_data = df_pepaf_data.iloc[2:]
+        df_pepaf_data = df_pepaf_data.rename(columns={'Style Code': 'SKU No.'})
+        df_pepaf_data['Store Name'] = df_pepaf_data['Country Code'].map(Country_Dict)
+        df_pepaf_data = df_pepaf_data.rename(columns={Wk_sales: 'Sales Qty'})
+        df_pepaf_data = df_pepaf_data.rename(columns={'WSOH': 'SOH Qty'})
+        
+        # Merge with retailer map
+        df_pepaf_merged = df_pepaf_data.merge(df_pepaf_retailers_map, how='left', on='SKU No.')
+        df_pepaf_merged
+        # Find missing data
+        missing_model = df_pepaf_merged['Product Code'].isnull()
+        df_pepaf_missing_model = df_pepaf_merged[missing_model]
+        df_missing = df_pepaf_missing_model[['SKU No.','Style Description']]
+        df_missing_unique = df_missing.drop_duplicates()
+        st.write("The following products are missing the SMD code on the map: ")
+        st.table(df_missing_unique)
+
+        st.write(" ") 
+        missing_rsp = df_pepaf_merged['RSP'].isnull()
+        df_pepaf_missing_rsp = df_pepaf_merged[missing_rsp]
+        df_missing_2 = df_pepaf_missing_rsp[['SKU No.','Style Description']]
+        df_missing_unique_2 = df_missing_2.drop_duplicates()
+        st.write("The following products are missing the RSP on the map: ")
+        st.table(df_missing_unique_2)
+
+    except:
+        st.markdown("**Retailer map column headings:** SKU No., Product Code, Product Description, RSP")
+        st.markdown("**Retailer data column headings:** Country Code, Style Code, Style Description, WSOH")
+        st.markdown("Column headings are **case sensitive.** Please make sure they are correct")
+
+    try:
+        # Set date columns
+        df_pepaf_merged['Start Date'] = Date_Start
+
+        # Total amount column
+        df_pepaf_merged['Total Amt'] = df_pepaf_merged['Sales Qty'] * df_pepaf_merged['RSP']
+        df_pepaf_merged['Total Amt'] = df_pepaf_merged['Total Amt'].apply(lambda x: round(x,2))
+
+        # Add retailer column
+        df_pepaf_merged['Forecast Group'] = 'Pep Africa'
+
+        # Don't change these headings. Rather change the ones above
+        final_df_pepaf = df_pepaf_merged[['Start Date','SKU No.', 'Product Code', 'Forecast Group','Store Name','SOH Qty','Sales Qty','Total Amt']]
+        final_df_pepaf_p = df_pepaf_merged[['Product Code','Style Description','Total Amt']]
+        final_df_pepaf_s = df_pepaf_merged[['Store Name','Total Amt']]   
+
+        # Show final df
+        total = final_df_pepaf['Total Amt'].sum()
+        total_units = final_df_pepaf['Sales Qty'].sum()
+        st.write('The total sales for the week are: R',"{:0,.2f}".format(total).replace(',', ' '))
+        st.write('Number of units sold: '"{:0,.0f}".format(total_units).replace(',', ' '))
+        st.write('')
+        st.write('Top 10 products for the week:')
+        grouped_df_pt = final_df_pepaf_p.groupby("Style Description").sum().sort_values("Total Amt", ascending=False)
+        grouped_df_final_pt = grouped_df_pt[['Total Amt']].head(10)
+        st.dataframe(grouped_df_final_pt.style.set_precision(2).format('R{0:,.2f}'),width=5000)
+        st.write('')
+        st.write('Top 10 stores for the week:')
+        grouped_df_st = final_df_pepaf_s.groupby("Store Name").sum().sort_values("Total Amt", ascending=False)
+        grouped_df_final_st = grouped_df_st[['Total Amt']].head(10)
+        st.dataframe(grouped_df_final_st.style.set_precision(2).format('R{0:,.2f}'),width=5000)
+        st.write('')
+        st.write('Bottom 10 products for the week:')
+        grouped_df_pb = final_df_pepaf_p.groupby("Style Description").sum().sort_values("Total Amt", ascending=False)
+        grouped_df_final_pb = grouped_df_pb[['Total Amt']].tail(10)
+        st.dataframe(grouped_df_final_pb.style.set_precision(2).format('R{0:,.2f}'),width=5000)
+        st.write('')
+        st.write('Bottom 10 stores for the week:')
+        grouped_df_sb = final_df_pepaf_s.groupby("Store Name").sum().sort_values("Total Amt", ascending=False)
+        grouped_df_final_sb = grouped_df_sb[['Total Amt']].tail(10)
+        st.dataframe(grouped_df_final_sb.style.set_precision(2).format('R{0:,.2f}'),width=5000)
+        st.write('Final Dataframe:')  
+        final_df_pepaf
+
+        # Output to .xlsx
+        st.write('Please ensure that no products are missing before downloading!')
+        st.markdown(get_table_download_link(final_df_pepaf), unsafe_allow_html=True)
+    except:
+        st.write('Check data') 
+
+
 #Pep South Africa
 elif option == 'Pep-SA':
       
@@ -1724,7 +1819,6 @@ elif option == 'Pep-SA':
         st.markdown(get_table_download_link(final_df_pep), unsafe_allow_html=True)
     except:
         st.write('Check data') 
-
 
 # Pick n Pay
 elif option == 'PnP':
