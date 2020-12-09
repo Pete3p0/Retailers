@@ -537,7 +537,7 @@ elif option == 'Clicks':
         df_clicks_merged['Start Date'] = Date_Start
 
         # Total amount column
-        df_clicks_merged['Total Amt'] = df_clicks_merged['Sales Qty LW TY'] * df_clicks_merged['RSP']
+        df_clicks_merged['Total Amt'] = df_clicks_merged['Sales Value LW TY'] * 1.15
 
         # Add retailer column
         df_clicks_merged['Forecast Group'] = 'Clicks'
