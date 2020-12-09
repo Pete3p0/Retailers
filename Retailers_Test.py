@@ -2232,7 +2232,7 @@ elif option == 'TFG':
         grouped_df_final_sb = grouped_df_sb[['Total Amt']].tail(10)
         st.table(grouped_df_final_sb)
 
-        st.write('**Final Dataframe:**')
+        st.write('Final Dataframe:')
         final_df_tfg
 
         # Output to .xlsx
