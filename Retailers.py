@@ -1623,7 +1623,7 @@ elif option == 'Pep-Africa':
         
         # Merge with retailer map
         df_pepaf_merged = df_pepaf_data.merge(df_pepaf_retailers_map, how='left', on='SKU No.')
-        df_pepaf_merged
+        
         # Find missing data
         missing_model = df_pepaf_merged['Product Code'].isnull()
         df_pepaf_missing_model = df_pepaf_merged[missing_model]
