@@ -1231,7 +1231,7 @@ elif option == 'Makro':
         df_makro_merged['Start Date'] = Date_Start
 
         # Total amount column
-        df_makro_merged['Total Amt'] = df_makro_merged[weekly_sales] * df_makro_merged['RSP']
+        df_makro_merged['Total Amt'] = np.where(df_makro_merged['Prom SP'] > 0, df_makro_merged[Week+'-'+Year] * df_makro_merged['Prom SP'], df_makro_merged[Week+'-'+Year] * df_makro_merged['Incl SP'])
         
         # Add retailer column
         df_makro_merged['Forecast Group'] = 'Makro'
