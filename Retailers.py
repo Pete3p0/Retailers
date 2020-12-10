@@ -101,63 +101,63 @@ if option == 'Ackermans':
         st.markdown("Column headings are **case sensitive.** Please make sure they are correct") 
 
         
-    # try:
-    # Set date columns
-    df_ackermans_merged['Start Date'] = Date_Start
+    try:
+        # Set date columns
+        df_ackermans_merged['Start Date'] = Date_Start
 
-    # Total amount column
-    df_ackermans_merged['Total Amt'] = df_ackermans_merged[Units_Sold].astype(int) * df_ackermans_merged['SMD RSP']
+        # Total amount column
+        df_ackermans_merged['Total Amt'] = df_ackermans_merged[Units_Sold].astype(int) * df_ackermans_merged['SMD RSP']
 
-    # Add retailer column and store column
-    df_ackermans_merged['Forecast Group'] = 'Ackermans'
-    df_ackermans_merged['Store Name'] = ''
-    df_ackermans_merged['Style Description'] = df_ackermans_merged['Style Description'].str.title() 
+        # Add retailer column and store column
+        df_ackermans_merged['Forecast Group'] = 'Ackermans'
+        df_ackermans_merged['Store Name'] = ''
+        df_ackermans_merged['Style Description'] = df_ackermans_merged['Style Description'].str.title() 
 
-    # Rename columns
-    df_ackermans_merged = df_ackermans_merged.rename(columns={CSOH: 'SOH Qty'})
-    df_ackermans_merged = df_ackermans_merged.rename(columns={Units_Sold: 'Sales Qty'})
-    df_ackermans_merged = df_ackermans_merged.rename(columns={'SMD Product Code': 'Product Code'})
+        # Rename columns
+        df_ackermans_merged = df_ackermans_merged.rename(columns={CSOH: 'SOH Qty'})
+        df_ackermans_merged = df_ackermans_merged.rename(columns={Units_Sold: 'Sales Qty'})
+        df_ackermans_merged = df_ackermans_merged.rename(columns={'SMD Product Code': 'Product Code'})
 
-    # Don't change these headings. Rather change the ones above
-    final_df_ackermans = df_ackermans_merged[['Start Date','SKU No.', 'Product Code', 'Forecast Group','Store Name','SOH Qty','Sales Qty','Total Amt']]
-    final_df_ackermans_p = df_ackermans_merged[['Product Code','Product Description','Sales Qty','Total Amt']]
-    final_df_ackermans_s = df_ackermans_merged[['Store Name','Total Amt']]
+        # Don't change these headings. Rather change the ones above
+        final_df_ackermans = df_ackermans_merged[['Start Date','SKU No.', 'Product Code', 'Forecast Group','Store Name','SOH Qty','Sales Qty','Total Amt']]
+        final_df_ackermans_p = df_ackermans_merged[['Product Code','Product Description','Sales Qty','Total Amt']]
+        final_df_ackermans_s = df_ackermans_merged[['Store Name','Total Amt']]
 
-    # Show final df
-    total = final_df_ackermans['Total Amt'].sum()
-    total_units = final_df_ackermans['Sales Qty'].sum()
-    st.write('**The total sales for the week are:** R',"{:0,.2f}".format(total).replace(',', ' '))
-    st.write('**Number of units sold:** '"{:0,.0f}".format(total_units).replace(',', ' '))
-    st.write('')
-    st.write('**Top 10 products for the week:**')
-    grouped_df_pt = final_df_ackermans_p.groupby("Product Description").sum().sort_values("Total Amt", ascending=False)
-    grouped_df_final_pt = grouped_df_pt[['Sales Qty', 'Total Amt']].head(10)
-    st.table(grouped_df_final_pt.style.format({'Sales Qty':'{:,.0f}','Total Amt':'R{:,.2f}'}))
-    st.write('')
-    st.write('**Top 10 stores for the week:**')
-    grouped_df_st = final_df_ackermans_s.groupby("Store Name").sum().sort_values("Total Amt", ascending=False)
-    grouped_df_final_st = grouped_df_st[['Total Amt']].head(10)
-    st.table(grouped_df_final_st.style.format('R{0:,.2f}'))
-    st.write('')
-    st.write('**Bottom 10 products for the week:**')
-    grouped_df_pb = final_df_ackermans_p.groupby("Product Description").sum().sort_values("Total Amt", ascending=False)
-    grouped_df_final_pb = grouped_df_pb[['Sales Qty', 'Total Amt']].tail(10)
-    st.table(grouped_df_final_pb.style.format({'Sales Qty':'{:,.0f}','Total Amt':'R{:,.2f}'}))
-    st.write('')
-    st.write('**Bottom 10 stores for the week:**')
-    grouped_df_sb = final_df_ackermans_s.groupby("Store Name").sum().sort_values("Total Amt", ascending=False)
-    grouped_df_final_sb = grouped_df_sb[['Total Amt']].tail(10)
-    st.table(grouped_df_final_sb.style.format('R{0:,.2f}'))
+        # Show final df
+        total = final_df_ackermans['Total Amt'].sum()
+        total_units = final_df_ackermans['Sales Qty'].sum()
+        st.write('**The total sales for the week are:** R',"{:0,.2f}".format(total).replace(',', ' '))
+        st.write('**Number of units sold:** '"{:0,.0f}".format(total_units).replace(',', ' '))
+        st.write('')
+        st.write('**Top 10 products for the week:**')
+        grouped_df_pt = final_df_ackermans_p.groupby("Product Description").sum().sort_values("Total Amt", ascending=False)
+        grouped_df_final_pt = grouped_df_pt[['Sales Qty', 'Total Amt']].head(10)
+        st.table(grouped_df_final_pt.style.format({'Sales Qty':'{:,.0f}','Total Amt':'R{:,.2f}'}))
+        st.write('')
+        st.write('**Top 10 stores for the week:**')
+        grouped_df_st = final_df_ackermans_s.groupby("Store Name").sum().sort_values("Total Amt", ascending=False)
+        grouped_df_final_st = grouped_df_st[['Total Amt']].head(10)
+        st.table(grouped_df_final_st.style.format('R{0:,.2f}'))
+        st.write('')
+        st.write('**Bottom 10 products for the week:**')
+        grouped_df_pb = final_df_ackermans_p.groupby("Product Description").sum().sort_values("Total Amt", ascending=False)
+        grouped_df_final_pb = grouped_df_pb[['Sales Qty', 'Total Amt']].tail(10)
+        st.table(grouped_df_final_pb.style.format({'Sales Qty':'{:,.0f}','Total Amt':'R{:,.2f}'}))
+        st.write('')
+        st.write('**Bottom 10 stores for the week:**')
+        grouped_df_sb = final_df_ackermans_s.groupby("Store Name").sum().sort_values("Total Amt", ascending=False)
+        grouped_df_final_sb = grouped_df_sb[['Total Amt']].tail(10)
+        st.table(grouped_df_final_sb.style.format('R{0:,.2f}'))
 
-    st.write('**Final Dataframe:**')
-    final_df_ackermans
+        st.write('**Final Dataframe:**')
+        final_df_ackermans
 
-    # Output to .xlsx
-    st.write('Please ensure that no products are missing before downloading!')
-    st.markdown(get_table_download_link(final_df_ackermans), unsafe_allow_html=True)
+        # Output to .xlsx
+        st.write('Please ensure that no products are missing before downloading!')
+        st.markdown(get_table_download_link(final_df_ackermans), unsafe_allow_html=True)
 
-    # except:
-    #     st.write('Check data')
+    except:
+        st.write('Check data')
 
 
 # Bradlows/Russels
@@ -1221,7 +1221,6 @@ elif option == 'Makro':
         st.write("The following products are missing the RSP on the map: ")
         st.table(df_missing_unique_2)
         
-
     except:
         st.markdown("**Retailer map column headings:** Article, SMD Product Code, SMD Description")
         st.markdown("**Retailer data column headings:** Article, Article Desc, Site, Store Name (in Stores.xlsx), SOH, "+weekly_sales)
@@ -1429,7 +1428,7 @@ elif option == 'Ok-Furniture':
 
         # Final df. Don't change these headings. Rather change the ones above
         final_df_ok_sales = df_okf_merged[['Start Date','SKU No.', 'Product Code', 'Forecast Group','Store Name','SOH Qty','Sales Qty','Total Amt']]
-        final_df_okf_p = df_okf_merged[['Product Code','Product Description','Sales Qty','Total Amt']]
+        final_df_okf_p = df_okf_merged[['Product Description','Sales Qty','Total Amt']]
         final_df_okf_s = df_okf_merged[['Store Name','Total Amt']]   
 
         # Show final df
@@ -1619,8 +1618,7 @@ elif option == 'Pep-Africa':
         df_pepaf_data = df_pepaf_data.iloc[2:]
         df_pepaf_data = df_pepaf_data.rename(columns={'Style Code': 'SKU No.'})
         df_pepaf_data['Store Name'] = df_pepaf_data['Country Code'].map(Country_Dict)
-        df_pepaf_data = df_pepaf_data.rename(columns={Wk_sales: 'Sales Qty'})
-        df_pepaf_data = df_pepaf_data.rename(columns={'WSOH': 'SOH Qty'})
+        df_pepaf_data = df_pepaf_data.rename(columns={'Total': 'SOH Qty'})
         
         # Merge with retailer map
         df_pepaf_merged = df_pepaf_data.merge(df_pepaf_retailers_map, how='left', on='SKU No.')
@@ -1651,15 +1649,15 @@ elif option == 'Pep-Africa':
         df_pepaf_merged['Start Date'] = Date_Start
 
         # Total amount column
+        df_pepaf_merged = df_pepaf_merged.rename(columns={Wk_sales: 'Sales Qty'})
         df_pepaf_merged['Total Amt'] = df_pepaf_merged['Sales Qty'] * df_pepaf_merged['RSP']
-        df_pepaf_merged['Total Amt'] = df_pepaf_merged['Total Amt'].apply(lambda x: round(x,2))
 
         # Add retailer column
         df_pepaf_merged['Forecast Group'] = 'Pep Africa'
 
         # Don't change these headings. Rather change the ones above
         final_df_pepaf = df_pepaf_merged[['Start Date','SKU No.', 'Product Code', 'Forecast Group','Store Name','SOH Qty','Sales Qty','Total Amt']]
-        final_df_pepaf_p = df_pepaf_merged[['Product Code','Style Description', 'Sales Qty','Total Amt']]
+        final_df_pepaf_p = df_pepaf_merged[['Product Code','Product Description','Sales Qty','Total Amt']]
         final_df_pepaf_s = df_pepaf_merged[['Store Name','Total Amt']]   
 
         # Show final df
@@ -1669,7 +1667,7 @@ elif option == 'Pep-Africa':
         st.write('**Number of units sold:** '"{:0,.0f}".format(total_units).replace(',', ' '))
         st.write('')
         st.write('**Top 10 products for the week:**')
-        grouped_df_pt = final_df_pepaf_p.groupby("Style Description").sum().sort_values("Total Amt", ascending=False)
+        grouped_df_pt = final_df_pepaf_p.groupby("Product Description").sum().sort_values("Total Amt", ascending=False)
         grouped_df_final_pt = grouped_df_pt[['Sales Qty', 'Total Amt']].head(10)
         st.table(grouped_df_final_pt.style.format({'Sales Qty':'{:,.0f}','Total Amt':'R{:,.2f}'}))
         st.write('')
@@ -1679,7 +1677,7 @@ elif option == 'Pep-Africa':
         st.table(grouped_df_final_st.style.format('R{0:,.2f}'))
         st.write('')
         st.write('**Bottom 10 products for the week:**')
-        grouped_df_pb = final_df_pepaf_p.groupby("Style Description").sum().sort_values("Total Amt", ascending=False)
+        grouped_df_pb = final_df_pepaf_p.groupby("Product Description").sum().sort_values("Total Amt", ascending=False)
         grouped_df_final_pb = grouped_df_pb[['Sales Qty', 'Total Amt']].tail(10)
         st.table(grouped_df_final_pb.style.format({'Sales Qty':'{:,.0f}','Total Amt':'R{:,.2f}'}))
         st.write('')
