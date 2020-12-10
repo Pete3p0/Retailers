@@ -1220,7 +1220,7 @@ elif option == 'Makro':
         df_missing_unique_2 = df_missing_2.drop_duplicates()
         st.write("The following products are missing the RSP on the map: ")
         st.table(df_missing_unique_2)
-        df_makro_merged
+        
 
     except:
         st.markdown("**Retailer map column headings:** Article, SMD Product Code, SMD Description")
