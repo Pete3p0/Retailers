@@ -1428,7 +1428,7 @@ elif option == 'Ok-Furniture':
 
         # Final df. Don't change these headings. Rather change the ones above
         final_df_ok_sales = df_okf_merged[['Start Date','SKU No.', 'Product Code', 'Forecast Group','Store Name','SOH Qty','Sales Qty','Total Amt']]
-        final_df_okf_p = df_okf_merged[['Product Description','Sales Qty','Total Amt']]
+        final_df_okf_p = df_okf_merged[['Product Code', 'Product Description','Sales Qty','Total Amt']]
         final_df_okf_s = df_okf_merged[['Store Name','Total Amt']]   
 
         # Show final df
