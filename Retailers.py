@@ -42,7 +42,7 @@ Country_Dict = {'AO':'Angola', 'MW':'Malawi', 'MZ':'Mozambique', 'NG':'Nigeria',
 
 option = st.selectbox(
     'Please select a retailer:',
-    ('Please select','Ackermans','Bradlows/Russels','Builders','Checkers','Clicks','Dealz','Dis-Chem','Dis-Chem-Pharmacies', 'H&H','HiFi','Incredible-Connection','Makro', 'Musica','Ok-Furniture', 'Outdoor-Warehouse','Pep-Africa','Pep-SA','PnP','Sportsmans-Warehouse','Takealot','TFG'))
+    ('Please select','Ackermans','Bradlows/Russels','Builders','Checkers','Clicks','Dealz','Dis-Chem','Dis-Chem-Pharmacies', 'H&H','HiFi','Incredible-Connection','Makro', 'Mr-Price-Sport', 'Musica','Ok-Furniture', 'Outdoor-Warehouse','Pep-Africa','Pep-SA','PnP','Sportsmans-Warehouse','Takealot','TFG'))
 st.write('You selected:', option)
 
 st.write("")
@@ -1311,7 +1311,96 @@ elif option == 'Makro':
     except:
         st.write('Check data')
 
-# Musica
+# Mr Price Sport
+elif option == 'Mr-Price-Sport':
+    try:
+        # Get retailers map
+        df_mrp_retailers_map = df_map
+        df_mrp_retailers_map.columns = df_mrp_retailers_map.columns.astype(str).str.strip()
+        df_mrp_retailers_map = df_mrp_retailers_map.rename(columns={'RRP':'RSP'})
+        df_mrp_retailers_map = df_mrp_retailers_map.rename(columns={'Retailer Item No.':'Item Number'})
+        df_retailers_map_mrp_final = df_mrp_retailers_map[['Item Number','SMD Code', 'Product Description', 'RSP']]
+
+
+        # Get retailer data
+        df_mrp_data = df_data
+        df_mrp_data.columns = df_mrp_data.iloc[1]
+        df_mrp_data = df_mrp_data.iloc[2:]  
+        df_mrp_data.columns = df_mrp_data.columns.astype(str).str.strip()
+
+        # Merge with retailer map
+        df_mrp_merged = df_mrp_data.merge(df_retailers_map_mrp_final, how='left', on='Item Number') 
+
+        # Rename columns
+        df_mrp_merged = df_mrp_merged.rename(columns={'Item Number': 'SKU No.'})
+        df_mrp_merged = df_mrp_merged.rename(columns={'T/Y SalesValue': 'Total Amt'})
+        df_mrp_merged = df_mrp_merged.rename(columns={'T/Y SalesUnits': 'Sales Qty'})
+        df_mrp_merged = df_mrp_merged.rename(columns={'T/Y Open SOHUnits': 'SOH Qty'})
+        df_mrp_merged = df_mrp_merged.rename(columns={'SMD Code': 'Product Code'})
+
+        # Find missing data
+        missing_model = df_mrp_merged['Product Code'].isnull()
+        df_mrp_missing_model = df_mrp_merged[missing_model]
+        df_missing = df_mrp_missing_model[['SKU No.','Item Description']]
+        df_missing_unique = df_missing.drop_duplicates()
+        st.write("The following products are missing the SMD code on the map: ")
+        st.table(df_missing_unique)
+
+    except:
+        st.markdown("**Retailer map column headings:** Retailer Item No., SMD Code, Product Description")
+        st.markdown("**Retailer data column headings:** Branch Description, Item Number, Item Description, T/Y SalesUnits, T/Y SalesValue, T/Y Open SOHUnits")
+        st.markdown("Column headings are **case sensitive.** Please make sure they are correct")
+
+    try:
+        # Set date columns
+        df_mrp_merged['Start Date'] = Date_Start
+
+        # Add retailer column and Store Name
+        df_mrp_merged['Forecast Group'] = 'Mr Price Sport'
+        df_mrp_merged['Store Name'] = df_mrp_merged['Branch Description'].str.title()
+
+        # Don't change these headings. Rather change the ones above
+        final_df_mrp = df_mrp_merged[['Start Date','SKU No.', 'Product Code', 'Forecast Group','Store Name','SOH Qty','Sales Qty','Total Amt']]
+        final_df_mrp_p = df_mrp_merged[['Product Code','Product Description','Sales Qty','Total Amt']]
+        final_df_mrp_s = df_mrp_merged[['Store Name','Total Amt']]        
+
+        # Show final df
+        total = final_df_mrp['Total Amt'].sum()
+        total_units = final_df_mrp['Sales Qty'].sum()
+        st.write('**The total sales for the week are:** R',"{:0,.2f}".format(total).replace(',', ' '))
+        st.write('**Number of units sold:** '"{:0,.0f}".format(total_units).replace(',', ' '))
+        st.write('')
+        st.write('**Top 10 products for the week:**')
+        grouped_df_pt = final_df_mrp_p.groupby("Product Description").sum().sort_values("Total Amt", ascending=False)
+        grouped_df_final_pt = grouped_df_pt[['Sales Qty', 'Total Amt']].head(10)
+        st.table(grouped_df_final_pt.style.format({'Sales Qty':'{:,.0f}','Total Amt':'R{:,.2f}'}))
+        st.write('')
+        st.write('**Top 10 stores for the week:**')
+        grouped_df_st = final_df_mrp_s.groupby("Store Name").sum().sort_values("Total Amt", ascending=False)
+        grouped_df_final_st = grouped_df_st[['Total Amt']].head(10)
+        st.table(grouped_df_final_st.style.format('R{0:,.2f}'))
+        st.write('')
+        st.write('**Bottom 10 products for the week:**')
+        grouped_df_pb = final_df_mrp_p.groupby("Product Description").sum().sort_values("Total Amt", ascending=False)
+        grouped_df_final_pb = grouped_df_pb[['Sales Qty', 'Total Amt']].tail(10)
+        st.table(grouped_df_final_pb.style.format({'Sales Qty':'{:,.0f}','Total Amt':'R{:,.2f}'}))
+        st.write('')
+        st.write('**Bottom 10 stores for the week:**')
+        grouped_df_sb = final_df_mrp_s.groupby("Store Name").sum().sort_values("Total Amt", ascending=False)
+        grouped_df_final_sb = grouped_df_sb[['Total Amt']].tail(10)
+        st.table(grouped_df_final_sb.style.format('R{0:,.2f}'))
+        st.write('**Final Dataframe:**')          
+        final_df_mrp
+
+        # Output to .xlsx
+        st.write('Please ensure that no products are missing before downloading!')
+        st.markdown(get_table_download_link(final_df_mrp), unsafe_allow_html=True)
+
+    except:
+        st.write('Check data')
+
+
+        # Musica
 elif option == 'Musica':
     try:
         # Get retailers map
@@ -1326,7 +1415,7 @@ elif option == 'Musica':
         df_musica_data = df_musica_data.rename(columns={'SKU No.': 'Musica Code'})
         df_musica_data = df_musica_data.rename(columns={'Sales.Qty': 'Sales Qty'})  
 
-        #Merge with retailer map
+        # Merge with retailer map
         df_musica_merged = df_musica_data.merge(df_retailers_map_musica_final, how='left', on='Musica Code')  
 
         # Find missing data
@@ -1402,6 +1491,7 @@ elif option == 'Musica':
         st.markdown(get_table_download_link(final_df_musica), unsafe_allow_html=True)
     except:
         st.write('Check data')
+
 
 # Ok Furniture
 elif option == 'Ok-Furniture':
