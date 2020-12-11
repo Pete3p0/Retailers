@@ -67,6 +67,7 @@ if option == 'Ackermans':
         df_ackermans_retailers_map = df_map
         df_ackermans_retailers_map.columns = df_ackermans_retailers_map.iloc[1]
         df_ackermans_retailers_map = df_ackermans_retailers_map.iloc[2:]
+        df_ackermans_retailers_map.columns = df_ackermans_retailers_map.columns.astype(str).str.strip()
         df_ackermans_retailers_map = df_ackermans_retailers_map.rename(columns={'Style Code': 'SKU No.'})
         df_ackermans_retailers_map_final = df_ackermans_retailers_map[['SKU No.','Product Description','SMD Product Code','SMD RSP']]
 
@@ -74,6 +75,7 @@ if option == 'Ackermans':
         df_ackermans_data = df_data
         df_ackermans_data.columns = df_ackermans_data.iloc[6]
         df_ackermans_data = df_ackermans_data.iloc[7:]
+        df_ackermans_data.columns = df_ackermans_data.columns.astype(str).str.strip()
 
         # Merge with retailer map
         df_ackermans_data['SKU No.'] = df_ackermans_data['Style Code'].astype(int)
@@ -165,11 +167,13 @@ elif option == 'Bradlows/Russels':
     try:
         # Get retailers map
         df_br_retailers_map = df_map
+        df_br_retailers_map.columns = df_br_retailers_map.columns.astype(str).str.strip()
         df_br_retailers_map = df_br_retailers_map.rename(columns={'Article Number':'SKU No. B&R'})
         df_br_retailers_map = df_br_retailers_map[['SKU No. B&R','Product Code','Product Description','RSP']]
 
         # Get retailer data
         df_br_data = df_data
+        df_br_data.columns = df_br_data.columns.astype(str).str.strip()
         df_br_data.columns = df_br_data.iloc[1]
         df_br_data = df_br_data.iloc[2:]
 
@@ -283,6 +287,7 @@ elif option == 'Builders':
     try:
         # Get retailers map
         df_bw_retailers_map = df_map
+        df_bw_retailers_map.columns = df_bw_retailers_map.columns.astype(str).str.strip()
         df_bw_retailers_map = df_bw_retailers_map.rename(columns={'SMD Description':'Product Description'})
         df_retailers_map_bw_final = df_bw_retailers_map[['Article','SMD Product Code','Product Description']]
 
@@ -290,7 +295,8 @@ elif option == 'Builders':
         df_bw_data = df_data
         df_bw_data.columns = df_bw_data.iloc[6]
         df_bw_data = df_bw_data.iloc[8:]
-        df_bw_data = df_bw_data.rename(columns={'  Incl SP': 'RSP'})
+        df_bw_data.columns = df_bw_data.columns.astype(str).str.strip()
+        df_bw_data = df_bw_data.rename(columns={'Incl SP': 'RSP'})
         df_bw_data = df_bw_data[df_bw_data['Article Description'].notna()]
         df_bw_data['RSP'] = df_bw_data['RSP'].replace(',','', regex=True)
         df_bw_data['RSP'] = df_bw_data['RSP'].astype(float)
@@ -395,17 +401,20 @@ elif option == 'Checkers':
     try:
         # Get retailers data
         df_checkers_retailers_map = df_map
+        df_checkers_retailers_map.columns = df_checkers_retailers_map.columns.astype(str).str.strip()
 
         # Get retailer data
         df_checkers_data = df_data
         df_checkers_data.columns = df_checkers_data.iloc[2]
         df_checkers_data = df_checkers_data.iloc[3:]
+        df_checkers_data.columns = df_checkers_data.columns.astype(str).str.strip()
         df_checkers_data = df_checkers_data.rename(columns={'Item Code': 'Article'})
         df_checkers_data['Lookup'] = df_checkers_data['Article'].astype(str) + df_checkers_data['Branch']
 
         # Get stock on hand
         df_checkers_soh.columns = df_checkers_soh.iloc[2]
         df_checkers_soh = df_checkers_soh.iloc[3:]
+        df_checkers_soh.columns = df_checkers_soh.columns.astype(str).str.strip()
         df_checkers_soh = df_checkers_soh.rename(columns={'Item Code': 'Article'})
         df_checkers_soh = df_checkers_soh.rename(columns={'Stock Qty':'SOH Qty'})
         df_checkers_soh['Lookup'] = df_checkers_soh['Article'].astype(str) + df_checkers_soh['Branch']
@@ -500,12 +509,14 @@ elif option == 'Clicks':
     try:
         # Get retailers map
         df_clicks_retailers_map = df_map
+        df_clicks_retailers_map.columns = df_clicks_retailers_map.columns.astype(str).str.strip()
         df_retailers_map_clicks_final = df_clicks_retailers_map[['Clicks Product Number','SMD CODE','SMD DESC','RSP']]
 
         # Get retailer data
         df_clicks_data = df_data
         df_clicks_data.columns = df_clicks_data.iloc[3]
         df_clicks_data = df_clicks_data.iloc[5:]
+        df_clicks_data.columns = df_clicks_data.columns.astype(str).str.strip()
 
         # Drop result rows
         df_clicks_data.drop(df_clicks_data[df_clicks_data['Product Status'] == 'Sum:'].index, inplace = True) 
@@ -599,6 +610,7 @@ elif option == 'Dealz':
     try:
         # Get retailers map
         df_dealz_retailers_map = df_map
+        df_dealz_retailers_map.columns = df_dealz_retailers_map.columns.astype(str).str.strip()
         df_retailers_map_dealz_final = df_dealz_retailers_map[['Style Code','Product Code','Product Description']]
 
         # Get retailer data
@@ -608,6 +620,7 @@ elif option == 'Dealz':
         s = pd.Series(df_dealz_data.columns)
         s = s.fillna('Unnamed: ' + (s.groupby(s.isnull()).cumcount() + 1).astype(str))
         df_dealz_data.columns = s
+        df_dealz_data.columns = df_dealz_data.columns.astype(str).str.strip()
 
         # Create SOH
         df_dealz_data['SOH Qty'] = df_dealz_data['Unnamed: 3'].astype(float) + df_dealz_data['Unnamed: 4'].astype(float)
@@ -697,11 +710,13 @@ elif option == 'Dis-Chem':
         
         # Get retailers map
         df_dischem_retailers_map = df_map
+        df_dischem_retailers_map.columns = df_dischem_retailers_map.columns.astype(str).str.strip()
         df_dischem_retailers_map = df_dischem_retailers_map.rename(columns={'Description': 'Product Description'})
         df_retailers_map_dischem_final = df_dischem_retailers_map[['Article Code','SMD Code','Product Description','RSP']]
 
         # Get retailer data
         df_dischem_data = df_data
+        df_dischem_data.columns = df_dischem_data.columns.astype(str).str.strip()
 
         # Merge with retailer map
         df_dischem_merged = df_dischem_data.merge(df_retailers_map_dischem_final, how='left', on='Article Code')
@@ -791,11 +806,13 @@ elif option == 'Dis-Chem-Pharmacies':
         
         # Get retailers map
         df_dischemp_retailers_map = df_map
+        df_dischemp_retailers_map.columns = df_dischemp_retailers_map.columns.astype(str).str.strip()
         df_dischemp_retailers_map = df_dischemp_retailers_map.rename(columns={'Description': 'Product Description'})
         df_retailers_map_dischemp_final = df_dischemp_retailers_map[['Article Code','SMD Code','Product Description','RSP']]
 
         # Get retailer data
         df_dischemp_data = df_data
+        df_dischemp_data.columns = df_dischemp_data.columns.astype(str).str.strip()
 
         # Merge with retailer map
         df_dischemp_merged = df_dischemp_data.merge(df_retailers_map_dischemp_final, how='left', on='Article Code')
@@ -884,18 +901,21 @@ elif option == 'HiFi':
 
         # Get retailers map
         df_hifi_retailer_map = df_map
+        df_hifi_retailer_map.columns = df_hifi_retailer_map.columns.astype(str).str.strip()
                
 
         # Get previous week
         hifi_data_prev = st.file_uploader('Previous week', type='xlsx')
         if hifi_data_prev:
             df_hifi_data_prev = pd.read_excel(hifi_data_prev)
+        df_hifi_data_prev.columns = df_hifi_data_prev.columns.astype(str).str.strip()
         df_hifi_data_prev['Lookup'] = df_hifi_data_prev['Material'].astype(str) + df_hifi_data_prev['Plant']
         df_hifi_data_prev = df_hifi_data_prev.rename(columns={Units_Sold: 'Prev Sales'})
         df_hifi_data_prev = df_hifi_data_prev[['Lookup','Prev Sales']]
 
         # Get current week
         df_hifi_data = df_data
+        df_hifi_data.columns = df_hifi_data.columns.astype(str).str.strip()
         df_hifi_data['Lookup'] = df_hifi_data['Material'].astype(str) + df_hifi_data['Plant']
 
         # Merge with retailer map and previous week
@@ -985,12 +1005,14 @@ elif option == 'H&H':
     try:
         # Get retailers map
         df_hh_retailers_map = df_map
+        df_hh_retailers_map.columns = df_hh_retailers_map.columns.astype(str).str.strip()
         df_hh_retailers_map_final = df_hh_retailers_map[['SKU Number','SMD Product Code','SMD Description']]
 
         # Get previous week
         hh_data_prev = st.file_uploader('Previous week', type='xlsx')
         if hh_data_prev:
             df_hh_data_prev = pd.read_excel(hh_data_prev)
+        df_hh_data_prev.columns = df_hh_data_prev.columns.astype(str).str.strip()
         df_hh_data_prev['Lookup'] = df_hh_data_prev['SKU Number'].astype(str) + df_hh_data_prev['Brn No'].astype(str)
         df_hh_data_prev = df_hh_data_prev.rename(columns={'Qty Sold': 'Prev Qty'})
         df_hh_data_prev = df_hh_data_prev.rename(columns={'Sold RSP': 'Prev Amt'})
@@ -998,6 +1020,7 @@ elif option == 'H&H':
 
         # Get current week
         df_hh_data = df_data
+        df_hh_data.columns = df_hh_data.columns.astype(str).str.strip()
         df_hh_data['Lookup'] = df_hh_data['SKU Number'].astype(str) + df_hh_data['Brn No'].astype(str)
 
         # Merge with retailer map and previous week
@@ -1082,18 +1105,21 @@ elif option == 'Incredible-Connection':
 
         # Get retailers map
         df_ic_retailers_map = df_map
+        df_ic_retailers_map.columns = df_ic_retailers_map.columns.astype(str).str.strip()
         
 
         # Get previous week
         ic_data_prev = st.file_uploader('Previous week', type='xlsx')
         if ic_data_prev:
             df_ic_data_prev = pd.read_excel(ic_data_prev)
+        df_ic_data_prev.columns = df_ic_data_prev.columns.astype(str).str.strip()
         df_ic_data_prev['Lookup'] = df_ic_data_prev['Article'].astype(str) + df_ic_data_prev['Site']
         df_ic_data_prev = df_ic_data_prev.rename(columns={Units_Sold: 'Prev Sales'})
         df_ic_data_prev_final = df_ic_data_prev[['Lookup','Prev Sales']]
 
         # Get current week
         df_ic_data = df_data
+        df_ic_data.columns = df_ic_data.columns.astype(str).str.strip()
         df_ic_data['Lookup'] = df_ic_data['Article'].astype(str) + df_ic_data['Site']
 
         # Rename columns
@@ -1193,11 +1219,13 @@ elif option == 'Makro':
     try:
         # Get retailers map
         df_makro_retailers_map = df_map
+        df_makro_retailers_map.columns = df_makro_retailers_map.columns.astype(str).str.strip()
         df_makro_retailers_map = df_makro_retailers_map.rename(columns={'SMD Description': 'Product Description'})
         df_retailers_map_makro_final = df_makro_retailers_map[['Article','SMD Product Code','Product Description']]
 
         # Get retailer data
         df_makro_data = df_data
+        df_makro_data.columns = df_makro_data.columns.astype(str).str.strip()
         df_makro_data = df_makro_data.rename(columns={'Incl SP': 'RSP'})
 
         # Merge with retailer map 
@@ -1288,15 +1316,19 @@ elif option == 'Musica':
     try:
         # Get retailers map
         df_musica_retailers_map = df_map
+        df_musica_retailers_map.columns = df_musica_retailers_map.columns.astype(str).str.strip()
         df_musica_retailers_map = df_musica_retailers_map.rename(columns={'SMD Desc': 'Product Description'})
         df_retailers_map_musica_final = df_musica_retailers_map[['Musica Code','SMD code','Product Description','RSP']]
 
         # Get retailer data
         df_musica_data = df_data
+        df_musica_data.columns = df_musica_data.columns.astype(str).str.strip()
         df_musica_data = df_musica_data.rename(columns={'SKU No.': 'Musica Code'})
         df_musica_data = df_musica_data.rename(columns={'Sales.Qty': 'Sales Qty'})  
+
         #Merge with retailer map
-        df_musica_merged = df_musica_data.merge(df_retailers_map_musica_final, how='left', on='Musica Code')    
+        df_musica_merged = df_musica_data.merge(df_retailers_map_musica_final, how='left', on='Musica Code')  
+
         # Find missing data
         missing_model = df_musica_merged['SMD code'].isnull()
         df_musica_missing_model = df_musica_merged[missing_model]
@@ -1377,12 +1409,14 @@ elif option == 'Ok-Furniture':
     try:
         # Get retailers map
         df_okf_retailers_map = df_map
+        df_okf_retailers_map.columns = df_okf_retailers_map.columns.astype(str).str.strip()
         df_okf_retailers_map_final = df_okf_retailers_map[['SKU Number','SMD Product Code','SMD Description']]
 
         # Get previous week
         okf_data_prev = st.file_uploader('Previous week', type='xlsx')
         if okf_data_prev:
             df_okf_data_prev = pd.read_excel(okf_data_prev)
+        df_okf_data_prev.columns = df_okf_data_prev.columns.astype(str).str.strip()
         df_okf_data_prev['Lookup'] = df_okf_data_prev['SKU Number'].astype(str) + df_okf_data_prev['Brn No'].astype(str)
         df_okf_data_prev = df_okf_data_prev.rename(columns={'Qty Sold': 'Prev Qty'})
         df_okf_data_prev = df_okf_data_prev.rename(columns={'Sold RSP': 'Prev Amt'})
@@ -1390,6 +1424,7 @@ elif option == 'Ok-Furniture':
 
         # Get current week
         df_okf_data = df_data
+        df_okf_data.columns = df_okf_data.columns.astype(str).str.strip()
         df_okf_data['Lookup'] = df_okf_data['SKU Number'].astype(str) + df_okf_data['Brn No'].astype(str)
 
         # Merge with retailer map and previous week
@@ -1479,6 +1514,7 @@ elif option == 'Outdoor-Warehouse':
     try:
         # Get retailers map
         df_ow_retailers_map = df_map
+        df_ow_retailers_map.columns = df_ow_retailers_map.columns.astype(str).str.strip()
         df_ow_retailers_map = df_ow_retailers_map.rename(columns={'SKUCode': 'Article Code'})
         df_ow_retailers_map = df_ow_retailers_map.rename(columns={'SMD Desc': 'Product Description'})
         df_retailers_map_ow_final = df_ow_retailers_map[['Article Code','SMD Code','Product Description','RSP']]
@@ -1486,6 +1522,7 @@ elif option == 'Outdoor-Warehouse':
         # Get retailer data
         df_ow_data = df_data
         df_ow_data = df_ow_data.iloc[1:]
+        df_ow_data.columns = df_ow_data.columns.astype(str).str.strip()
 
         # Get rid of extra columns
         del df_ow_data['Code']
@@ -1612,11 +1649,13 @@ elif option == 'Pep-Africa':
 
         # Get retailers map
         df_pepaf_retailers_map = df_map
+        df_pepaf_retailers_map.columns = df_pepaf_retailers_map.columns.astype(str).str.strip()
 
         # Get retailer data
         df_pepaf_data = df_data
         df_pepaf_data.columns = df_pepaf_data.iloc[1]
         df_pepaf_data = df_pepaf_data.iloc[2:]
+        df_pepaf_data.columns = df_pepaf_data.columns.astype(str).str.strip()
         df_pepaf_data = df_pepaf_data.rename(columns={'Style Code': 'SKU No.'})
         df_pepaf_data['Store Name'] = df_pepaf_data['Country Code'].map(Country_Dict)
         df_pepaf_data = df_pepaf_data.rename(columns={'Total': 'SOH Qty'})
@@ -1830,10 +1869,12 @@ elif option == 'PnP':
     try:
         # Get retailers map
         df_pnp_retailers_map = df_map
+        df_pnp_retailers_map.columns = df_pnp_retailers_map.columns.astype(str).str.strip()
         df_retailers_map_pnp_final = df_pnp_retailers_map[['Article Number','SMD code','Product Description', 'RSP']]
         
         # Get retailer data
         df_pnp_data = df_data
+        df_pnp_data.columns = df_pnp_data.columns.astype(str).str.strip()
         df_pnp_data = df_pnp_data.rename(columns={'PnP ArticleNumber': 'Article Number'})
         df_pnp_data = df_pnp_data.rename(columns={'Product Description': 'Article Desc'})
         df_pnp_data = df_pnp_data.rename(columns={'Store': 'Store Name'})
@@ -1941,6 +1982,7 @@ elif option == 'Sportsmans-Warehouse':
     try:
         # Get retailers map
         df_sw_retailers_map = df_map
+        df_sw_retailers_map.columns = df_sw_retailers_map.columns.astype(str).str.strip()
         df_sw_retailers_map = df_sw_retailers_map.rename(columns={'SKUCode': 'Article Code'})
         df_sw_retailers_map = df_sw_retailers_map.rename(columns={'Description': 'Product Description'})
         df_retailers_map_sw_final = df_sw_retailers_map[['Article Code','SMD Code', 'Product Description', 'RSP']]
@@ -1948,6 +1990,7 @@ elif option == 'Sportsmans-Warehouse':
         # Get retailer data
         df_sw_data = df_data
         df_sw_data = df_sw_data.iloc[1:]
+        df_sw_data.columns = df_sw_data.columns.astype(str).str.strip()
 
         # Get rid of extra columns
         del df_sw_data['Code']
@@ -1971,6 +2014,7 @@ elif option == 'Sportsmans-Warehouse':
 
         # Get stock on hand
         df_sw_soh = df_sw_soh.iloc[1:]
+        df_sw_soh.columns = df_sw_soh.columns.astype(str).str.strip()
         del df_sw_soh['Code']
         del df_sw_soh['Colour']
         del df_sw_soh['Total']
@@ -2067,10 +2111,12 @@ elif option == 'Takealot':
     try:
         # Get retailers map
         df_takealot_retailers_map = df_map
+        df_takealot_retailers_map.columns = df_takealot_retailers_map.columns.astype(str).str.strip()
         df_takealot_retailers_map = df_takealot_retailers_map.rename(columns={'Description': 'Product Description'})
         df_retailers_map_takealot_final = df_takealot_retailers_map[['idProduct','Product Description','Manufacturer','SMD Code','RSP']]
         # Get retailer data
         df_takealot_data = df_data
+        df_takealot_data.columns = df_takealot_data.columns.astype(str).str.strip()
         df_takealot_data = df_takealot_data.iloc[1:]
         #Merge with retailer map
         df_takealot_merged = df_takealot_data.merge(df_retailers_map_takealot_final, how='left', on='idProduct')    
@@ -2154,11 +2200,14 @@ elif option == 'TFG':
     try:
         # Get retailers map
         df_tfg_retailers_map = df_map
+        df_tfg_retailers_map.columns = df_tfg_retailers_map.columns.astype(str).str.strip()
         df_tfg_retailers_map = df_tfg_retailers_map.rename(columns={'DES':'Product Description'})
         df_retailers_map_tfg_final = df_tfg_retailers_map[['Article Code','Code','Product Description','RSP']]
         
         # Get retailer data
         df_tfg_data = df_data
+        df_tfg_data.columns = df_tfg_data.columns.astype(str).str.strip()
+
         # Apply the split string method on the Style code to get the SKU No. out
         df_tfg_data['Article Code'] = df_tfg_data['Style'].astype(str).str.split(' ').str[0]
         # Convert to float
