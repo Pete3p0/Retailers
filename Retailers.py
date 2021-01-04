@@ -1903,7 +1903,6 @@ elif option == 'Pep-SA':
         st.markdown("Column headings are **case sensitive.** Please make sure they are correct")
         
     try:
-        df_pep_merged.columns
         # Set date columns
         df_pep_merged['Start Date'] = Date_Start
 
