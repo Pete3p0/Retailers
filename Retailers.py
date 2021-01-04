@@ -293,8 +293,8 @@ elif option == 'Builders':
 
         # Get retailer data
         df_bw_data = df_data
-        df_bw_data.columns = df_bw_data.iloc[6]
-        df_bw_data = df_bw_data.iloc[8:]
+        # df_bw_data.columns = df_bw_data.iloc[6]
+        # df_bw_data = df_bw_data.iloc[8:]
         df_bw_data.columns = df_bw_data.columns.astype(str).str.strip()
         df_bw_data = df_bw_data.rename(columns={'Incl SP': 'RSP'})
         df_bw_data = df_bw_data[df_bw_data['Article Description'].notna()]
