@@ -1211,6 +1211,10 @@ elif option == 'Incredible-Connection':
 
 elif option == 'Makro':
     Week = st.text_input("Enter week number: ")
+    if int(Week) < 10:
+        Week = str(0) + str(Week)
+    else:
+        Week = Week
     weekly_sales = Week+'-'+Year
     makro_stores = st.file_uploader('Stores', type='xlsx')
     if makro_stores:
@@ -1897,13 +1901,14 @@ elif option == 'Pep-SA':
         st.markdown("**Retailer map column headings:** Style Code, Product Code, Product Description, RSP")
         st.markdown("**Retailer data column headings:** Style Code, Month, Total Company Stock")
         st.markdown("Column headings are **case sensitive.** Please make sure they are correct")
-
+        
     try:
+        df_pep_merged.columns
         # Set date columns
         df_pep_merged['Start Date'] = Date_Start
 
         # Total amount column
-        df_pep_merged['Total Amt'] = df_pep_merged['Sales Qty'] * df_pep_merged['RSP']
+        df_pep_merged['Total Amt'] = df_pep_merged['Sales Qty'].astype(float) * df_pep_merged['RSP']
         df_pep_merged['Total Amt'] = df_pep_merged['Total Amt'].apply(lambda x: round(x,2))
 
         # Add retailer and store column
@@ -1922,22 +1927,22 @@ elif option == 'Pep-SA':
         st.write('**Number of units sold:** '"{:0,.0f}".format(total_units).replace(',', ' '))
         st.write('')
         st.write('**Top 10 products for the week:**')
-        grouped_df_pt = final_df_pep_p.groupby("Product Description").sum().sort_values("Total Amt", ascending=False)
-        grouped_df_final_pt = grouped_df_pt[['Sales Qty', 'Total Amt']].head(10)
+        grouped_df_pt = final_df_pep_p.groupby(["Product Description"]).agg({"Sales Qty":"sum", "Total Amt":"sum"}).sort_values("Total Amt", ascending=False)
+        grouped_df_final_pt = grouped_df_pt[['Sales Qty','Total Amt']].head(10)
         st.table(grouped_df_final_pt.style.format({'Sales Qty':'{:,.0f}','Total Amt':'R{:,.2f}'}))
         st.write('')
         st.write('**Top 10 stores for the week:**')
-        grouped_df_st = final_df_pep_s.groupby("Store Name").sum().sort_values("Total Amt", ascending=False)
+        grouped_df_st = final_df_pep_s.groupby("Store Name").agg({"Total Amt":"sum"}).sort_values("Total Amt", ascending=False)
         grouped_df_final_st = grouped_df_st[['Total Amt']].head(10)
         st.table(grouped_df_final_st.style.format('R{0:,.2f}'))
         st.write('')
         st.write('**Bottom 10 products for the week:**')
-        grouped_df_pb = final_df_pep_p.groupby("Product Description").sum().sort_values("Total Amt", ascending=False)
-        grouped_df_final_pb = grouped_df_pb[['Sales Qty', 'Total Amt']].tail(10)
+        grouped_df_pb = final_df_pep_p.groupby("Product Description").agg({"Sales Qty":"sum", "Total Amt":"sum"}).sort_values("Total Amt", ascending=False)
+        grouped_df_final_pb = grouped_df_pb[['Sales Qty','Total Amt']].tail(10)
         st.table(grouped_df_final_pb.style.format({'Sales Qty':'{:,.0f}','Total Amt':'R{:,.2f}'}))
         st.write('')
         st.write('**Bottom 10 stores for the week:**')
-        grouped_df_sb = final_df_pep_s.groupby("Store Name").sum().sort_values("Total Amt", ascending=False)
+        grouped_df_sb = final_df_pep_s.groupby("Store Name").agg({"Total Amt":"sum"}).sort_values("Total Amt", ascending=False)
         grouped_df_final_sb = grouped_df_sb[['Total Amt']].tail(10)
         st.table(grouped_df_final_sb.style.format('R{0:,.2f}'))
         st.write('**Final Dataframe:**')  
