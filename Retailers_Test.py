@@ -1183,7 +1183,7 @@ elif option == 'Incredible-Connection':
 # Makro
 
 elif option == 'Makro':
-    Week = st.text_input("Enter week number: ")
+    Week = st.number_input("Enter week number: ")
     weekly_sales = Week+'-'+Year
     makro_stores = st.file_uploader('Stores', type='xlsx')
     if makro_stores:

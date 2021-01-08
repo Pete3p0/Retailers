@@ -1210,11 +1210,11 @@ elif option == 'Incredible-Connection':
 # Makro
 
 elif option == 'Makro':
-    Week = st.text_input("Enter week number: ")
+    Week = st.number_input("Enter week number: ",min_value = 0, value = 0)
     if int(Week) < 10:
         Week = str(0) + str(Week)
     else:
-        Week = Week
+        Week = str(Week)
     weekly_sales = Week+'-'+Year
     makro_stores = st.file_uploader('Stores', type='xlsx')
     if makro_stores:
