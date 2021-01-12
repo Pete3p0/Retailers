@@ -1990,6 +1990,7 @@ elif option == 'PnP':
         df_pnp_merged = df_pnp_merged.rename(columns={'Article Number': 'SKU No.'})
         df_pnp_merged = df_pnp_merged.rename(columns={'SMD code': 'Product Code'})
         df_pnp_merged = df_pnp_merged.rename(columns={'Units': 'Sales Qty'})
+        df_pnp_merged = df_pnp_merged.rename(columns={'Day': 'Start Date'})
 
         # Find missing data
         missing_model = df_pnp_merged['Product Code'].isnull()
@@ -2015,7 +2016,7 @@ elif option == 'PnP':
 
     try:
         # Set date columns
-        df_pnp_merged['Start Date'] = Date_Start
+        # df_pnp_merged['Start Date'] = Date_Start
 
         # Total amount column
         df_pnp_merged['Total Amt'] = df_pnp_merged['Sales Qty'] * df_pnp_merged['RSP']
