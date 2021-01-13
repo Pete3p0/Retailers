@@ -278,8 +278,15 @@ elif option == 'Bradlows/Russels':
 # Builders Warehouse
 
 elif option == 'Builders':
-    Week = st.text_input("Enter week number: ")
+
+    Week = st.number_input("Enter week number: ",min_value = 0, value = 0)
+    if int(Week) < 10:
+        Week = str(0) + str(Week)
+    else:
+        Week = str(Week)
+    
     weekly_sales = Week+'-'+Year[-1:]
+
     bw_stores = st.file_uploader('Stores', type='xlsx')
     if bw_stores:
         df_bw_stores = pd.read_excel(bw_stores)
