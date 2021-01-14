@@ -42,7 +42,7 @@ Country_Dict = {'AO':'Angola', 'MW':'Malawi', 'MZ':'Mozambique', 'NG':'Nigeria',
 
 option = st.selectbox(
     'Please select a retailer:',
-    ('Please select','Ackermans','Bradlows/Russels','Builders','Checkers','Clicks','Dealz','Dis-Chem','Dis-Chem-Pharmacies', 'H&H','HiFi','Incredible-Connection','Makro', 'Mr-Price-Sport', 'Musica','Ok-Furniture', 'Outdoor-Warehouse','Pep-Africa','Pep-SA','PnP','Sportsmans-Warehouse','Takealot','TFG', 'The-Hub'))
+    ('Please select','Ackermans','Bradlows/Russels','Builders','Checkers','Clicks','Dealz', 'Decofurn','Dis-Chem','Dis-Chem-Pharmacies', 'H&H','HiFi','Incredible-Connection','Makro', 'Mr-Price-Sport', 'Musica','Ok-Furniture', 'Outdoor-Warehouse','Pep-Africa','Pep-SA','PnP','Sportsmans-Warehouse','Takealot','TFG'))
 st.write('You selected:', option)
 
 st.write("")
@@ -2393,8 +2393,8 @@ elif option == 'TFG':
         st.write('Check data')
 
 
-# The Hub
-elif option == 'The-Hub':
+# Decofurn
+elif option == 'Decofurn':
     try:
         # Get retailers map
         df_hub_retailers_map = df_map
@@ -2446,7 +2446,7 @@ elif option == 'The-Hub':
         df_hub_merged['Total Amt'] = df_hub_merged['Sales Qty'] * df_hub_merged['RSP']
 
         # Add retailer and store column
-        df_hub_merged['Forecast Group'] = 'The Hub'
+        df_hub_merged['Forecast Group'] = 'Decofurn'
 
         # Don't change these headings. Rather change the ones above
         final_df_hub = df_hub_merged[['Start Date','SKU No.', 'Product Code', 'Forecast Group','Store Name','SOH Qty','Sales Qty','Total Amt']]
