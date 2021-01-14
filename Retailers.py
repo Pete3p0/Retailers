@@ -708,6 +708,100 @@ elif option == 'Dealz':
         st.write('Check data')
 
 
+# Decofurn
+elif option == 'Decofurn':
+    try:
+        # Get retailers map
+        df_dcf_retailers_map = df_map
+        df_dcf_retailers_map.columns = df_dcf_retailers_map.columns.astype(str).str.strip()
+        df_retailers_map_dcf_final = df_dcf_retailers_map[['Article','Product Code', 'SMD Description', 'RSP']]
+        
+        # Get retailer data
+        df_dcf_data = df_data
+        df_dcf_data.columns = df_dcf_data.columns.astype(str).str.strip()
+
+        # Merge with retailer map
+        df_dcf_merged = df_dcf_data.merge(df_retailers_map_dcf_final, how='left', on='Article')
+        df_dcf_merged.columns = df_dcf_merged.columns.str.title()
+
+        # Rename columns
+        df_dcf_merged = df_dcf_merged.rename(columns={'Article': 'SKU No.'})
+        df_dcf_merged = df_dcf_merged.rename(columns={'Soh': 'SOH Qty'})
+        df_dcf_merged = df_dcf_merged.rename(columns={'Rsp': 'RSP'})
+        df_dcf_merged = df_dcf_merged.rename(columns={'Sales '+ str(Short_Date_Dict[Month]): 'Sales Qty'})
+        df_dcf_merged = df_dcf_merged.rename(columns={'Smd Description': 'Product Description'})
+
+        
+        # Find missing data
+        missing_model_dcf = df_dcf_merged['Product Code'].isnull()
+        df_dcf_missing_model = df_dcf_merged[missing_model_dcf]
+        df_missing = df_dcf_missing_model[['SKU No.','Description']]
+        df_missing_unique = df_missing.drop_duplicates()
+        st.write("The following products are missing the SMD code on the map: ")
+        st.table(df_missing_unique)
+
+        st.write(" ")
+        missing_rsp_dcf = df_dcf_merged['RSP'].isnull()
+        df_dcf_missing_rsp = df_dcf_merged[missing_rsp_dcf] 
+        df_missing_2 = df_dcf_missing_rsp[['SKU No.','Description']]
+        df_missing_unique_2 = df_missing_2.drop_duplicates()
+        st.write("The following products are missing the RSP on the map: ")
+        st.table(df_missing_unique_2)
+
+    except:
+        st.markdown("**Retailer map column headings:** Product Code, Article, SMD Description, RSP")
+        st.markdown("**Retailer data column headings:** Article, Description, Store Name, SOH, Sales "+str(Short_Date_Dict[Month]))
+        st.markdown("Column headings are **case sensitive.** Please make sure they are correct")
+
+    try:
+        # Set date columns
+        df_dcf_merged['Start Date'] = Date_Start
+
+        # Total amount column
+        df_dcf_merged['Total Amt'] = df_dcf_merged['Sales Qty'] * df_dcf_merged['RSP']
+
+        # Add retailer and store column
+        df_dcf_merged['Forecast Group'] = 'Decofurn'
+
+        # Don't change these headings. Rather change the ones above
+        final_df_dcf = df_dcf_merged[['Start Date','SKU No.', 'Product Code', 'Forecast Group','Store Name','SOH Qty','Sales Qty','Total Amt']]
+        final_df_dcf_p = df_dcf_merged[['Product Code','Product Description', 'Sales Qty', 'Total Amt']]
+        final_df_dcf_s = df_dcf_merged[['Store Name','Total Amt']]
+
+        # Show final df
+        total = final_df_dcf['Total Amt'].sum()
+        total_units = final_df_dcf['Sales Qty'].sum()
+        st.write('**The total sales for the week are:** R',"{:0,.2f}".format(total).replace(',', ' '))
+        st.write('**Number of units sold:** '"{:0,.0f}".format(total_units).replace(',', ' '))
+        st.write('')
+        st.write('**Top 10 products for the week:**')
+        grouped_df_pt = final_df_dcf_p.groupby(["Product Description"]).agg({"Sales Qty":"sum", "Total Amt":"sum"}).sort_values("Total Amt", ascending=False)
+        grouped_df_final_pt = grouped_df_pt[['Sales Qty','Total Amt']].head(10)
+        st.table(grouped_df_final_pt.style.format({'Sales Qty':'{:,.0f}','Total Amt':'R{:,.2f}'}))
+        st.write('')
+        st.write('**Top 10 stores for the week:**')
+        grouped_df_st = final_df_dcf_s.groupby("Store Name").agg({"Total Amt":"sum"}).sort_values("Total Amt", ascending=False)
+        grouped_df_final_st = grouped_df_st[['Total Amt']].head(10)
+        st.table(grouped_df_final_st.style.format('R{0:,.2f}'))
+        st.write('')
+        st.write('**Bottom 10 products for the week:**')
+        grouped_df_pb = final_df_dcf_p.groupby("Product Description").agg({"Sales Qty":"sum", "Total Amt":"sum"}).sort_values("Total Amt", ascending=False)
+        grouped_df_final_pb = grouped_df_pb[['Sales Qty','Total Amt']].tail(10)
+        st.table(grouped_df_final_pb.style.format({'Sales Qty':'{:,.0f}','Total Amt':'R{:,.2f}'}))
+        st.write('')
+        st.write('**Bottom 10 stores for the week:**')
+        grouped_df_sb = final_df_dcf_s.groupby("Store Name").agg({"Total Amt":"sum"}).sort_values("Total Amt", ascending=False)
+        grouped_df_final_sb = grouped_df_sb[['Total Amt']].tail(10)
+        st.table(grouped_df_final_sb.style.format('R{0:,.2f}'))
+        st.write('**Final Dataframe:**')  
+        final_df_dcf
+
+        # Output to .xlsx
+        st.write('Please ensure that no products are missing before downloading!')
+        st.markdown(get_table_download_link(df_dcf_merged), unsafe_allow_html=True)
+    except:
+        st.write('Check data')
+
 
 # Dis-Chem
 
@@ -2389,101 +2483,6 @@ elif option == 'TFG':
         # Output to .xlsx
         st.write('Please ensure that no products are missing before downloading!')
         st.markdown(get_table_download_link(df_tfg_merged), unsafe_allow_html=True)
-    except:
-        st.write('Check data')
-
-
-# Decofurn
-elif option == 'Decofurn':
-    try:
-        # Get retailers map
-        df_hub_retailers_map = df_map
-        df_hub_retailers_map.columns = df_hub_retailers_map.columns.astype(str).str.strip()
-        df_retailers_map_hub_final = df_hub_retailers_map[['Article','Product Code', 'SMD Description', 'RSP']]
-        
-        # Get retailer data
-        df_hub_data = df_data
-        df_hub_data.columns = df_hub_data.columns.astype(str).str.strip()
-
-        # Merge with retailer map
-        df_hub_merged = df_hub_data.merge(df_retailers_map_hub_final, how='left', on='Article')
-        df_hub_merged.columns = df_hub_merged.columns.str.title()
-
-        # Rename columns
-        df_hub_merged = df_hub_merged.rename(columns={'Article': 'SKU No.'})
-        df_hub_merged = df_hub_merged.rename(columns={'Soh': 'SOH Qty'})
-        df_hub_merged = df_hub_merged.rename(columns={'Rsp': 'RSP'})
-        df_hub_merged = df_hub_merged.rename(columns={'Sales '+ str(Short_Date_Dict[Month]): 'Sales Qty'})
-        df_hub_merged = df_hub_merged.rename(columns={'Smd Description': 'Product Description'})
-
-        
-        # Find missing data
-        missing_model_hub = df_hub_merged['Product Code'].isnull()
-        df_hub_missing_model = df_hub_merged[missing_model_hub]
-        df_missing = df_hub_missing_model[['SKU No.','Description']]
-        df_missing_unique = df_missing.drop_duplicates()
-        st.write("The following products are missing the SMD code on the map: ")
-        st.table(df_missing_unique)
-
-        st.write(" ")
-        missing_rsp_hub = df_hub_merged['RSP'].isnull()
-        df_hub_missing_rsp = df_hub_merged[missing_rsp_hub] 
-        df_missing_2 = df_hub_missing_rsp[['SKU No.','Description']]
-        df_missing_unique_2 = df_missing_2.drop_duplicates()
-        st.write("The following products are missing the RSP on the map: ")
-        st.table(df_missing_unique_2)
-
-    except:
-        st.markdown("**Retailer map column headings:** Article Code, Code, DES, RSP")
-        st.markdown("**Retailer data column headings:** Style, Sls (U), CSOH Incl IT (U)")
-        st.markdown("Column headings are **case sensitive.** Please make sure they are correct")
-
-    try:
-        # Set date columns
-        df_hub_merged['Start Date'] = Date_Start
-
-        # Total amount column
-        df_hub_merged['Total Amt'] = df_hub_merged['Sales Qty'] * df_hub_merged['RSP']
-
-        # Add retailer and store column
-        df_hub_merged['Forecast Group'] = 'Decofurn'
-
-        # Don't change these headings. Rather change the ones above
-        final_df_hub = df_hub_merged[['Start Date','SKU No.', 'Product Code', 'Forecast Group','Store Name','SOH Qty','Sales Qty','Total Amt']]
-        final_df_hub_p = df_hub_merged[['Product Code','Product Description', 'Sales Qty', 'Total Amt']]
-        final_df_hub_s = df_hub_merged[['Store Name','Total Amt']]
-
-        # Show final df
-        total = final_df_hub['Total Amt'].sum()
-        total_units = final_df_hub['Sales Qty'].sum()
-        st.write('**The total sales for the week are:** R',"{:0,.2f}".format(total).replace(',', ' '))
-        st.write('**Number of units sold:** '"{:0,.0f}".format(total_units).replace(',', ' '))
-        st.write('')
-        st.write('**Top 10 products for the week:**')
-        grouped_df_pt = final_df_hub_p.groupby(["Product Description"]).agg({"Sales Qty":"sum", "Total Amt":"sum"}).sort_values("Total Amt", ascending=False)
-        grouped_df_final_pt = grouped_df_pt[['Sales Qty','Total Amt']].head(10)
-        st.table(grouped_df_final_pt.style.format({'Sales Qty':'{:,.0f}','Total Amt':'R{:,.2f}'}))
-        st.write('')
-        st.write('**Top 10 stores for the week:**')
-        grouped_df_st = final_df_hub_s.groupby("Store Name").agg({"Total Amt":"sum"}).sort_values("Total Amt", ascending=False)
-        grouped_df_final_st = grouped_df_st[['Total Amt']].head(10)
-        st.table(grouped_df_final_st.style.format('R{0:,.2f}'))
-        st.write('')
-        st.write('**Bottom 10 products for the week:**')
-        grouped_df_pb = final_df_hub_p.groupby("Product Description").agg({"Sales Qty":"sum", "Total Amt":"sum"}).sort_values("Total Amt", ascending=False)
-        grouped_df_final_pb = grouped_df_pb[['Sales Qty','Total Amt']].tail(10)
-        st.table(grouped_df_final_pb.style.format({'Sales Qty':'{:,.0f}','Total Amt':'R{:,.2f}'}))
-        st.write('')
-        st.write('**Bottom 10 stores for the week:**')
-        grouped_df_sb = final_df_hub_s.groupby("Store Name").agg({"Total Amt":"sum"}).sort_values("Total Amt", ascending=False)
-        grouped_df_final_sb = grouped_df_sb[['Total Amt']].tail(10)
-        st.table(grouped_df_final_sb.style.format('R{0:,.2f}'))
-        st.write('**Final Dataframe:**')  
-        final_df_hub
-
-        # Output to .xlsx
-        st.write('Please ensure that no products are missing before downloading!')
-        st.markdown(get_table_download_link(df_hub_merged), unsafe_allow_html=True)
     except:
         st.write('Check data')
 
