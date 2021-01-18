@@ -668,7 +668,8 @@ elif option == 'Cross_Trainer':
 
         # Add column for retailer and store name
         df_ct_merged['Forecast Group'] = 'Cross Trainer'
-
+        df_ct_merged['Store Name'] = df_ct_merged['Store Name'].str.title()
+        
         # Final df. Don't change these headings. Rather change the ones above
         final_df_ct_sales = df_ct_merged[['Start Date','SKU No.', 'Product Code', 'Forecast Group','Store Name','SOH Qty','Sales Qty','Total Amt']]
         final_df_ct_p = df_ct_merged[['Product Code','Product Description','Sales Qty','Total Amt']]
@@ -695,7 +696,7 @@ elif option == 'Cross_Trainer':
         grouped_df_final_pb = grouped_df_pb[['Sales Qty', 'Total Amt']].tail(10)
         st.table(grouped_df_final_pb.style.format({'Sales Qty':'{:,.0f}','Total Amt':'R{:,.2f}'}))
         st.write('')
-        st.write('**Top 10 stores for the week:**')
+        st.write('**Bottom 10 stores for the week:**')
         grouped_df_sb = final_df_ct_s.groupby("Store Name").sum().sort_values("Total Amt", ascending=False)
         grouped_df_final_sb = grouped_df_sb[['Total Amt']].tail(10)
         st.table(grouped_df_final_sb.style.format('R{0:,.2f}'))
