@@ -42,7 +42,10 @@ Country_Dict = {'AO':'Angola', 'MW':'Malawi', 'MZ':'Mozambique', 'NG':'Nigeria',
 
 option = st.selectbox(
     'Please select a retailer:',
-    ('Please select','Ackermans','Bradlows/Russels','Builders','Checkers','Clicks','Dealz', 'Decofurn','Dis-Chem','Dis-Chem-Pharmacies', 'H&H','HiFi','Incredible-Connection','Makro', 'Mr-Price-Sport', 'Musica','Ok-Furniture', 'Outdoor-Warehouse','Pep-Africa','Pep-SA','PnP','Sportsmans-Warehouse','Takealot','TFG'))
+    ('Please select','Ackermans','Bradlows/Russels','Builders','Checkers',
+    'Clicks','Cross_Trainer','Dealz', 'Decofurn','Dis-Chem','Dis-Chem-Pharmacies', 'H&H','HiFi',
+    'Incredible-Connection','Makro', 'Mr-Price-Sport', 'Musica','Ok-Furniture', 
+    'Outdoor-Warehouse','Pep-Africa','Pep-SA','PnP','Sportsmans-Warehouse','Takealot','TFG'))
 st.write('You selected:', option)
 
 st.write("")
@@ -606,6 +609,103 @@ elif option == 'Clicks':
         st.write('Please ensure that no products are missing before downloading!')
         st.markdown(get_table_download_link(final_df_clicks), unsafe_allow_html=True)
     
+    except:
+        st.write('Check data')
+
+# Cross Trainer
+elif option == 'Cross_Trainer':
+
+    try:
+        # Get retailers map
+        df_ct_retailers_map = df_map
+        df_ct_retailers_map.columns = df_ct_retailers_map.columns.astype(str).str.strip()
+        df_ct_retailers_map = df_ct_retailers_map.rename(columns={'Cross Trainer Product Code':'Item Code'})
+        df_retailers_map_ct_final = df_ct_retailers_map[['Item Code','SMD Product Code', 'SMD Description','RSP']] 
+
+        # Get retailer data
+        df_ct_data = df_data
+        df_ct_data.columns = df_ct_data.iloc[0]
+        df_ct_data = df_ct_data.iloc[1:]
+
+        # Merge with retailer map
+        df_ct_merged = df_ct_data.merge(df_retailers_map_ct_final, how='left', on='Item Code')
+
+        # Rename columns
+        df_ct_merged = df_ct_merged.rename(columns={'Item Code': 'SKU No.'})
+        df_ct_merged = df_ct_merged.rename(columns={'Qty': 'Sales Qty'})
+        df_ct_merged = df_ct_merged.rename(columns={'SOH': 'SOH Qty'})
+        df_ct_merged = df_ct_merged.rename(columns={'SMD Product Code': 'Product Code'})
+        df_ct_merged = df_ct_merged.rename(columns={'Store': 'Store Name'})
+        df_ct_merged = df_ct_merged.rename(columns={'SMD Description': 'Product Description'})
+
+        # Find missing data
+        missing_model_ct = df_ct_merged['Product Code'].isnull()
+        df_ct_missing_model = df_ct_merged[missing_model_ct]
+        df_missing = df_ct_missing_model[['SKU No.','Item Description']]
+        df_missing_unique = df_missing.drop_duplicates()
+        st.write("The following products are missing the SMD code on the map: ")
+        st.table(df_missing_unique)
+
+        st.write(" ")
+        missing_rsp_ct = df_ct_merged['RSP'].isnull()
+        df_ct_missing_rsp = df_ct_merged[missing_model_ct] 
+        df_missing_2 = df_ct_missing_rsp[['SKU No.','Item Description']]
+        df_missing_unique_2 = df_missing_2.drop_duplicates()
+        st.write("The following products are missing the RSP on the map: ")
+        st.table(df_missing_unique_2)
+
+    except:
+        st.markdown("**Retailer map column headings:** SMD Product Code, SMD Description, Cross Trainer Product Code, RSP")
+        st.markdown("**Retailer data column headings:** Store, Item Code, Item Description, SOH, Qty")
+        st.markdown("Column headings are **case sensitive.** Please make sure they are correct")   
+
+    try:
+        # Set date columns
+        df_ct_merged['Start Date'] = Date_Start
+
+        # Add Total Amount column
+        df_ct_merged['Total Amt'] = df_ct_merged['Sales Qty'] * df_ct_merged['RSP']
+
+        # Add column for retailer and store name
+        df_ct_merged['Forecast Group'] = 'Cross Trainer'
+
+        # Final df. Don't change these headings. Rather change the ones above
+        final_df_ct_sales = df_ct_merged[['Start Date','SKU No.', 'Product Code', 'Forecast Group','Store Name','SOH Qty','Sales Qty','Total Amt']]
+        final_df_ct_p = df_ct_merged[['Product Code','Product Description','Sales Qty','Total Amt']]
+        final_df_ct_s = df_ct_merged[['Store Name','Total Amt']]
+
+        # Show final df
+        total = final_df_ct_sales['Total Amt'].sum()
+        total_units = final_df_ct_sales['Sales Qty'].sum()
+        st.write('**The total sales for the week are:** R',"{:0,.2f}".format(total).replace(',', ' '))
+        st.write('**Number of units sold:** '"{:0,.0f}".format(total_units).replace(',', ' '))
+        st.write('')
+        st.write('**Top 10 products for the week:**')
+        grouped_df_pt = final_df_ct_p.groupby(["Product Description"]).agg({"Sales Qty":"sum", "Total Amt":"sum"}).sort_values("Total Amt", ascending=False)
+        grouped_df_final_pt = grouped_df_pt[['Sales Qty', 'Total Amt']].head(10)
+        st.table(grouped_df_final_pt.style.format({'Sales Qty':'{:,.0f}','Total Amt':'R{:,.2f}'}))
+        st.write('')
+        st.write('**Top 10 stores for the week:**')
+        grouped_df_st = final_df_ct_s.groupby("Store Name").sum().sort_values("Total Amt", ascending=False)
+        grouped_df_final_st = grouped_df_st[['Total Amt']].head(10)
+        st.table(grouped_df_final_st.style.format('R{0:,.2f}'))
+        st.write('')
+        st.write('**Bottom 10 products for the week:**')
+        grouped_df_pb = final_df_ct_p.groupby(["Product Description"]).agg({"Sales Qty":"sum", "Total Amt":"sum"}).sort_values("Total Amt", ascending=False)
+        grouped_df_final_pb = grouped_df_pb[['Sales Qty', 'Total Amt']].tail(10)
+        st.table(grouped_df_final_pb.style.format({'Sales Qty':'{:,.0f}','Total Amt':'R{:,.2f}'}))
+        st.write('')
+        st.write('**Top 10 stores for the week:**')
+        grouped_df_sb = final_df_ct_s.groupby("Store Name").sum().sort_values("Total Amt", ascending=False)
+        grouped_df_final_sb = grouped_df_sb[['Total Amt']].tail(10)
+        st.table(grouped_df_final_sb.style.format('R{0:,.2f}'))
+        st.write('**Final Dataframe:**')
+        final_df_ct_sales
+
+        # Output to .xlsx
+        st.write('Please ensure that no products are missing before downloading!')
+        st.markdown(get_table_download_link(final_df_ct_sales), unsafe_allow_html=True)
+
     except:
         st.write('Check data')
 
