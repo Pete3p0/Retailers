@@ -925,7 +925,7 @@ elif option == 'Dis-Chem':
 
         # Rename columns
         df_dischem_merged = df_dischem_merged.rename(columns={'Article Code': 'SKU No.'})
-        df_dischem_merged = df_dischem_merged.rename(columns={'Oct 2020': 'Sales Qty'})
+        df_dischem_merged = df_dischem_merged.rename(columns={Units_Sold: 'Sales Qty'})
         df_dischem_merged = df_dischem_merged.rename(columns={'SMD Code': 'Product Code'})
 
         # Find missing data
@@ -1021,7 +1021,7 @@ elif option == 'Dis-Chem-Pharmacies':
 
         # Rename columns
         df_dischemp_merged = df_dischemp_merged.rename(columns={'Article Code': 'SKU No.'})
-        df_dischemp_merged = df_dischemp_merged.rename(columns={'Oct 2020': 'Sales Qty'})
+        df_dischemp_merged = df_dischemp_merged.rename(columns={Units_Sold: 'Sales Qty'})
         df_dischemp_merged = df_dischemp_merged.rename(columns={'SMD Code': 'Product Code'})
 
         # Find missing data
