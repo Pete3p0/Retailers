@@ -34,7 +34,12 @@ if Date_End.day < 10:
     Day = '0'+str(Date_End.day)
 else:
     Day = str(Date_End.day)
-Month = Date_End.month
+
+if Date_End.month < 10:
+    Month = '0'+str(Date_End.month)
+else:
+    Month = str(Date_End.month)
+
 Year = str(Date_End.year)
 Short_Date_Dict = {1:'Jan', 2:'Feb', 3:'Mar',4:'Apr',5:'May',6:'Jun',7:'Jul',8:'Aug',9:'Sep',10:'Oct',11:'Nov',12:'Dec'}
 Long_Date_Dict = {1:'January', 2:'February', 3:'March',4:'April',5:'May',6:'June',7:'July',8:'August',9:'September',10:'October',11:'November',12:'December'}
