@@ -84,6 +84,7 @@ if option == 'Ackermans':
         df_ackermans_data.columns = df_ackermans_data.iloc[6]
         df_ackermans_data = df_ackermans_data.iloc[7:]
         df_ackermans_data.columns = df_ackermans_data.columns.astype(str).str.strip()
+        # df_ackermans_data[Units_Sold].fillna(0,inplace=True)
 
         # Merge with retailer map
         df_ackermans_data['SKU No.'] = df_ackermans_data['Style Code'].astype(int)
@@ -116,7 +117,9 @@ if option == 'Ackermans':
         df_ackermans_merged['Start Date'] = Date_Start
 
         # Total amount column
-        df_ackermans_merged['Total Amt'] = df_ackermans_merged[Units_Sold].astype(int) * df_ackermans_merged['SMD RSP']
+        # df_ackermans_merged[Units_Sold].fillna(0,inplace=True)
+        # .astype(int)
+        df_ackermans_merged['Total Amt'] = df_ackermans_merged[Units_Sold] * df_ackermans_merged['SMD RSP']
 
         # Add retailer column and store column
         df_ackermans_merged['Forecast Group'] = 'Ackermans'
