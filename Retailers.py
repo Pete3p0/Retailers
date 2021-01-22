@@ -909,7 +909,7 @@ elif option == 'Decofurn':
 
         # Output to .xlsx
         st.write('Please ensure that no products are missing before downloading!')
-        st.markdown(get_table_download_link(df_dcf_merged), unsafe_allow_html=True)
+        st.markdown(get_table_download_link(final_df_dcf), unsafe_allow_html=True)
     except:
         st.write('Check data')
 
