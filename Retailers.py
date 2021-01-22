@@ -71,6 +71,11 @@ if option == 'Ackermans':
 
     Units_Sold = 'Sales: ' + Day + '/' + str(Month) + '/' + Year
     CSOH = 'CSOH: ' + Day + '/' + str(Month) + '/' + Year
+    
+    if Date_End.month < 10:
+        Month = '0'+str(Date_End.month)
+    else:
+        Month = str(Date_End.month)
 
     try:
         # Get retailers map
