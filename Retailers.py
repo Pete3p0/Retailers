@@ -69,13 +69,15 @@ if data_file:
 # Ackermans
 if option == 'Ackermans':
 
-    Units_Sold = 'Sales: ' + Day + '/' + str(Month) + '/' + Year
-    CSOH = 'CSOH: ' + Day + '/' + str(Month) + '/' + Year
-    
     if Date_End.month < 10:
         Month = '0'+str(Date_End.month)
     else:
         Month = str(Date_End.month)
+
+    Units_Sold = 'Sales: ' + Day + '/' + str(Month) + '/' + Year
+    CSOH = 'CSOH: ' + Day + '/' + str(Month) + '/' + Year
+
+
 
     try:
         # Get retailers map
@@ -91,7 +93,6 @@ if option == 'Ackermans':
         df_ackermans_data.columns = df_ackermans_data.iloc[6]
         df_ackermans_data = df_ackermans_data.iloc[7:]
         df_ackermans_data.columns = df_ackermans_data.columns.astype(str).str.strip()
-        # df_ackermans_data[Units_Sold].fillna(0,inplace=True)
 
         # Merge with retailer map
         df_ackermans_data['SKU No.'] = df_ackermans_data['Style Code'].astype(int)
@@ -126,6 +127,7 @@ if option == 'Ackermans':
         # Total amount column
         # df_ackermans_merged[Units_Sold].fillna(0,inplace=True)
         # .astype(int)
+        df_ackermans_merged[Units_Sold].fillna(0,inplace=True)
         df_ackermans_merged['Total Amt'] = df_ackermans_merged[Units_Sold] * df_ackermans_merged['SMD RSP']
 
         # Add retailer column and store column
@@ -150,7 +152,7 @@ if option == 'Ackermans':
         st.write('**Number of units sold:** '"{:0,.0f}".format(total_units).replace(',', ' '))
         st.write('')
         st.write('**Top 10 products for the week:**')
-        grouped_df_pt = final_df_ackermans_p.groupby("Product Description").sum().sort_values("Total Amt", ascending=False)
+        grouped_df_pt = final_df_ackermans_p.groupby(["Product Description"]).agg({"Sales Qty":"sum", "Total Amt":"sum"}).sort_values("Total Amt", ascending=False)
         grouped_df_final_pt = grouped_df_pt[['Sales Qty', 'Total Amt']].head(10)
         st.table(grouped_df_final_pt.style.format({'Sales Qty':'{:,.0f}','Total Amt':'R{:,.2f}'}))
         st.write('')
@@ -160,7 +162,7 @@ if option == 'Ackermans':
         st.table(grouped_df_final_st.style.format('R{0:,.2f}'))
         st.write('')
         st.write('**Bottom 10 products for the week:**')
-        grouped_df_pb = final_df_ackermans_p.groupby("Product Description").sum().sort_values("Total Amt", ascending=False)
+        grouped_df_pb = final_df_ackermans_p.groupby(["Product Description"]).agg({"Sales Qty":"sum", "Total Amt":"sum"}).sort_values("Total Amt", ascending=False)
         grouped_df_final_pb = grouped_df_pb[['Sales Qty', 'Total Amt']].tail(10)
         st.table(grouped_df_final_pb.style.format({'Sales Qty':'{:,.0f}','Total Amt':'R{:,.2f}'}))
         st.write('')
