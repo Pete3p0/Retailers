@@ -1140,6 +1140,7 @@ elif option == 'HiFi':
         # Merge with retailer map and previous week
         df_hifi_data_merge_curr = df_hifi_data.merge(df_hifi_data_prev, how='left', on='Lookup')
         df_hifi_merged = df_hifi_data_merge_curr.merge(df_hifi_retailer_map, how='left', on='Material')
+        df_hifi_merged = df_hifi_merged.drop_duplicates(subset=['Lookup'])
 
         missing_model_hifi = df_hifi_merged['SMD Code'].isnull()
         df_hifi_missing_model = df_hifi_merged[missing_model_hifi]
@@ -1348,6 +1349,7 @@ elif option == 'Incredible-Connection':
         # Merge with retailer map and previous week
         df_ic_data_merge_curr = df_ic_data.merge(df_ic_data_prev_final, how='left', on='Lookup')
         df_ic_merged = df_ic_data_merge_curr.merge(df_ic_retailers_map, how='left', on='Article')
+        df_ic_merged = df_ic_merged.drop_duplicates(subset=['Lookup'])
 
         missing_model_ic = df_ic_merged['SMD Code'].isnull()
         df_ic_missing_model = df_ic_merged[missing_model_ic]
