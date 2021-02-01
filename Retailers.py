@@ -8,7 +8,7 @@ from io import BytesIO
 import datetime as dt
 # import locale
 # locale.setlocale( locale.LC_ALL, 'en_ZA.UTF-8' )
-st.set_page_config(layout="centered")
+# st.set_page_config(layout="centered")
 
 def to_excel(df):
     output = BytesIO()
