@@ -2561,8 +2561,8 @@ elif option == 'TFG':
 
         # Rename columns
         df_tfg_merged = df_tfg_merged.rename(columns={'Article Code': 'SKU No.','Sls (U)' :'Sales Qty', 'CSOH Incl IT (U)':'SOH Qty', 'Code' : 'Product Code' })
-
-        # Total amount column
+        
+        # Total Amount column
         df_tfg_merged['Total Amt'] = df_tfg_merged['Sales Qty'] * df_tfg_merged['RSP']
 
         # Add retailer and store column
@@ -2571,7 +2571,7 @@ elif option == 'TFG':
 
         # Don't change these headings. Rather change the ones above
         final_df_tfg = df_tfg_merged[['Start Date','SKU No.', 'Product Code', 'Forecast Group','Store Name','SOH Qty','Sales Qty','Total Amt']]
-        final_df_tfg_p = df_tfg_merged[['Product Code','Product Description','Total Amt']]
+        final_df_tfg_p = df_tfg_merged[['Product Code','Product Description', 'Sales Qty', 'Total Amt']]
         final_df_tfg_s = df_tfg_merged[['Store Name','Total Amt']]
 
         # Show final df
@@ -2581,24 +2581,24 @@ elif option == 'TFG':
         st.write('**Number of units sold:** '"{:0,.0f}".format(total_units).replace(',', ' '))
         st.write('')
         st.write('**Top 10 products for the week:**')
-        grouped_df_pt = final_df_tfg_p.groupby("Product Description").sum().sort_values("Total Amt", ascending=False)
-        grouped_df_final_pt = grouped_df_pt[['Sales Qty', 'Total Amt']].head(10)
-        st.table(grouped_df_final_pt)
+        grouped_df_pt = final_df_tfg_p.groupby(["Product Description"]).agg({"Sales Qty":"sum", "Total Amt":"sum"}).sort_values("Total Amt", ascending=False)
+        grouped_df_final_pt = grouped_df_pt[['Sales Qty','Total Amt']].head(10)
+        st.table(grouped_df_final_pt.style.format({'Sales Qty':'{:,.0f}','Total Amt':'R{:,.2f}'}))
         st.write('')
         st.write('**Top 10 stores for the week:**')
-        grouped_df_st = final_df_tfg_s.groupby("Store Name").sum().sort_values("Total Amt", ascending=False)
+        grouped_df_st = final_df_tfg_s.groupby("Store Name").agg({"Total Amt":"sum"}).sort_values("Total Amt", ascending=False)
         grouped_df_final_st = grouped_df_st[['Total Amt']].head(10)
-        st.table(grouped_df_final_st)
+        st.table(grouped_df_final_st.style.format('R{0:,.2f}'))
         st.write('')
         st.write('**Bottom 10 products for the week:**')
-        grouped_df_pb = final_df_tfg_p.groupby("Product Description").sum().sort_values("Total Amt", ascending=False)
-        grouped_df_final_pb = grouped_df_pb[['Sales Qty', 'Total Amt']].tail(10)
-        st.table(grouped_df_final_pb)
+        grouped_df_pb = final_df_tfg_p.groupby("Product Description").agg({"Sales Qty":"sum", "Total Amt":"sum"}).sort_values("Total Amt", ascending=False)
+        grouped_df_final_pb = grouped_df_pb[['Sales Qty','Total Amt']].tail(10)
+        st.table(grouped_df_final_pb.style.format({'Sales Qty':'{:,.0f}','Total Amt':'R{:,.2f}'}))
         st.write('')
         st.write('**Bottom 10 stores for the week:**')
-        grouped_df_sb = final_df_tfg_s.groupby("Store Name").sum().sort_values("Total Amt", ascending=False)
+        grouped_df_sb = final_df_tfg_s.groupby("Store Name").agg({"Total Amt":"sum"}).sort_values("Total Amt", ascending=False)
         grouped_df_final_sb = grouped_df_sb[['Total Amt']].tail(10)
-        st.table(grouped_df_final_sb)
+        st.table(grouped_df_final_sb.style.format('R{0:,.2f}'))
 
         st.write('**Final Dataframe:**')
         final_df_tfg
