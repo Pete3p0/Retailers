@@ -2634,8 +2634,8 @@ elif option == 'TFG_Cosmetics':
         st.table(df_missing_unique)
 
     except:
-        st.markdown("**Retailer map column headings:** Article Code, Code, DES, RSP")
-        st.markdown("**Retailer data column headings:** Style, Sls (U), CSOH Incl IT (U)")
+        st.markdown("**Retailer map column headings:** Supplier Style No, SMD Product Code, Product Description, RSP")
+        st.markdown("**Retailer data column headings:** Supplier Style No, Supplier Style Desc, Sls (R), Sls (U), CSOH Incl IT (U)")
         st.markdown("Column headings are **case sensitive.** Please make sure they are correct")
 
     try:
