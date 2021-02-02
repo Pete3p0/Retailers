@@ -54,7 +54,7 @@ option = st.selectbox(
     ('Please select','Ackermans','Bradlows/Russels','Builders','Checkers',
     'Clicks','Cross_Trainer','Dealz', 'Decofurn','Dis-Chem','Dis-Chem-Pharmacies', 'H&H','HiFi',
     'Incredible-Connection','Makro', 'Mr-Price-Sport', 'Musica','Ok-Furniture', 
-    'Outdoor-Warehouse','Pep-Africa','Pep-SA','PnP','Sportsmans-Warehouse','Takealot','TFG'))
+    'Outdoor-Warehouse','Pep-Africa','Pep-SA','PnP','Sportsmans-Warehouse','Takealot','TFG','TFG_Cosmetics'))
 st.write('You selected:', option)
 
 st.write("")
@@ -2606,6 +2606,86 @@ elif option == 'TFG':
         # Output to .xlsx
         st.write('Please ensure that no products are missing before downloading!')
         st.markdown(get_table_download_link(df_tfg_merged), unsafe_allow_html=True)
+    except:
+        st.write('Check data')
+
+# TFG Cosmetics
+elif option == 'TFG_Cosmetics':
+    try:
+        # Get retailers map
+        df_tfgc_retailers_map = df_map
+        df_tfgc_retailers_map.columns = df_tfgc_retailers_map.columns.astype(str).str.strip()
+        df_retailers_map_tfgc_final = df_tfgc_retailers_map[['Supplier Style No','SMD Product Code','Product Description']]
+        
+        # Get retailer data
+        df_tfgc_data = df_data
+        df_tfgc_data.columns = df_tfgc_data.columns.astype(str).str.strip()
+        df_tfgc_data.drop(df_tfgc_data[df_tfgc_data['Branch'] == 'Total'].index, inplace = True)
+
+        # Merge with retailer map 
+        df_tfgc_merged = df_tfgc_data.merge(df_retailers_map_tfgc_final, how='left', on='Supplier Style No')
+        
+        # Find missing data
+        missing_model_tfgc = df_tfgc_merged['SMD Product Code'].isnull()
+        df_tfgc_missing_model = df_tfgc_merged[missing_model_tfgc]
+        df_missing = df_tfgc_missing_model[['Supplier Style No','Supplier Style Desc']]
+        df_missing_unique = df_missing.drop_duplicates()
+        st.write("The following products are missing the SMD code on the map: ")
+        st.table(df_missing_unique)
+
+    except:
+        st.markdown("**Retailer map column headings:** Article Code, Code, DES, RSP")
+        st.markdown("**Retailer data column headings:** Style, Sls (U), CSOH Incl IT (U)")
+        st.markdown("Column headings are **case sensitive.** Please make sure they are correct")
+
+    try:
+        # Set date columns
+        df_tfgc_merged['Start Date'] = Date_Start
+
+        # Rename columns
+        df_tfgc_merged = df_tfgc_merged.rename(columns={'Sls (R)': 'Total Amt','Supplier Style No': 'SKU No.','Sls (U)' :'Sales Qty', 'CSOH Incl IT (U)':'SOH Qty', 'SMD Product Code' : 'Product Code' })
+
+        # Add retailer and store column
+        df_tfgc_merged['Forecast Group'] = 'TFG - Cosmetics'
+        df_tfgc_merged['Store Name'] = df_tfgc_merged['Branch'].str.title() 
+
+        # Don't change these headings. Rather change the ones above
+        final_df_tfgc = df_tfgc_merged[['Start Date','SKU No.', 'Product Code', 'Forecast Group','Store Name','SOH Qty','Sales Qty','Total Amt']]
+        final_df_tfgc_p = df_tfgc_merged[['Product Code','Product Description','Sales Qty','Total Amt']]
+        final_df_tfgc_s = df_tfgc_merged[['Store Name','Total Amt']]
+
+        # Show final df
+        total = df_tfgc_merged['Total Amt'].sum()
+        total_units = final_df_tfgc['Sales Qty'].sum()
+        st.write('**The total sales for the week are:** R',"{:0,.2f}".format(total).replace(',', ' '))
+        st.write('**Number of units sold:** '"{:0,.0f}".format(total_units).replace(',', ' '))
+        st.write('')
+        st.write('**Top 10 products for the week:**')
+        grouped_df_pt = final_df_tfgc_p.groupby("Product Description").sum().sort_values("Total Amt", ascending=False)
+        grouped_df_final_pt = grouped_df_pt[['Sales Qty', 'Total Amt']].head(10)
+        st.table(grouped_df_final_pt)
+        st.write('')
+        st.write('**Top 10 stores for the week:**')
+        grouped_df_st = final_df_tfgc_s.groupby("Store Name").sum().sort_values("Total Amt", ascending=False)
+        grouped_df_final_st = grouped_df_st[['Total Amt']].head(10)
+        st.table(grouped_df_final_st)
+        st.write('')
+        st.write('**Bottom 10 products for the week:**')
+        grouped_df_pb = final_df_tfgc_p.groupby("Product Description").sum().sort_values("Total Amt", ascending=False)
+        grouped_df_final_pb = grouped_df_pb[['Sales Qty', 'Total Amt']].tail(10)
+        st.table(grouped_df_final_pb)
+        st.write('')
+        st.write('**Bottom 10 stores for the week:**')
+        grouped_df_sb = final_df_tfgc_s.groupby("Store Name").sum().sort_values("Total Amt", ascending=False)
+        grouped_df_final_sb = grouped_df_sb[['Total Amt']].tail(10)
+        st.table(grouped_df_final_sb)
+
+        st.write('**Final Dataframe:**')
+        final_df_tfgc
+
+        # Output to .xlsx
+        st.write('Please ensure that no products are missing before downloading!')
+        st.markdown(get_table_download_link(df_tfgc_merged), unsafe_allow_html=True)
     except:
         st.write('Check data')
 
