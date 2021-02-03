@@ -52,7 +52,7 @@ Country_Dict = {'AO':'Angola', 'MW':'Malawi', 'MZ':'Mozambique', 'NG':'Nigeria',
 option = st.selectbox(
     'Please select a retailer:',
     ('Please select','Ackermans','Bradlows/Russels','Builders','Checkers',
-    'Clicks','Cross_Trainer','Dealz', 'Decofurn','Dis-Chem','Dis-Chem-Pharmacies', 'H&H','HiFi',
+    'Clicks', 'CNA', 'Cross_Trainer','Dealz','CNA', 'Decofurn','Dis-Chem','Dis-Chem-Pharmacies', 'H&H','HiFi',
     'Incredible-Connection','Makro', 'Mr-Price-Sport', 'Musica','Ok-Furniture', 
     'Outdoor-Warehouse','Pep-Africa','Pep-SA','PnP','Sportsmans-Warehouse','Takealot','TFG','TFG_Cosmetics'))
 st.write('You selected:', option)
@@ -628,6 +628,111 @@ elif option == 'Clicks':
         st.write('Please ensure that no products are missing before downloading!')
         st.markdown(get_table_download_link(final_df_clicks), unsafe_allow_html=True)
     
+    except:
+        st.write('Check data')
+
+# CNA
+elif option == 'CNA':
+
+    Day = str(Date_End.day)
+    SOH = 'Total Stock Units as at '+ Day +' '+ Short_Date_Dict[Month]
+
+    try:
+        # Get retailers map
+        df_cna_retailers_map = df_map
+        df_cna_retailers_map.columns = df_cna_retailers_map.columns.astype(str).str.strip()
+        df_cna_retailers_map = df_cna_retailers_map.rename(columns={'NEW- Retailers Article code':'SKU No.', 'SMD Code': 'Product Code'})
+        df_cna_retailers_map = df_cna_retailers_map[['SKU No.','Product Code']]
+
+        # Get retailer data
+        df_cna_data = df_data
+        df_cna_data.columns = df_cna_data.iloc[14]
+        df_cna_data = df_cna_data.iloc[15:]
+        df_cna_data.columns = df_cna_data.columns.astype(str).str.strip()
+        df_cna_data = df_cna_data.rename(columns={'Part Number': 'SKU No.'})
+
+        # Drop result rows
+        df_cna_data.drop(df_cna_data[df_cna_data['Supplier Name'] == 'Grand Total'].index, inplace = True) 
+
+        # Merge with retailer map
+        df_cna_data_merged = df_cna_data.merge(df_cna_retailers_map, how='left', on='SKU No.',indicator=True)
+
+        # Find missing data
+        missing_model_cna = df_cna_data_merged['Product Code'].isnull()
+        df_cna_missing_model = df_cna_data_merged[missing_model_cna]
+        df_missing = df_cna_missing_model[['SKU No.','Full Description']]
+        df_missing_unique = df_missing.drop_duplicates()
+        st.write("The following products are missing the SMD code on the map: ")
+        st.table(df_missing_unique)
+        st.write(" ")
+
+        missing_rsp_cna = df_cna_data_merged['RSP'].isnull()
+        df_cna_missing_rsp = df_cna_data_merged[missing_rsp_cna]
+        df_missing_2 = df_cna_missing_rsp[['SKU No.','Full Description']]
+        df_missing_unique_2 = df_missing_2.drop_duplicates()
+        st.write("The following products are missing the RSP on the map: ")
+        st.table(df_missing_unique_2)
+
+               
+    except:
+        st.markdown("**Retailer map column headings:** Article Number, Product Code, Product Description & RSP")
+        st.markdown("**Retailer data column headings:** Cluster, Article, Description, Site, Site Name, Valuated Stock Qty(Total), Sales Qty*")
+        st.markdown("Column headings are **case sensitive.** Please make sure they are correct") 
+
+    try:
+        # Set date columns
+        df_cna_data_merged['Start Date'] = Date_Start
+
+        # Add retailer column
+        df_cna_data_merged['Forecast Group'] = 'Edcon CNA Audio and Digital'
+
+        # Total amount column
+        df_cna_data_merged['Total Amt'] = df_cna_data_merged['Sales Excl VAT'] * 1.15
+
+        # Rename columns
+        df_cna_data_merged = df_cna_data_merged.rename(columns={'Unit Sales': 'Sales Qty'})
+        df_cna_data_merged = df_cna_data_merged.rename(columns={'Branch Name': 'Store Name'})
+        df_cna_data_merged = df_cna_data_merged.rename(columns={SOH: 'SOH Qty'})
+        df_cna_data_merged = df_cna_data_merged.rename(columns={'Full Description': 'Product Description'})
+
+        # Don't change these headings. Rather change the ones above
+        final_df_cna = df_cna_data_merged[['Start Date','SKU No.', 'Product Code', 'Forecast Group','Store Name','SOH Qty','Sales Qty','Total Amt']]
+        final_df_cna_p = df_cna_data_merged[['Product Code','Product Description','Sales Qty','Total Amt']]
+        final_df_cna_s = df_cna_data_merged[['Store Name','Total Amt']]
+
+        # Show final df
+        total = final_df_cna['Total Amt'].sum()
+        total_units = final_df_cna['Sales Qty'].sum()
+        st.write('**The total sales for the week are:** R',"{:0,.2f}".format(total).replace(',', ' '))
+        st.write('**Number of units sold:** '"{:0,.0f}".format(total_units).replace(',', ' '))
+        st.write('')
+        st.write('**Top 10 products for the week:**')
+        grouped_df_pt = final_df_cna_p.groupby(["Product Description"]).agg({"Sales Qty":"sum", "Total Amt":"sum"}).sort_values("Total Amt", ascending=False)
+        grouped_df_final_pt = grouped_df_pt[['Sales Qty', 'Total Amt']].head(10)
+        st.table(grouped_df_final_pt.style.format({'Sales Qty':'{:,.0f}','Total Amt':'R{:,.2f}'}))
+        st.write('')
+        st.write('**Top 10 stores for the week:**')
+        grouped_df_st = final_df_cna_s.groupby("Store Name").sum().sort_values("Total Amt", ascending=False)
+        grouped_df_final_st = grouped_df_st[['Total Amt']].head(10)
+        st.table(grouped_df_final_st.style.format('R{0:,.2f}'))
+        st.write('')
+        st.write('**Bottom 10 products for the week:**')
+        grouped_df_pb = final_df_cna_p.groupby(["Product Description"]).agg({"Sales Qty":"sum", "Total Amt":"sum"}).sort_values("Total Amt", ascending=False)
+        grouped_df_final_pb = grouped_df_pb[['Sales Qty', 'Total Amt']].tail(10)
+        st.table(grouped_df_final_pb.style.format({'Sales Qty':'{:,.0f}','Total Amt':'R{:,.2f}'}))
+        st.write('')
+        st.write('**Bottom 10 stores for the week:**')
+        grouped_df_sb = final_df_cna_s.groupby("Store Name").sum().sort_values("Total Amt", ascending=False)
+        grouped_df_final_sb = grouped_df_sb[['Total Amt']].tail(10)
+        st.table(grouped_df_final_sb.style.format('R{0:,.2f}'))
+
+        st.write('**Final Dataframe:**')
+        final_df_cna
+
+        # Output to .xlsx
+        st.write('Please ensure that no products are missing before downloading!')
+        st.markdown(get_table_download_link(final_df_cna), unsafe_allow_html=True)
+
     except:
         st.write('Check data')
 
