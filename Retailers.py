@@ -634,8 +634,11 @@ elif option == 'Clicks':
 # CNA
 elif option == 'CNA':
 
-    Day = str(Date_End.day)
-    SOH = 'Total Stock Units as at '+ Day +' '+ Short_Date_Dict[Month]
+    st.markdown("**Stock on hand needs to be in a separate sheet**")
+
+    cna_soh = st.file_uploader('SOH', type='xlsx')
+    if cna_soh:
+        df_cna_soh = pd.read_excel(cna_soh)
 
     try:
         # Get retailers map
@@ -646,59 +649,56 @@ elif option == 'CNA':
 
         # Get retailer data
         df_cna_data = df_data
-        df_cna_data.columns = df_cna_data.iloc[14]
-        df_cna_data = df_cna_data.iloc[15:]
         df_cna_data.columns = df_cna_data.columns.astype(str).str.strip()
+        
+        # Rename columns
         df_cna_data = df_cna_data.rename(columns={'Part Number': 'SKU No.'})
+        df_cna_data = df_cna_data.rename(columns={'Branch Name': 'Store Name'})
+        df_cna_data = df_cna_data.rename(columns={'Sum of Unit Sales': 'Sales Qty'})
+        df_cna_data = df_cna_data.rename(columns={'Date Decarded': 'Start Date'})
 
-        # Drop result rows
-        df_cna_data.drop(df_cna_data[df_cna_data['Supplier Name'] == 'Grand Total'].index, inplace = True) 
+        # Lookup column
+        df_cna_data['Lookup'] = df_cna_data['SKU No.'].astype(str) + df_cna_data['Store Name']
+
+        # Get stock on hand
+        df_cna_soh = df_cna_soh.rename(columns={'Branch Name': 'Store Name'})
+        df_cna_soh = df_cna_soh.rename(columns={'Sum of Total Stock': 'SOH Qty'})
+        df_cna_soh['Lookup'] = df_cna_soh['Product Code'].astype(str) + df_cna_soh['Store Name']
+        df_cna_soh_final = df_cna_soh[['Lookup','SOH Qty']]
+
+        # Merge with SOH
+        df_cna_data = df_cna_data.merge(df_cna_soh_final, how='left', on='Lookup')
 
         # Merge with retailer map
-        df_cna_data_merged = df_cna_data.merge(df_cna_retailers_map, how='left', on='SKU No.',indicator=True)
+        df_cna_merged = df_cna_data.merge(df_cna_retailers_map, how='left', on='SKU No.')
+        df_cna_merged = df_cna_merged.rename(columns={'Full Description': 'Product Description'})
 
         # Find missing data
-        missing_model_cna = df_cna_data_merged['Product Code'].isnull()
-        df_cna_missing_model = df_cna_data_merged[missing_model_cna]
-        df_missing = df_cna_missing_model[['SKU No.','Full Description']]
+        missing_model_cna = df_cna_merged['Product Code'].isnull()
+        df_cna_missing_model = df_cna_merged[missing_model_cna]
+        df_missing = df_cna_missing_model[['SKU No.','Product Description']]
         df_missing_unique = df_missing.drop_duplicates()
         st.write("The following products are missing the SMD code on the map: ")
         st.table(df_missing_unique)
         st.write(" ")
 
-        missing_rsp_cna = df_cna_data_merged['RSP'].isnull()
-        df_cna_missing_rsp = df_cna_data_merged[missing_rsp_cna]
-        df_missing_2 = df_cna_missing_rsp[['SKU No.','Full Description']]
-        df_missing_unique_2 = df_missing_2.drop_duplicates()
-        st.write("The following products are missing the RSP on the map: ")
-        st.table(df_missing_unique_2)
-
-               
     except:
-        st.markdown("**Retailer map column headings:** Article Number, Product Code, Product Description & RSP")
-        st.markdown("**Retailer data column headings:** Cluster, Article, Description, Site, Site Name, Valuated Stock Qty(Total), Sales Qty*")
-        st.markdown("Column headings are **case sensitive.** Please make sure they are correct") 
+        st.markdown("**Retailer map column headings:** Article Code, SMD Code, SMD Desc ,RSP")
+        st.markdown("**Retailer data column headings:** Code, Product, SKUCode")
+        st.markdown("Column headings are **case sensitive.** Please make sure they are correct")
+
 
     try:
-        # Set date columns
-        df_cna_data_merged['Start Date'] = Date_Start
-
-        # Add retailer column
-        df_cna_data_merged['Forecast Group'] = 'Edcon CNA Audio and Digital'
-
         # Total amount column
-        df_cna_data_merged['Total Amt'] = df_cna_data_merged['Sales Excl VAT'] * 1.15
+        df_cna_merged['Total Amt'] = df_cna_merged['Sum of Sales Excl VAT'] * 1.15
 
-        # Rename columns
-        df_cna_data_merged = df_cna_data_merged.rename(columns={'Unit Sales': 'Sales Qty'})
-        df_cna_data_merged = df_cna_data_merged.rename(columns={'Branch Name': 'Store Name'})
-        df_cna_data_merged = df_cna_data_merged.rename(columns={SOH: 'SOH Qty'})
-        df_cna_data_merged = df_cna_data_merged.rename(columns={'Full Description': 'Product Description'})
+        # Add retailer and store column
+        df_cna_merged['Forecast Group'] = 'Edcon CNA Audio and Digital'
 
         # Don't change these headings. Rather change the ones above
-        final_df_cna = df_cna_data_merged[['Start Date','SKU No.', 'Product Code', 'Forecast Group','Store Name','SOH Qty','Sales Qty','Total Amt']]
-        final_df_cna_p = df_cna_data_merged[['Product Code','Product Description','Sales Qty','Total Amt']]
-        final_df_cna_s = df_cna_data_merged[['Store Name','Total Amt']]
+        final_df_cna = df_cna_merged[['Start Date','SKU No.', 'Product Code', 'Forecast Group','Store Name','SOH Qty','Sales Qty','Total Amt']]
+        final_df_cna_p = df_cna_merged[['Product Code','Product Description','Sales Qty','Total Amt']]
+        final_df_cna_s = df_cna_merged[['Store Name','Total Amt']]    
 
         # Show final df
         total = final_df_cna['Total Amt'].sum()
@@ -734,7 +734,8 @@ elif option == 'CNA':
         st.markdown(get_table_download_link(final_df_cna), unsafe_allow_html=True)
 
     except:
-        st.write('Check data')
+        st.write('Check data') 
+
 
 # Cross Trainer
 elif option == 'Cross_Trainer':
