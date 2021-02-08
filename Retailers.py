@@ -882,7 +882,8 @@ elif option == 'Dealz':
         df_dealz_merged['Start Date'] = Date_Start
 
         # Add Total Amount column
-        df_dealz_merged['Total Amt'] = df_dealz_merged[units_sold] * df_dealz_merged['Price']
+        df_dealz_merged[units_sold] = df_dealz_merged[units_sold].fillna(0)
+        df_dealz_merged['Total Amt'] = df_dealz_merged[units_sold].astype(int) * df_dealz_merged['Price']
 
         # Add column for retailer and store name
         df_dealz_merged['Forecast Group'] = 'Dealz'
@@ -893,21 +894,26 @@ elif option == 'Dealz':
         df_dealz_merged = df_dealz_merged.rename(columns={units_sold: 'Sales Qty'})
         df_dealz_merged = df_dealz_merged.rename(columns={'Price': 'RSP'})
 
+
         # Final df. Don't change these headings. Rather change the ones above
         final_df_dealz_sales = df_dealz_merged[['Start Date','SKU No.', 'Product Code', 'Forecast Group','Store Name','SOH Qty','Sales Qty','Total Amt']]
         final_df_dealz_p = df_dealz_merged[['Product Code','Product Description','Sales Qty','Total Amt']]
         final_df_dealz_s = df_dealz_merged[['Store Name','Total Amt']]
 
         # Show final df
+        final_df_dealz_sales['Total Amt'] = final_df_dealz_sales['Total Amt'].astype(float)
+        final_df_dealz_sales['Sales Qty'] = final_df_dealz_sales['Sales Qty'].astype(float)
         total = final_df_dealz_sales['Total Amt'].sum()
         total_units = final_df_dealz_sales['Sales Qty'].sum()
+
         st.write('**The total sales for the week are:** R',"{:0,.2f}".format(total).replace(',', ' '))
         st.write('**Number of units sold:** '"{:0,.0f}".format(total_units).replace(',', ' '))
         st.write('')
         st.write('**Top 10 products for the week:**')
-        grouped_df_pt = final_df_dealz_p.groupby("Product Description").sum().sort_values("Total Amt", ascending=False)
+        grouped_df_pt = final_df_dealz_p.groupby(["Product Description"]).agg({"Sales Qty":"sum", "Total Amt":"sum"}).sort_values("Total Amt", ascending=False)
         grouped_df_final_pt = grouped_df_pt[['Sales Qty', 'Total Amt']].head(10)
-        st.table(grouped_df_final_pt.style.format({'Sales Qty':'{:,.0f}','Total Amt':'R{:,.2f}'}))
+        #'Sales Qty':'{:,.0f}',
+        st.table(grouped_df_final_pt.style.format({'Total Amt':'R{:,.2f}'}))
         st.write('')
         st.write('**Top 10 stores for the week:**')
         grouped_df_st = final_df_dealz_s.groupby("Store Name").sum().sort_values("Total Amt", ascending=False)
@@ -915,11 +921,11 @@ elif option == 'Dealz':
         st.table(grouped_df_final_st.style.format('R{0:,.2f}'))
         st.write('')
         st.write('**Bottom 10 products for the week:**')
-        grouped_df_pb = final_df_dealz_p.groupby("Product Description").sum().sort_values("Total Amt", ascending=False)
+        grouped_df_pb = final_df_dealz_p.groupby(["Product Description"]).agg({"Sales Qty":"sum", "Total Amt":"sum"}).sort_values("Total Amt", ascending=False)
         grouped_df_final_pb = grouped_df_pb[['Sales Qty', 'Total Amt']].tail(10)
         st.table(grouped_df_final_pb.style.format({'Sales Qty':'{:,.0f}','Total Amt':'R{:,.2f}'}))
         st.write('')
-        st.write('**Top 10 stores for the week:**')
+        st.write('**Bottom 10 stores for the week:**')
         grouped_df_sb = final_df_dealz_s.groupby("Store Name").sum().sort_values("Total Amt", ascending=False)
         grouped_df_final_sb = grouped_df_sb[['Total Amt']].tail(10)
         st.table(grouped_df_final_sb.style.format('R{0:,.2f}'))
