@@ -937,7 +937,7 @@ elif option == 'Dealz':
         st.markdown(get_table_download_link(final_df_dealz_sales), unsafe_allow_html=True)
 
     except:
-        st.write('Check data')
+        st.write('Check data. Make sure the month in long form eg. '+units_sold)
 
 
 # Decofurn
