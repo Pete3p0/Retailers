@@ -1860,6 +1860,8 @@ elif option == 'Ok-Furniture':
         # Merge with retailer map and previous week
         df_okf_data_merge_curr = df_okf_data.merge(df_okf_data_prev_final, how='left', on='Lookup')
         df_okf_merged = df_okf_data_merge_curr.merge(df_okf_retailers_map_final, how='left', on='SKU Number')
+        df_okf_merged['Qty Sold'].fillna(0,inplace=True)
+        df_okf_merged['Prev Qty'].fillna(0,inplace=True)
 
         # Find missing data
         missing_model_okf = df_okf_merged['SMD Product Code'].isnull()
