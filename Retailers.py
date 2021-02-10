@@ -2799,7 +2799,7 @@ elif option == 'TFG_Cosmetics':
 
         # Output to .xlsx
         st.write('Please ensure that no products are missing before downloading!')
-        st.markdown(get_table_download_link(df_tfgc_merged), unsafe_allow_html=True)
+        st.markdown(get_table_download_link(final_df_tfgc), unsafe_allow_html=True)
     except:
         st.write('Check data')
 
