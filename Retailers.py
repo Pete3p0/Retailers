@@ -52,7 +52,7 @@ Country_Dict = {'AO':'Angola', 'MW':'Malawi', 'MZ':'Mozambique', 'NG':'Nigeria',
 option = st.selectbox(
     'Please select a retailer:',
     ('Please select','Ackermans','Bradlows/Russels','Builders','Checkers',
-    'Clicks', 'CNA', 'Cross_Trainer','Dealz','CNA', 'Decofurn','Dis-Chem','Dis-Chem-Pharmacies', 'H&H','HiFi',
+    'Clicks', 'CNA', 'Cross_Trainer','Dealz', 'Decofurn','Dis-Chem','Dis-Chem-Pharmacies', 'H&H','HiFi',
     'Incredible-Connection','Makro', 'Mr-Price-Sport', 'Musica','Ok-Furniture', 
     'Outdoor-Warehouse','Pep-Africa','Pep-SA','PnP','Sportsmans-Warehouse','Takealot','TFG','TFG_Cosmetics'))
 st.write('You selected:', option)
@@ -683,8 +683,9 @@ elif option == 'CNA':
         st.write(" ")
 
     except:
-        st.markdown("**Retailer map column headings:** Article Code, SMD Code, SMD Desc ,RSP")
-        st.markdown("**Retailer data column headings:** Code, Product, SKUCode")
+        st.markdown("**Retailer map column headings:** NEW- Retailers Article code, SMD Code, Description ,RSP")
+        st.markdown("**Retailer data column headings:** Branch Name, Part Number, Sum of Unit Sales, Date Decarded, Full Description")
+        st.markdown("**Retailer SOH column headings:** Branch Name, Product Code, Sum of Total Stock")
         st.markdown("Column headings are **case sensitive.** Please make sure they are correct")
 
 
