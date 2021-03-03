@@ -1753,8 +1753,10 @@ elif option == 'Musica':
         # Get retailer data
         df_musica_data = df_data
         df_musica_data.columns = df_musica_data.columns.astype(str).str.strip()
+        df_musica_data.columns = df_musica_data.iloc[0]
+        df_musica_data = df_musica_data.iloc[1:]
         df_musica_data = df_musica_data.rename(columns={'SKU No.': 'Musica Code'})
-        df_musica_data = df_musica_data.rename(columns={'Sales.Qty': 'Sales Qty'})  
+        df_musica_data = df_musica_data.rename(columns={'4 Wks sales Qty': 'Sales Qty'})  
 
         # Merge with retailer map
         df_musica_merged = df_musica_data.merge(df_retailers_map_musica_final, how='left', on='Musica Code')  
@@ -1777,18 +1779,19 @@ elif option == 'Musica':
 
     except:
         st.markdown("**Retailer map column headings:** Musica Code, SMD code, SMD Desc, RSP")
-        st.markdown("**Retailer data column headings:** Store Name, SKU No., Title Desc, Sales.Qty, SOH Qty")
+        st.markdown("**Retailer data column headings:** Store Name, SKU No., Title Desc, Selling_Price, 4 Wks sales Qty, SOH Qty")
         st.markdown("Column headings are **case sensitive.** Please make sure they are correct")
 
     try:
         # Set date columns
         df_musica_merged['Start Date'] = Date_Start
-   
+
         # Total amount column
-        df_musica_merged['Total Amt'] = df_musica_merged['Sales Qty'] * df_musica_merged['RSP']
+        df_musica_merged['Total Amt'] = df_musica_merged['Sales Qty'] * df_musica_merged['Selling_Price']
 
         # Add retailer column
         df_musica_merged['Forecast Group'] = 'Musica'
+        df_musica_merged['Store Name'] = ''
 
         # Rename columns
         df_musica_merged = df_musica_merged.rename(columns={'Musica Code': 'SKU No.'})
