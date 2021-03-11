@@ -64,9 +64,15 @@ map_file = st.file_uploader('Retailer Map', type='xlsx')
 if map_file:
     df_map = pd.read_excel(map_file)
 
-data_file = st.file_uploader('Weekly Sales Data',type='xlsx')
-if data_file:
-    df_data = pd.read_excel(data_file)
+data_file = st.file_uploader('Weekly Sales Data',type=['csv','txt','xlsx'])
+if data_file:    
+    if data_file.name[-3:] == 'csv':
+        df_data = pd.read_csv(data_file,sep='|', engine='python')
+    elif data_file.name[-3:] == 'txt':
+        df_data = pd.read_csv(data_file,sep='|', engine='python')
+    else:
+        df_data = pd.read_excel(data_file)
+
 
 # Ackermans
 if option == 'Ackermans':
@@ -684,7 +690,7 @@ elif option == 'CNA':
 
     except:
         st.markdown("**Retailer map column headings:** NEW- Retailers Article code, SMD Code, Description ,RSP")
-        st.markdown("**Retailer data column headings:** Branch Name, Part Number, Sum of Unit Sales, Date Decarded, Full Description")
+        st.markdown("**Retailer data column headings:** Branch Name, Part Number, Sum of Unit Sales, Sum of Sales Excl VAT, Date Decarded, Full Description")
         st.markdown("**Retailer SOH column headings:** Branch Name, Product Code, Sum of Total Stock")
         st.markdown("Column headings are **case sensitive.** Please make sure they are correct")
 
@@ -1547,15 +1553,6 @@ elif option == 'Incredible-Connection':
 # Makro
 
 elif option == 'Makro':
-    Week = st.number_input("Enter week number: ",min_value = 0, value = 0)
-    if int(Week) < 10:
-        Week = str(0) + str(Week)
-    else:
-        Week = str(Week)
-    weekly_sales = Week+'-'+Year
-    makro_stores = st.file_uploader('Stores', type='xlsx')
-    if makro_stores:
-        df_makro_stores = pd.read_excel(makro_stores)
    
     try:
         # Get retailers map
@@ -1567,50 +1564,46 @@ elif option == 'Makro':
         # Get retailer data
         df_makro_data = df_data
         df_makro_data.columns = df_makro_data.columns.astype(str).str.strip()
-        df_makro_data = df_makro_data.rename(columns={'Incl SP': 'RSP'})
+        df_makro_data = df_makro_data[df_makro_data['StartDate'].notna()]
+        df_makro_data = df_makro_data.rename(columns={'ProductCode': 'Article'})
 
         # Merge with retailer map 
         df_makro_merged = df_makro_data.merge(df_retailers_map_makro_final, how='left', on='Article')
 
-        # Merge with stores
-        df_makro_merged = df_makro_merged.merge(df_makro_stores, how='left', on='Site')
-        
+
         # Find missing data
         missing_model_makro = df_makro_merged['SMD Product Code'].isnull()
         df_makro_missing_model = df_makro_merged[missing_model_makro]
-        df_missing = df_makro_missing_model[['Article','Article Desc']]
+        df_missing = df_makro_missing_model[['Article','ProductDescription']]
         df_missing_unique = df_missing.drop_duplicates()
         st.write("The following products are missing the SMD code on the map: ")
         st.table(df_missing_unique)
 
-        st.write(" ")
-        missing_rsp_makro = df_makro_merged['RSP'].isnull()
-        df_makro_missing_rsp = df_makro_merged[missing_rsp_makro]  
-        df_missing_2 = df_makro_missing_rsp[['Article','Article Desc']]
-        df_missing_unique_2 = df_missing_2.drop_duplicates()
-        st.write("The following products are missing the RSP on the map: ")
-        st.table(df_missing_unique_2)
-        
     except:
         st.markdown("**Retailer map column headings:** Article, SMD Product Code, SMD Description")
-        st.markdown("**Retailer data column headings:** Article, Article Desc, Site, Store Name (in Stores.xlsx), SOH, "+weekly_sales)
+        st.markdown("**Retailer data column headings:** EndDate, ProductCode, ProductDescription, SiteDescription, Quantity, ValueExcl")
         st.markdown("Column headings are **case sensitive.** Please make sure they are correct")
 
+    
     try:
         # Set date columns
-        df_makro_merged['Start Date'] = Date_Start
+        # df_makro_merged['Start Date'] = Date_Start
 
         # Total amount column
-        df_makro_merged['Total Amt'] = np.where(df_makro_merged['Prom SP'] > 0, df_makro_merged[Week+'-'+Year] * df_makro_merged['Prom SP'], df_makro_merged[Week+'-'+Year] * df_makro_merged['RSP'])
+        df_makro_merged['Total Amt'] = df_makro_merged['Quantity'] * df_makro_merged['ValueExcl'] * 1.15
+        df_makro_merged['SOH Qty'] = ''
         
         # Add retailer column
         df_makro_merged['Forecast Group'] = 'Makro'
 
         # Rename columns
+        df_makro_merged = df_makro_merged.rename(columns={'EndDate': 'Start Date'})
         df_makro_merged = df_makro_merged.rename(columns={'Article': 'SKU No.'})
         df_makro_merged = df_makro_merged.rename(columns={'SMD Product Code': 'Product Code'})
-        df_makro_merged = df_makro_merged.rename(columns={'SOH': 'SOH Qty'})
-        df_makro_merged = df_makro_merged.rename(columns={weekly_sales: 'Sales Qty'})
+        # df_makro_merged = df_makro_merged.rename(columns={'SOH': 'SOH Qty'})
+        df_makro_merged = df_makro_merged.rename(columns={'Quantity': 'Sales Qty'})
+        df_makro_merged = df_makro_merged.rename(columns={'SiteDescription': 'Store Name'})
+        
 
         # Don't change these headings. Rather change the ones above
         final_df_makro = df_makro_merged[['Start Date','SKU No.', 'Product Code', 'Forecast Group','Store Name','SOH Qty','Sales Qty','Total Amt']]
