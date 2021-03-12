@@ -1564,6 +1564,7 @@ elif option == 'Makro':
 
         # Get retailer data
         df_makro_data = df_data
+        del df_data
         df_makro_data.columns = df_makro_data.columns.astype(str).str.strip()
         df_makro_data = df_makro_data[df_makro_data['StartDate'].notna()]
         df_makro_data = df_makro_data.rename(columns={'ProductCode': 'Article'})
