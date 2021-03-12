@@ -68,9 +68,9 @@ if map_file:
 data_file = st.file_uploader('Weekly Sales Data',type=['csv','txt','xlsx'])
 if data_file:    
     if data_file.name[-3:] == 'csv':
-        df_data = pd.read_csv(data_file,sep='\|')
+        df_data = pd.read_csv(io.StringIO(data_file.read().decode('utf-8')), delimiter='\|')
     elif data_file.name[-3:] == 'txt':
-        df_data = pd.read_csv(data_file,sep='\|')
+        df_data = pd.read_csv(io.StringIO(data_file.read().decode('utf-8')), delimiter='\|')
     else:
         df_data = pd.read_excel(data_file)
 
