@@ -65,6 +65,7 @@ map_file = st.file_uploader('Retailer Map', type='xlsx')
 if map_file:
     df_map = pd.read_excel(map_file)
 
+
 data_file = st.file_uploader('Weekly Sales Data',type=['csv','txt','xlsx'])
 if data_file:    
     if data_file.name[-3:] == 'csv':
@@ -73,6 +74,9 @@ if data_file:
         df_data = pd.read_csv(io.StringIO(data_file.read().decode('utf-8')), delimiter='\|')
     else:
         df_data = pd.read_excel(data_file)
+data_file.close()
+del data_file
+
 
 
 # Ackermans
@@ -1558,7 +1562,6 @@ elif option == 'Makro':
     try:
         # Get retailers map
         df_makro_retailers_map = df_map
-        data_file.close()
         df_makro_retailers_map.columns = df_makro_retailers_map.columns.astype(str).str.strip()
         df_makro_retailers_map = df_makro_retailers_map.rename(columns={'SMD Description': 'Product Description'})
         df_retailers_map_makro_final = df_makro_retailers_map[['Article','SMD Product Code','Product Description']]
