@@ -69,8 +69,10 @@ data_file = st.file_uploader('Weekly Sales Data',type=['csv','txt','xlsx'])
 if data_file:    
     if data_file.name[-3:] == 'csv':
         df_data = pd.read_csv(io.StringIO(data_file.read().decode('utf-8')), delimiter='\|')
+        data_file.close()
     elif data_file.name[-3:] == 'txt':
         df_data = pd.read_csv(io.StringIO(data_file.read().decode('utf-8')), delimiter='\|')
+        data_file.close()
     else:
         df_data = pd.read_excel(data_file)
 
@@ -1564,7 +1566,6 @@ elif option == 'Makro':
 
         # Get retailer data
         df_makro_data = df_data
-        del df_data
         df_makro_data.columns = df_makro_data.columns.astype(str).str.strip()
         df_makro_data = df_makro_data[df_makro_data['StartDate'].notna()]
         df_makro_data = df_makro_data.rename(columns={'ProductCode': 'Article'})
