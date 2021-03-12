@@ -74,8 +74,9 @@ if data_file:
         df_data = pd.read_csv(io.StringIO(data_file.read().decode('utf-8')), delimiter='\|')
     else:
         df_data = pd.read_excel(data_file)
-data_file.close()
-del data_file
+if data_file:
+    data_file.close()
+    del data_file
 
 
 
