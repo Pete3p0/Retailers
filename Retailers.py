@@ -75,7 +75,6 @@ if data_file:
     else:
         df_data = pd.read_excel(data_file)
 if data_file:
-    data_file.close()
     del data_file
 
 
