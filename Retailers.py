@@ -66,10 +66,8 @@ if map_file:
     df_map = pd.read_excel(map_file)
 
 
-if data_file in locals():
-    del data_file
-if df_data in locals():
-    del df_data	
+data_file = None
+df_data = None
 	
 data_file = st.file_uploader('Weekly Sales Data',type=['csv','txt','xlsx'])
 if data_file:    
