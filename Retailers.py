@@ -66,8 +66,15 @@ if map_file:
     df_map = pd.read_excel(map_file)
 
 
-       
-data_file = st.file_uploader('Weekly Sales Data',type=['csv','txt','xlsx'])
+try:
+    if data_file:
+        del data_file
+    if df_data:
+        del df_data
+
+except:
+    data_file = st.file_uploader('Weekly Sales Data',type=['csv','txt','xlsx'])
+
 if data_file:    
     if data_file.name[-3:] == 'csv':
         df_data = pd.read_csv(io.StringIO(data_file.read().decode('utf-8')), delimiter='\|')
