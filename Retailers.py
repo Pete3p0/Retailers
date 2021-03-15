@@ -1600,7 +1600,7 @@ elif option == 'Makro':
         # df_makro_merged['Start Date'] = Date_Start
 
         # Total amount column
-        df_makro_merged['Total Amt'] = df_makro_merged['Quantity'] * df_makro_merged['ValueExcl'] * 1.15
+        df_makro_merged['Total Amt'] = df_makro_merged['ValueExcl'] + df_makro_merged['VAT']
         df_makro_merged['SOH Qty'] = ''
         
         # Add retailer column
