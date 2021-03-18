@@ -763,12 +763,12 @@ elif option == 'Cross_Trainer':
         df_ct_retailers_map.columns = df_ct_retailers_map.columns.astype(str).str.strip()
         df_ct_retailers_map = df_ct_retailers_map.rename(columns={'Cross Trainer Product Code':'Item Code'})
         df_retailers_map_ct_final = df_ct_retailers_map[['Item Code','SMD Product Code', 'SMD Description','RSP']] 
-
+        
         # Get retailer data
         df_ct_data = df_data
-        df_ct_data.columns = df_ct_data.iloc[0]
-        df_ct_data = df_ct_data.iloc[1:]
-
+        # df_ct_data.columns = df_ct_data.iloc[0]
+        # df_ct_data = df_ct_data.iloc[1:]
+        
         # Merge with retailer map
         df_ct_merged = df_ct_data.merge(df_retailers_map_ct_final, how='left', on='Item Code')
 
@@ -777,7 +777,7 @@ elif option == 'Cross_Trainer':
         df_ct_merged = df_ct_merged.rename(columns={'Qty': 'Sales Qty'})
         df_ct_merged = df_ct_merged.rename(columns={'SOH': 'SOH Qty'})
         df_ct_merged = df_ct_merged.rename(columns={'SMD Product Code': 'Product Code'})
-        df_ct_merged = df_ct_merged.rename(columns={'Store': 'Store Name'})
+        df_ct_merged = df_ct_merged.rename(columns={'Stores': 'Store Name'})
         df_ct_merged = df_ct_merged.rename(columns={'SMD Description': 'Product Description'})
 
         # Find missing data
