@@ -40,11 +40,6 @@ else:
 
 Month = Date_End.month
 
-# if Date_End.month < 10:
-#     Month = '0'+str(Date_End.month)
-# else:
-#     Month = str(Date_End.month)
-
 Year = str(Date_End.year)
 Short_Date_Dict = {1:'Jan', 2:'Feb', 3:'Mar',4:'Apr',5:'May',6:'Jun',7:'Jul',8:'Aug',9:'Sep',10:'Oct',11:'Nov',12:'Dec'}
 Long_Date_Dict = {1:'January', 2:'February', 3:'March',4:'April',5:'May',6:'June',7:'July',8:'August',9:'September',10:'October',11:'November',12:'December'}
@@ -55,7 +50,7 @@ option = st.selectbox(
     ('Please select','Ackermans','Bradlows/Russels','Builders','Checkers',
     'Clicks', 'CNA', 'Cross_Trainer','Dealz', 'Decofurn','Dis-Chem','Dis-Chem-Pharmacies', 'H&H','HiFi',
     'Incredible-Connection','Makro', 'Mr-Price-Sport', 'Musica','Ok-Furniture', 
-    'Outdoor-Warehouse','Pep-Africa','Pep-SA','PnP','Sportsmans-Warehouse','Takealot','TFG','TFG_Cosmetics'))
+    'Outdoor-Warehouse','Pep-Africa','Pep-SA','PnP','Retailability', 'Sportsmans-Warehouse','Takealot','TFG','TFG_Cosmetics'))
 st.write('You selected:', option)
 
 st.write("")
@@ -2407,6 +2402,99 @@ elif option == 'PnP':
         st.markdown(get_table_download_link(final_df_pnp), unsafe_allow_html=True)
     except:
         st.write('Check data') 
+
+# Retailability
+
+elif option == 'Retailability':
+
+    week = dt.date(int(Year),int(Month),int(Day)).isocalendar()[1]
+    if week < 10:
+        week_sales = ('Week 0'+str(week))
+    else:
+        week_sales = ('Week '+str(week))
+    
+    
+    try:
+        # Get retailers map
+        df_ret_retailers_map = df_map       
+        df_ret_retailers_map.columns = df_ret_retailers_map.columns.astype(str).str.strip()
+        df_ret_retailers_map = df_ret_retailers_map.rename(columns={'Article Code': 'Item Colour'})
+        df_ret_retailers_map_final = df_ret_retailers_map[['Item Colour','Code', 'Product Description', 'RSP']]
+        
+        # Get retailer data
+        df_ret_data = df_data
+        df_ret_data.columns = df_ret_data.columns.astype(str).str.strip()
+            
+        # Merge with retailer map
+        df_ret_merged = df_ret_data.merge(df_ret_retailers_map_final, how='left', on='Item Colour')
+        df_ret_merged = df_ret_merged.rename(columns={'Item Colour':'SKU No.'})
+        df_ret_merged = df_ret_merged.rename(columns={'Code':'Product Code'})
+        df_ret_merged = df_ret_merged.rename(columns={week_sales:'Sales Qty'})
+        
+
+        # Find missing data
+        missing_model = df_ret_merged['Product Code'].isnull()
+        df_ret_missing_model = df_ret_merged[missing_model]
+        df_missing = df_ret_missing_model[['SKU No.','Item Description']]
+        df_missing_unique = df_missing.drop_duplicates()
+        st.write("The following products are missing the SMD code on the map: ")
+        st.table(df_missing_unique)
+
+    except:
+        st.markdown("**Retailer map column headings:** Article Code, Code, Product Description, RSP")
+        st.markdown("**Retailer data column headings:** Item Colour, Item Description, SOH Qty, Current Price (Stock)"+week_sales)
+        st.markdown("Column headings are **case sensitive.** Please make sure they are correct")
+
+    try:
+        # Set date columns
+        df_ret_merged['Start Date'] = Date_Start
+
+        # Total amount column
+        df_ret_merged['Total Amt'] = df_ret_merged['Sales Qty'] * df_ret_merged['Current Price (Stock)']
+
+        # Add retailer and store column
+        df_ret_merged['Forecast Group'] = 'Retailability'
+        df_ret_merged['Store Name'] = ''
+
+        # Don't change these headings. Rather change the ones above
+        final_df_ret = df_ret_merged[['Start Date','SKU No.', 'Product Code', 'Forecast Group','Store Name','SOH Qty','Sales Qty','Total Amt']]
+        final_df_ret_p = df_ret_merged[['Product Code','Product Description','Sales Qty','Total Amt']]
+        final_df_ret_s = df_ret_merged[['Store Name','Total Amt']]  
+
+        # Show final df
+        total = final_df_ret['Total Amt'].sum()
+        total_units = final_df_ret['Sales Qty'].sum()
+        st.write('**The total sales for the week are:** R',"{:0,.2f}".format(total).replace(',', ' '))
+        st.write('**Number of units sold:** '"{:0,.0f}".format(total_units).replace(',', ' '))
+        st.write('')
+        st.write('**Top 10 products for the week:**')
+        grouped_df_pt = final_df_ret_p.groupby("Product Description").sum().sort_values("Total Amt", ascending=False)
+        grouped_df_final_pt = grouped_df_pt[['Sales Qty', 'Total Amt']].head(10)
+        st.table(grouped_df_final_pt.style.format({'Sales Qty':'{:,.0f}','Total Amt':'R{:,.2f}'}))
+        st.write('')
+        st.write('**Top 10 stores for the week:**')
+        grouped_df_st = final_df_ret_s.groupby("Store Name").sum().sort_values("Total Amt", ascending=False)
+        grouped_df_final_st = grouped_df_st[['Total Amt']].head(10)
+        st.table(grouped_df_final_st.style.format('R{0:,.2f}'))
+        st.write('')
+        st.write('**Bottom 10 products for the week:**')
+        grouped_df_pb = final_df_ret_p.groupby("Product Description").sum().sort_values("Total Amt", ascending=False)
+        grouped_df_final_pb = grouped_df_pb[['Sales Qty', 'Total Amt']].tail(10)
+        st.table(grouped_df_final_pb.style.format({'Sales Qty':'{:,.0f}','Total Amt':'R{:,.2f}'}))
+        st.write('')
+        st.write('**Bottom 10 stores for the week:**')
+        grouped_df_sb = final_df_ret_s.groupby("Store Name").sum().sort_values("Total Amt", ascending=False)
+        grouped_df_final_sb = grouped_df_sb[['Total Amt']].tail(10)
+        st.table(grouped_df_final_sb.style.format('R{0:,.2f}'))
+        st.write('**Final Dataframe:**')  
+        final_df_ret
+
+        # Output to .xlsx
+        st.write('Please ensure that no products are missing before downloading!')
+        st.markdown(get_table_download_link(final_df_ret), unsafe_allow_html=True)
+    except:
+        st.write('Check data') 
+
 
 
 # Sportsmans Warehouse
