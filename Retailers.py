@@ -135,7 +135,7 @@ if option == 'Ackermans':
         
     try:
         # Set date columns
-        df_ackermans_merged['Start Date'] = Date_Start
+        df_ackermans_merged['Start Date'] = Date_End
 
         # Total amount column
         # df_ackermans_merged[Units_Sold].fillna(0,inplace=True)
