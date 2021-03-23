@@ -48,7 +48,7 @@ Country_Dict = {'AO':'Angola', 'MW':'Malawi', 'MZ':'Mozambique', 'NG':'Nigeria',
 option = st.selectbox(
     'Please select a retailer:',
     ('Please select','Ackermans','Bradlows/Russels','Builders','Checkers',
-    'Clicks', 'CNA', 'Cross_Trainer','Dealz', 'Decofurn','Dis-Chem','Dis-Chem-Pharmacies', 'H&H','HiFi',
+    'Clicks', 'CNA', 'Cross_Trainer','Dealz', 'Decofurn','Dis-Chem','Dis-Chem-Pharmacies', 'Game', 'H&H','HiFi',
     'Incredible-Connection','Makro', 'Mr-Price-Sport', 'Musica','Ok-Furniture', 
     'Outdoor-Warehouse','Pep-Africa','Pep-SA','PnP','Retailability', 'Sportsmans-Warehouse','Takealot','TFG','TFG_Cosmetics'))
 st.write('You selected:', option)
@@ -1237,6 +1237,105 @@ elif option == 'Dis-Chem-Pharmacies':
 
     except:
         st.write('Check data') 
+
+# Game
+
+elif option == 'Game':
+   
+    try:
+        # Get retailers map
+        df_game_retailers_map = df_map
+        df_game_retailers_map.columns = df_game_retailers_map.columns.astype(str).str.strip()
+        df_game_retailers_map = df_game_retailers_map.rename(columns={'SMD Description': 'Product Description'})
+        df_game_retailers_map = df_game_retailers_map.rename(columns={'Article number': 'Article'})
+        df_retailers_map_game_final = df_game_retailers_map[['Article','SMD Code','Product Description']]
+
+        # Get retailer data
+        df_game_data = df_data
+        df_game_data.columns = df_game_data.columns.astype(str).str.strip()
+        df_game_data = df_game_data[df_game_data['StartDate'].notna()]
+        df_game_data = df_game_data.rename(columns={'MaterialCode': 'Article'})
+
+        # Merge with retailer map 
+        df_game_merged = df_game_data.merge(df_retailers_map_game_final, how='left', on='Article')
+
+
+        # Find missing data
+        missing_model_game = df_game_merged['SMD Code'].isnull()
+        df_game_missing_model = df_game_merged[missing_model_game]
+        df_missing = df_game_missing_model[['Article','MaterialDescription']]
+        df_missing_unique = df_missing.drop_duplicates()
+        st.write("The following products are missing the SMD code on the map: ")
+        st.table(df_missing_unique)
+
+    except:
+        st.markdown("**Retailer map column headings:** Article, SMD Product Code, SMD Description")
+        st.markdown("**Retailer data column headings:** EndDate, ProductCode, ProductDescription, SiteDescription, Quantity, ValueExcl")
+        st.markdown("Column headings are **case sensitive.** Please make sure they are correct")
+
+    
+    try:
+        # Set date columns
+        # df_makro_merged['Start Date'] = Date_Start
+
+        # Total amount column
+        df_game_merged['Total Amt'] = df_game_merged['ValueExcl'] + df_game_merged['VAT']
+        df_game_merged['SOH Qty'] = ''
+        
+        # Add retailer column
+        df_game_merged['Forecast Group'] = 'Game'
+
+        # Rename columns
+        df_game_merged = df_game_merged.rename(columns={'EndDate': 'Start Date'})
+        df_game_merged = df_game_merged.rename(columns={'Article': 'SKU No.'})
+        df_game_merged = df_game_merged.rename(columns={'SMD Code': 'Product Code'})
+        df_game_merged = df_game_merged.rename(columns={'Quantity': 'Sales Qty'})
+        df_game_merged = df_game_merged.rename(columns={'PlantName': 'Store Name'})
+
+        df_game_merged['Store Name'] = df_game_merged['Store Name'].str.title()
+        
+
+        # Don't change these headings. Rather change the ones above
+        final_df_game = df_game_merged[['Start Date','SKU No.', 'Product Code', 'Forecast Group','Store Name','SOH Qty','Sales Qty','Total Amt']]
+        final_df_game_p = df_game_merged[['Product Code','Product Description','Sales Qty','Total Amt']]
+        final_df_game_s = df_game_merged[['Store Name','Total Amt']]
+
+        # Show final df
+        total = final_df_game['Total Amt'].sum()
+        total_units = final_df_game['Sales Qty'].sum()
+        st.write('**The total sales for the week are:** R',"{:0,.2f}".format(total).replace(',', ' '))
+        st.write('**Number of units sold:** '"{:0,.0f}".format(total_units).replace(',', ' '))
+        st.write('')
+        st.write('**Top 10 products for the week:**')
+        grouped_df_pt = final_df_game_p.groupby("Product Description").sum().sort_values("Total Amt", ascending=False)
+        grouped_df_final_pt = grouped_df_pt[['Sales Qty', 'Total Amt']].head(10)
+        st.table(grouped_df_final_pt.style.format({'Sales Qty':'{:,.0f}','Total Amt':'R{:,.2f}'}))
+        st.write('')
+        st.write('**Top 10 stores for the week:**')
+        grouped_df_st = final_df_game_s.groupby("Store Name").sum().sort_values("Total Amt", ascending=False)
+        grouped_df_final_st = grouped_df_st[['Total Amt']].head(10)
+        st.table(grouped_df_final_st.style.format('R{0:,.2f}'))
+        st.write('')
+        st.write('**Bottom 10 products for the week:**')
+        grouped_df_pb = final_df_game_p.groupby("Product Description").sum().sort_values("Total Amt", ascending=False)
+        grouped_df_final_pb = grouped_df_pb[['Sales Qty', 'Total Amt']].tail(10)
+        st.table(grouped_df_final_pb.style.format({'Sales Qty':'{:,.0f}','Total Amt':'R{:,.2f}'}))
+        st.write('')
+        st.write('**Bottom 10 stores for the week:**')
+        grouped_df_sb = final_df_game_s.groupby("Store Name").sum().sort_values("Total Amt", ascending=False)
+        grouped_df_final_sb = grouped_df_sb[['Total Amt']].tail(10)
+        st.table(grouped_df_final_sb.style.format('R{0:,.2f}'))
+        st.write('**Final Dataframe:**')          
+        final_df_game
+
+        # Output to .xlsx
+        st.write('Please ensure that no products are missing before downloading!')
+        st.markdown(get_table_download_link(final_df_game), unsafe_allow_html=True)
+
+    except:
+        st.write('Check data')
+
+
 
 # HiFi Corp
 
