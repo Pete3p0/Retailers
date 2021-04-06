@@ -1662,6 +1662,7 @@ elif option == 'Makro':
         # Get retailer data
         df_makro_data = df_data
         df_makro_data.columns = df_makro_data.columns.astype(str).str.strip()
+        df_makro_data = df_makro_data[df_makro_data['Article Desc'].notna()]
 
         # Get Store Names
         store_file = st.file_uploader('Stores', type='xlsx')
