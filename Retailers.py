@@ -95,11 +95,9 @@ if option == 'Ackermans':
     try:
         # Get retailers map
         df_ackermans_retailers_map = df_map
-        # df_ackermans_retailers_map.columns = df_ackermans_retailers_map.iloc[1]
-        # df_ackermans_retailers_map = df_ackermans_retailers_map.iloc[2:]
         df_ackermans_retailers_map.columns = df_ackermans_retailers_map.columns.astype(str).str.strip()
         df_ackermans_retailers_map = df_ackermans_retailers_map.rename(columns={'Style Code': 'SKU No.'})
-        df_ackermans_retailers_map_final = df_ackermans_retailers_map[['SKU No.','Product Description','SMD Product Code','RSP']]
+        df_ackermans_retailers_map_final = df_ackermans_retailers_map[['SKU No.','Product Description','SMD Product Code']]
 
         # Get retailer data
         df_ackermans_data = df_data
@@ -120,13 +118,6 @@ if option == 'Ackermans':
         st.table(df_missing_unique)
         st.write(" ")
 
-        missing_rsp_ackermans = df_ackermans_merged['RSP'].isnull()
-        df_ackermans_missing_rsp = df_ackermans_merged[missing_rsp_ackermans]
-        df_missing_2 = df_ackermans_missing_rsp[['SKU No.','Style Description']]
-        df_missing_unique_2 = df_missing_2.drop_duplicates()
-        st.write("The following products are missing the RSP on the map: ")
-        st.table(df_missing_unique_2)
-
     except:
         st.markdown("**Retailer map column headings:** Style Code, Product Description, SMD Product Code & RSP")
         st.markdown("**Retailer data column headings:** Style Code, Style Description, " + CSOH +", "+ Units_Sold)
@@ -141,7 +132,7 @@ if option == 'Ackermans':
         # df_ackermans_merged[Units_Sold].fillna(0,inplace=True)
         # .astype(int)
         df_ackermans_merged[Units_Sold].fillna(0,inplace=True)
-        df_ackermans_merged['Total Amt'] = df_ackermans_merged[Units_Sold] * df_ackermans_merged['RSP']
+        df_ackermans_merged['Total Amt'] = df_ackermans_merged[Units_Sold] * df_ackermans_merged['Current RSP']
 
         # Add retailer column and store column
         df_ackermans_merged['Forecast Group'] = 'Ackermans'
