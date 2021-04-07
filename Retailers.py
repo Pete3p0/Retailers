@@ -1267,7 +1267,7 @@ elif option == 'Game':
     
     try:
         # Set date columns
-        # df_makro_merged['Start Date'] = Date_Start
+        df_game_merged['EndDate'] = pd.to_datetime(df_game_merged['EndDate'])
 
         # Total amount column
         df_game_merged['Total Amt'] = df_game_merged['ValueExcl'] + df_game_merged['VAT']
