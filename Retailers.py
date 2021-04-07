@@ -66,11 +66,11 @@ data_file = st.file_uploader('Weekly Sales Data',type=['csv','txt','xlsx'])
 if data_file:    
     if data_file.name[-3:] == 'csv':
         data_file.seek(0)
-        df_data = pd.read_csv(io.StringIO(data_file.read().decode('utf-8')), delimiter='\|')
+        df_data = pd.read_csv(io.StringIO(data_file.read().decode('utf-8')), delimiter='|')
 
     elif data_file.name[-3:] == 'txt':
         data_file.seek(0)
-        df_data = pd.read_csv(io.StringIO(data_file.read().decode('utf-8')), delimiter='\|')
+        df_data = pd.read_csv(io.StringIO(data_file.read().decode('utf-8')), delimiter='|')
 
     else:
         df_data = pd.read_excel(data_file)
@@ -1549,14 +1549,14 @@ elif option == 'Incredible-Connection':
         ic_data_prev = st.file_uploader('Previous week', type='xlsx')
         if ic_data_prev:
             df_ic_data_prev = pd.read_excel(ic_data_prev)
-        df_ic_data_prev.columns = df_ic_data_prev.columns.astype(str).str.strip()
+        df_ic_data_prev = df_ic_data_prev.rename(columns=lambda x: x.strip())
         df_ic_data_prev['Lookup'] = df_ic_data_prev['Article'].astype(str) + df_ic_data_prev['Site']
         df_ic_data_prev = df_ic_data_prev.rename(columns={Units_Sold: 'Prev Sales'})
         df_ic_data_prev_final = df_ic_data_prev[['Lookup','Prev Sales']]
 
         # Get current week
         df_ic_data = df_data
-        df_ic_data.columns = df_ic_data.columns.astype(str).str.strip()
+        df_ic_data = df_ic_data.rename(columns=lambda x: x.strip())
         df_ic_data['Lookup'] = df_ic_data['Article'].astype(str) + df_ic_data['Site']
 
         # Rename columns
