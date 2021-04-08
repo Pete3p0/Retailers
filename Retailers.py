@@ -59,6 +59,7 @@ st.markdown("Please ensure data is in the **_first sheet_** of your Excel Workbo
 map_file = st.file_uploader('Retailer Map', type='xlsx')
 if map_file:
     df_map = pd.read_excel(map_file)
+    df_map = df_map.rename(columns=lambda x: x.strip())
 
 
 
@@ -67,13 +68,16 @@ if data_file:
     if data_file.name[-3:] == 'csv':
         data_file.seek(0)
         df_data = pd.read_csv(io.StringIO(data_file.read().decode('utf-8')), delimiter='|')
+        df_data = df_data.rename(columns=lambda x: x.strip())
 
     elif data_file.name[-3:] == 'txt':
         data_file.seek(0)
         df_data = pd.read_csv(io.StringIO(data_file.read().decode('utf-8')), delimiter='|')
+        df_data = df_data.rename(columns=lambda x: x.strip())
 
     else:
         df_data = pd.read_excel(data_file)
+        df_data = df_data.rename(columns=lambda x: x.strip())
 
 
 
@@ -746,14 +750,11 @@ elif option == 'Cross_Trainer':
     try:
         # Get retailers map
         df_ct_retailers_map = df_map
-        df_ct_retailers_map.columns = df_ct_retailers_map.columns.astype(str).str.strip()
         df_ct_retailers_map = df_ct_retailers_map.rename(columns={'Cross Trainer Product Code':'Item Code'})
         df_retailers_map_ct_final = df_ct_retailers_map[['Item Code','SMD Product Code', 'SMD Description','RSP']] 
         
         # Get retailer data
         df_ct_data = df_data
-        # df_ct_data.columns = df_ct_data.iloc[0]
-        # df_ct_data = df_ct_data.iloc[1:]
         
         # Merge with retailer map
         df_ct_merged = df_ct_data.merge(df_retailers_map_ct_final, how='left', on='Item Code')
