@@ -1244,7 +1244,7 @@ elif option == 'Game':
     
     try:
         # Set date columns
-        df_game_merged['EndDate'] = pd.to_datetime(df_game_merged['EndDate'],format='%d-%m-%Y', errors='coerce')
+        df_game_merged['EndDate'] = pd.to_datetime(df_game_merged['EndDate'])
 
         # Total amount column
         df_game_merged['Total Amt'] = df_game_merged['ValueExcl'] + df_game_merged['VAT']
@@ -1754,6 +1754,9 @@ elif option == 'Makro':
 
     
     try:
+
+        # Get Date
+        df_makro_merged['EndDate'] = pd.to_datetime(df_makro_merged['EndDate'])
 
         # Total amount column
         df_makro_merged['Total Amt'] = df_makro_merged['ValueExcl'] + df_makro_merged['VAT']
