@@ -973,7 +973,7 @@ elif option == 'Decofurn':
 
     try:
         # Set date columns
-        df_dcf_merged['Start Date'] = Date_Start
+        df_dcf_merged['Start Date'] = Date_End
 
         # Total amount column
         df_dcf_merged['Total Amt'] = df_dcf_merged['Sales Qty'] * df_dcf_merged['RSP']
@@ -1211,6 +1211,23 @@ elif option == 'Dis-Chem-Pharmacies':
 # Game
 
 elif option == 'Game':
+
+
+    game_soh = st.file_uploader('SOH',type=['csv','txt','xlsx'])
+    if game_soh:    
+        if game_soh.name[-3:] == 'csv':
+            game_soh.seek(0)
+            df_game_soh = pd.read_csv(io.StringIO(game_soh.read().decode('utf-8')), delimiter='|')
+            df_game_soh = df_game_soh.rename(columns=lambda x: x.strip())
+
+        elif data_file.name[-3:] == 'txt':
+            data_file.seek(0)
+            df_game_soh = pd.read_csv(io.StringIO(game_soh.read().decode('utf-8')), delimiter='|')
+            df_game_soh = df_game_soh.rename(columns=lambda x: x.strip())
+
+        else:
+            df_game_soh = pd.read_excel(game_soh)
+            df_game_soh = df_game_soh.rename(columns=lambda x: x.strip())
    
     try:
         # Get retailers map
@@ -1222,10 +1239,16 @@ elif option == 'Game':
         # Get retailer data
         df_game_data = df_data
         df_game_data = df_game_data[df_game_data['StartDate'].notna()]
+        df_game_data['Lookup'] = df_game_data['MaterialCode'].astype(str) + df_game_data['PlantCode']
         df_game_data = df_game_data.rename(columns={'MaterialCode': 'Article'})
 
         # Merge with retailer map 
         df_game_merged = df_game_data.merge(df_retailers_map_game_final, how='left', on='Article')
+
+        # Merge with SOH
+        df_game_soh['Lookup'] = df_game_soh['MaterialCode'].astype(str) + df_game_soh['PlantCode']
+        df_game_soh_final = df_game_soh[['Lookup', 'StockOnHand']]
+        df_game_merged = df_game_merged.merge(df_game_soh_final, how='left', on='Lookup')
 
 
         # Find missing data
@@ -1248,7 +1271,6 @@ elif option == 'Game':
 
         # Total amount column
         df_game_merged['Total Amt'] = df_game_merged['ValueExcl'] + df_game_merged['VAT']
-        df_game_merged['SOH Qty'] = ''
         
         # Add retailer column
         df_game_merged['Forecast Group'] = 'Game'
@@ -1259,6 +1281,7 @@ elif option == 'Game':
         df_game_merged = df_game_merged.rename(columns={'SMD Code': 'Product Code'})
         df_game_merged = df_game_merged.rename(columns={'Quantity': 'Sales Qty'})
         df_game_merged = df_game_merged.rename(columns={'PlantName': 'Store Name'})
+        df_game_merged = df_game_merged.rename(columns={'StockOnHand': 'SOH Qty'})
 
         df_game_merged['Store Name'] = df_game_merged['Store Name'].str.title()
         
@@ -1624,6 +1647,22 @@ elif option == 'Makro':
         week_sales = ('0'+str(week)+'-'+str(Year))
     else:
         week_sales = (str(week)+'-'+str(Year))
+
+    makro_soh = st.file_uploader('SOH',type=['csv','txt','xlsx'])
+    if makro_soh:    
+        if makro_soh.name[-3:] == 'csv':
+            makro_soh.seek(0)
+            df_makro_soh = pd.read_csv(io.StringIO(makro_soh.read().decode('utf-8')), delimiter='|')
+            df_makro_soh = df_makro_soh.rename(columns=lambda x: x.strip())
+
+        elif data_file.name[-3:] == 'txt':
+            data_file.seek(0)
+            df_makro_soh = pd.read_csv(io.StringIO(makro_soh.read().decode('utf-8')), delimiter='|')
+            df_makro_soh = df_makro_soh.rename(columns=lambda x: x.strip())
+
+        else:
+            df_makro_soh = pd.read_excel(makro_soh)
+            df_makro_soh = df_makro_soh.rename(columns=lambda x: x.strip())
     
     # st.write('Week chosen: '+week_sales)
     
@@ -1733,10 +1772,16 @@ elif option == 'Makro':
         # Get retailer data
         df_makro_data = df_data
         df_makro_data = df_makro_data[df_makro_data['StartDate'].notna()]
+        df_makro_data['Lookup'] = df_makro_data['ProductCode'].astype(str) + df_makro_data['SiteCode']
         df_makro_data = df_makro_data.rename(columns={'ProductCode': 'Article'})
 
         # Merge with retailer map 
         df_makro_merged = df_makro_data.merge(df_retailers_map_makro_final, how='left', on='Article')
+
+        # Merge with SOH
+        df_makro_soh['Lookup'] = df_makro_soh['ProductCode'].astype(str) + df_makro_soh['SiteCode']
+        df_makro_soh_final = df_makro_soh[['Lookup', 'StockOnHand']]
+        df_makro_merged = df_makro_merged.merge(df_makro_soh_final, how='left', on='Lookup')
 
 
         # Find missing data
@@ -1760,7 +1805,6 @@ elif option == 'Makro':
 
         # Total amount column
         df_makro_merged['Total Amt'] = df_makro_merged['ValueExcl'] + df_makro_merged['VAT']
-        df_makro_merged['SOH Qty'] = ''
         
         # Add retailer column
         df_makro_merged['Forecast Group'] = 'Makro'
@@ -1769,7 +1813,7 @@ elif option == 'Makro':
         df_makro_merged = df_makro_merged.rename(columns={'EndDate': 'Start Date'})
         df_makro_merged = df_makro_merged.rename(columns={'Article': 'SKU No.'})
         df_makro_merged = df_makro_merged.rename(columns={'SMD Product Code': 'Product Code'})
-        # df_makro_merged = df_makro_merged.rename(columns={'SOH': 'SOH Qty'})
+        df_makro_merged = df_makro_merged.rename(columns={'StockOnHand': 'SOH Qty'})
         df_makro_merged = df_makro_merged.rename(columns={'Quantity': 'Sales Qty'})
         df_makro_merged = df_makro_merged.rename(columns={'SiteDescription': 'Store Name'})
         
