@@ -68,16 +68,25 @@ if data_file:
     if data_file.name[-3:] == 'csv':
         data_file.seek(0)
         df_data = pd.read_csv(io.StringIO(data_file.read().decode('utf-8')), delimiter='|')
-        df_data = df_data.rename(columns=lambda x: x.strip())
+        try:
+            df_data = df_data.rename(columns=lambda x: x.strip())
+        except:
+            df_data = df_data
 
     elif data_file.name[-3:] == 'txt':
         data_file.seek(0)
         df_data = pd.read_csv(io.StringIO(data_file.read().decode('utf-8')), delimiter='|')
-        df_data = df_data.rename(columns=lambda x: x.strip())
+        try:
+            df_data = df_data.rename(columns=lambda x: x.strip())
+        except:
+            df_data = df_data
 
     else:
         df_data = pd.read_excel(data_file)
-        df_data = df_data.rename(columns=lambda x: x.strip())
+        try:
+            df_data = df_data.rename(columns=lambda x: x.strip())
+        except:
+            df_data = df_data
 
 
 
