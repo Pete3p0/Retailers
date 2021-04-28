@@ -1229,8 +1229,8 @@ elif option == 'Game':
             df_game_soh = pd.read_csv(io.StringIO(game_soh.read().decode('utf-8')), delimiter='|')
             df_game_soh = df_game_soh.rename(columns=lambda x: x.strip())
 
-        elif data_file.name[-3:] == 'txt':
-            data_file.seek(0)
+        elif game_soh.name[-3:] == 'txt':
+            game_soh.seek(0)
             df_game_soh = pd.read_csv(io.StringIO(game_soh.read().decode('utf-8')), delimiter='|')
             df_game_soh = df_game_soh.rename(columns=lambda x: x.strip())
 
@@ -1664,8 +1664,8 @@ elif option == 'Makro':
             df_makro_soh = pd.read_csv(io.StringIO(makro_soh.read().decode('utf-8')), delimiter='|')
             df_makro_soh = df_makro_soh.rename(columns=lambda x: x.strip())
 
-        elif data_file.name[-3:] == 'txt':
-            data_file.seek(0)
+        elif makro_soh.name[-3:] == 'txt':
+            makro_soh.seek(0)
             df_makro_soh = pd.read_csv(io.StringIO(makro_soh.read().decode('utf-8')), delimiter='|')
             df_makro_soh = df_makro_soh.rename(columns=lambda x: x.strip())
 
