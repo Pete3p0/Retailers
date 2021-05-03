@@ -780,7 +780,7 @@ elif option == 'Cross_Trainer':
 
     except:
         st.markdown("**Retailer map column headings:** SMD Product Code, SMD Description, Cross Trainer Product Code, RSP")
-        st.markdown("**Retailer data column headings:** Store, Item Code, Item Description, SOH, Qty")
+        st.markdown("**Retailer data column headings:** Stores, Item Code, Item Description, SOH, Qty")
         st.markdown("Column headings are **case sensitive.** Please make sure they are correct")   
 
     try:
