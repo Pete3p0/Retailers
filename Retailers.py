@@ -59,9 +59,6 @@ st.markdown("Please ensure data is in the **_first sheet_** of your Excel Workbo
 map_file = st.file_uploader('Retailer Map', type='xlsx')
 if map_file:
     df_map = pd.read_excel(map_file)
-    df_map = df_map.rename(columns=lambda x: x.strip())
-
-
 
 data_file = st.file_uploader('Weekly Sales Data',type=['csv','txt','xlsx'])
 if data_file:    
