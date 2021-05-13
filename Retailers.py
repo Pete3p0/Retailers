@@ -2506,48 +2506,46 @@ elif option == 'PnP':
     try:
         # Get retailers map
         df_pnp_retailers_map = df_map
-        df_retailers_map_pnp_final = df_pnp_retailers_map[['Article Number','SMD code','Product Description', 'RSP']]
+        df_pnp_retailers_map = df_pnp_retailers_map.rename(columns={'Article Number': 'SKU No.'})
+        df_pnp_retailers_map = df_pnp_retailers_map.drop_duplicates(subset='SKU No.')
+        df_retailers_map_pnp_final = df_pnp_retailers_map[['SKU No.','SMD code','Product Description']]
         
         # Get retailer data
         df_pnp_data = df_data
-        df_pnp_data = df_pnp_data.rename(columns={'PnP ArticleNumber': 'Article Number'})
-        df_pnp_data = df_pnp_data.rename(columns={'Product Description': 'Article Desc'})
+        df_pnp_data = df_pnp_data.rename(columns={'Day': 'Start Date'})
+        df_pnp_data = df_pnp_data.rename(columns={'PnP ArticleNumber': 'SKU No.'})
         df_pnp_data = df_pnp_data.rename(columns={'Store': 'Store Name'})
-
-        # Lookup column
-        df_pnp_data['Lookup'] = df_pnp_data['Article Number'].astype(str) + df_pnp_data['Store ID']
+        df_pnp_data = df_pnp_data.rename(columns={'Units': 'Sales Qty'})
+        df_pnp_data = df_pnp_data.rename(columns={'Amount': 'Total Amt'})
+        df_pnp_data = df_pnp_data.rename(columns={'Product Description': 'Article description'})
+        df_pnp_data['SOH Qty'] = 0
+        df_pnp_data_final = df_pnp_data[['Start Date','SKU No.','Article description','Store Name','SOH Qty','Sales Qty','Total Amt']]
 
         # Get stock on hand
-        df_pnp_soh['Lookup'] = df_pnp_soh['Article Number'].astype(str) + df_pnp_soh['Site Code']
-        df_pnp_soh_final = df_pnp_soh[['Lookup','SOH Qty']]
+        df_pnp_soh = df_pnp_soh.rename(columns={'Week Ending Date': 'Start Date'})
+        df_pnp_soh = df_pnp_soh.rename(columns={'Article Number': 'SKU No.'})
+        df_pnp_soh = df_pnp_soh.rename(columns={'Site Description': 'Store Name'})
+        df_pnp_soh['Sales Qty'] = 0
+        df_pnp_soh['Total Amt'] = 0
+        df_pnp_soh_final = df_pnp_soh[['Start Date','SKU No.','Article description','Store Name','SOH Qty','Sales Qty','Total Amt']]
 
-        # Merge with SOH
-        df_pnp_data = df_pnp_data.merge(df_pnp_soh_final, how='left', on='Lookup')
+        # Concatenate SOH and Sales
+        df_pnp_data_concat = pd.concat([df_pnp_data_final, df_pnp_soh_final])
+        df_pnp_data_concat['Store Name'] = df_pnp_data_concat['Store Name'].str.title()
 
         # Merge with retailer map
-        df_pnp_merged = df_pnp_data.merge(df_retailers_map_pnp_final, how='left', on='Article Number')
+        df_pnp_merged = df_pnp_data_concat.merge(df_retailers_map_pnp_final, how='left', on='SKU No.')
 
         # Rename columns
-        df_pnp_merged = df_pnp_merged.rename(columns={'Article Number': 'SKU No.'})
         df_pnp_merged = df_pnp_merged.rename(columns={'SMD code': 'Product Code'})
-        df_pnp_merged = df_pnp_merged.rename(columns={'Units': 'Sales Qty'})
-        df_pnp_merged = df_pnp_merged.rename(columns={'Day': 'Start Date'})
 
         # Find missing data
         missing_model = df_pnp_merged['Product Code'].isnull()
         df_pnp_missing_model = df_pnp_merged[missing_model]
-        df_missing = df_pnp_missing_model[['SKU No.','Article Desc']]
+        df_missing = df_pnp_missing_model[['SKU No.','Article description']]
         df_missing_unique = df_missing.drop_duplicates()
         st.write("The following products are missing the SMD code on the map: ")
         st.table(df_missing_unique)
-
-        st.write(" ") 
-        missing_rsp = df_pnp_merged['RSP'].isnull()
-        df_pnp_missing_rsp = df_pnp_merged[missing_rsp] 
-        df_missing_2 = df_pnp_missing_rsp[['SKU No.','Article Desc']]
-        df_missing_unique_2 = df_missing_2.drop_duplicates()
-        st.write("The following products are missing the RSP on the map: ")
-        st.table(df_missing_unique_2)
 
     except:
         st.markdown("**Retailer map column headings:** Article Number, SMD code, Product Description, RSP")
@@ -2556,11 +2554,11 @@ elif option == 'PnP':
         st.markdown("Column headings are **case sensitive.** Please make sure they are correct")
 
     try:
-        # Set date columns
-        # df_pnp_merged['Start Date'] = Date_Start
+    # Set date columns
+    # df_pnp_merged['Start Date'] = Date_Start
 
-        # Total amount column
-        df_pnp_merged['Total Amt'] = df_pnp_merged['Sales Qty'] * df_pnp_merged['RSP']
+    # Total amount column
+    # df_pnp_merged['Total Amt'] = df_pnp_merged['Sales Qty'] * df_pnp_merged['RSP']
 
         # Add retailer and store column
         df_pnp_merged['Forecast Group'] = 'Pick n Pay'
