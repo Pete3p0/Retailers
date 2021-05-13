@@ -1357,9 +1357,9 @@ elif option == 'HiFi':
         df_hifi_data['Lookup'] = df_hifi_data['Material'].astype(str) + df_hifi_data['Plant']
 
         # Merge with retailer map and previous week
-        df_hifi_data_merge_curr = df_hifi_data.merge(df_hifi_data_prev, how='left', on='Lookup')
+        df_hifi_data_merge_curr = df_hifi_data.merge(df_hifi_data_prev, how='outer', on='Lookup')
         df_hifi_merged = df_hifi_data_merge_curr.merge(df_hifi_retailer_map, how='left', on='Material')
-        df_hifi_merged = df_hifi_merged.drop_duplicates(subset=['Lookup'])
+        # df_hifi_merged = df_hifi_merged.drop_duplicates(subset=['Lookup'])
 
         missing_model_hifi = df_hifi_merged['SMD Code'].isnull()
         df_hifi_missing_model = df_hifi_merged[missing_model_hifi]
