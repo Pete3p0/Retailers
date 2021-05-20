@@ -49,7 +49,7 @@ option = st.selectbox(
     'Please select a retailer:',
     ('Please select','Ackermans','Bradlows/Russels','Builders','Checkers',
     'Clicks', 'CNA', 'Cross_Trainer','Dealz', 'Decofurn','Dis-Chem','Dis-Chem-Pharmacies', 'Game', 'H&H','HiFi',
-    'Incredible-Connection','Makro', 'Mr-Price-Sport', 'Musica','Ok-Furniture', 
+    'Incredible-Connection','J.A.M.','Makro', 'Mr-Price-Sport', 'Musica','Ok-Furniture', 
     'Outdoor-Warehouse','Pep-Africa','Pep-SA','PnP','Retailability', 'Sportsmans-Warehouse','Takealot','TFG','TFG_Cosmetics'))
 st.write('You selected:', option)
 
@@ -60,7 +60,7 @@ map_file = st.file_uploader('Retailer Map', type='xlsx')
 if map_file:
     df_map = pd.read_excel(map_file)
 
-data_file = st.file_uploader('Weekly Sales Data',type=['csv','txt','xlsx'])
+data_file = st.file_uploader('Weekly Sales Data',type=['csv','txt','xlsx','xls'])
 if data_file:    
     if data_file.name[-3:] == 'csv':
         data_file.seek(0)
@@ -1573,6 +1573,7 @@ elif option == 'Incredible-Connection':
         st.write("The following products are missing the SMD code on the map: ")
         st.table(df_missing_unique)
 
+        # Find missing data
         st.write(" ")
         missing_rsp_ic = df_ic_merged['RSP'].isnull()
         df_ic_missing_rsp = df_ic_merged[missing_rsp_ic]
@@ -1643,6 +1644,96 @@ elif option == 'Incredible-Connection':
     except:
         st.write('Check data')
 
+# J.A.M.
+
+elif option == 'J.A.M.':
+
+    try:
+        # Get retailers map
+        df_jam_retailers_map = df_map
+        df_jam_retailers_map = df_jam_retailers_map.rename(columns={'Description': 'Product Description'})
+
+        # Get retailer data
+        df_jam_data = df_data
+        df_jam_data.columns = df_jam_data.iloc[6]
+        df_jam_data = df_jam_data.iloc[7:]
+        df_jam_data = df_jam_data.dropna(subset=['Description'])
+        df_jam_data = df_jam_data.rename(columns={'Product': 'Item Number'})
+        
+        # Merge with retailer map
+        df_jam_merged = df_jam_data.merge(df_jam_retailers_map, how='left', on='Item Number')
+        df_jam_merged
+        
+        # Find missing data
+        missing_model_jam = df_jam_merged['Product Code'].isnull()
+        df_jam_missing_model = df_jam_merged[missing_model_jam]
+        df_missing = df_jam_missing_model[['Item Number','Description']]
+        df_missing_unique = df_missing.drop_duplicates()
+        st.write("The following products are missing the SMD code on the map: ")
+        st.table(df_missing_unique)
+
+    except:
+        st.markdown("**Retailer map column headings:** Item Number, Product Code & Description")
+        st.markdown("**Retailer data column headings:** Product, Description, SOO, SOH, SIT, Price (Incl) & Qty Sold")
+        st.markdown("Column headings are **case sensitive.** Please make sure they are correct")
+
+    try:
+        # Set date columns
+        df_jam_merged['Start Date'] = Date_Start
+
+        # Stores
+        df_jam_merged['Store Name'] = ''
+
+        # Add Total Amount column
+        df_jam_merged['Total Amt'] = df_jam_merged['Price (Incl)'] * df_jam_merged['Qty Sold']
+
+        # Add column for retailer and SOH
+        df_jam_merged['Forecast Group'] = 'J.A.M Clothing'
+        df_jam_merged['SOH Qty'] = df_jam_merged['SOO'] + df_jam_merged['SOH'] + df_jam_merged['SIT']
+
+        # Rename columns
+        df_jam_merged = df_jam_merged.rename(columns={'Item Number': 'SKU No.'})
+        df_jam_merged = df_jam_merged.rename(columns={'Qty Sold': 'Sales Qty'})
+
+        # Final df. Don't change these headings. Rather change the ones above
+        final_df_jam_sales = df_jam_merged[['Start Date','SKU No.', 'Product Code', 'Forecast Group','Store Name','SOH Qty','Sales Qty','Total Amt']]
+        final_df_jam_p = df_jam_merged[['Product Code','Product Description','Sales Qty','Total Amt']]
+        final_df_jam_s = df_jam_merged[['Store Name','Total Amt']]
+
+        # Show final df
+        total = final_df_jam_sales['Total Amt'].sum()
+        total_units = final_df_jam_sales['Sales Qty'].sum()
+        st.write('**The total sales for the week are:** R',"{:0,.2f}".format(total).replace(',', ' '))
+        st.write('**Number of units sold:** '"{:0,.0f}".format(total_units).replace(',', ' '))
+        st.write('')
+        st.write('**Top 10 products for the week:**')
+        grouped_df_pt = final_df_jam_p.groupby("Product Description").sum().sort_values("Total Amt", ascending=False)
+        grouped_df_final_pt = grouped_df_pt[['Sales Qty', 'Total Amt']].head(10)
+        st.table(grouped_df_final_pt.style.format({'Sales Qty':'{:,.0f}','Total Amt':'R{:,.2f}'}))
+        st.write('')
+        st.write('**Top 10 stores for the week:**')
+        grouped_df_st = final_df_jam_s.groupby("Store Name").sum().sort_values("Total Amt", ascending=False)
+        grouped_df_final_st = grouped_df_st[['Total Amt']].head(10)
+        st.table(grouped_df_final_st.style.format('R{0:,.2f}'))
+        st.write('')
+        st.write('**Bottom 10 products for the week:**')
+        grouped_df_pb = final_df_jam_p.groupby("Product Description").sum().sort_values("Total Amt", ascending=False)
+        grouped_df_final_pb = grouped_df_pb[['Sales Qty', 'Total Amt']].tail(10)
+        st.table(grouped_df_final_pb.style.format({'Sales Qty':'{:,.0f}','Total Amt':'R{:,.2f}'}))
+        st.write('')
+        st.write('**Bottom 10 stores for the week:**')
+        grouped_df_sb = final_df_jam_s.groupby("Store Name").sum().sort_values("Total Amt", ascending=False)
+        grouped_df_final_sb = grouped_df_sb[['Total Amt']].tail(10)
+        st.table(grouped_df_final_sb.style.format('R{0:,.2f}'))
+        st.write('**Final Dataframe:**')    
+        final_df_jam_sales
+
+        # Output to .xlsx
+        st.write('Please ensure that no products are missing before downloading!')
+        st.markdown(get_table_download_link(final_df_jam_sales), unsafe_allow_html=True)
+
+    except:
+        st.write('Check data')
 
 # Makro
 
