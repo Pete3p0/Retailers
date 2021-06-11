@@ -2793,8 +2793,7 @@ elif option == 'PnP':
         df_pnp_data = df_pnp_data.rename(columns={'Product Description': 'Article description'})
         df_pnp_data['SOH Qty'] = 0
         df_pnp_data_final = df_pnp_data[['Start Date','SKU No.','Article description','Store Name','SOH Qty','Sales Qty','Total Amt']]
-        df_pnp_data_final['Start Date'].dtypes
-
+        
         # Get stock on hand
         df_pnp_soh = df_pnp_soh.rename(columns={'Week Ending Date': 'Start Date'})
         df_pnp_soh = df_pnp_soh.rename(columns={'Article Number': 'SKU No.'})
@@ -2803,8 +2802,7 @@ elif option == 'PnP':
         df_pnp_soh['Sales Qty'] = 0
         df_pnp_soh['Total Amt'] = 0
         df_pnp_soh_final = df_pnp_soh[['Start Date','SKU No.','Article description','Store Name','SOH Qty','Sales Qty','Total Amt']]
-        df_pnp_soh_final['Start Date'].dtypes
-
+        
         # Concatenate SOH and Sales
         df_pnp_data_concat = pd.concat([df_pnp_data_final, df_pnp_soh_final])
         df_pnp_data_concat['Store Name'] = df_pnp_data_concat['Store Name'].str.title()
