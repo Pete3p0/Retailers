@@ -3121,22 +3121,15 @@ elif option == 'Takealot':
         # Find missing data
         missing_model = df_takealot_merged['SMD Code'].isnull()
         df_takealot_missing_model = df_takealot_merged[missing_model]
-        df_missing = df_takealot_missing_model[['idProduct','Supplier Code']]
+        df_missing = df_takealot_missing_model[['idProduct','ProdTitle']]
         df_missing_unique = df_missing.drop_duplicates()
         st.write("The following products are missing the SMD code on the map: ")
         st.table(df_missing_unique)
 
-        st.write(" ")
-        missing_rsp = df_takealot_merged['RSP'].isnull()
-        df_takealot_missing_rsp = df_takealot_merged[missing_rsp]
-        df_missing_2 = df_takealot_missing_rsp[['idProduct','Supplier Code']]
-        df_missing_unique_2 = df_missing_2.drop_duplicates()
-        st.write("The following products are missing the RSP on the map: ")
-        st.table(df_missing_unique_2)
 
     except:
         st.markdown("**Retailer map column headings:** idProduct, SMD Code, RSP")
-        st.markdown("**Retailer data column headings:** idProduct, Supplier Code, Total SOH, Units Sold Qty")
+        st.markdown("**Retailer data column headings:** idProduct, ProdTitle, Total_Stock, Qty, SaleValueEx")
         st.markdown("Column headings are **case sensitive.** Please make sure they are correct")
 
     try:
@@ -3144,14 +3137,14 @@ elif option == 'Takealot':
         df_takealot_merged['Start Date'] = Date_Start
 
         # Total amount column
-        df_takealot_merged['Total Amt'] = df_takealot_merged['Units Sold Value'] * 1.15
+        df_takealot_merged['Total Amt'] = df_takealot_merged['SaleValueEx'] * 1.15
 
         # Add retailer and store column
         df_takealot_merged['Forecast Group'] = 'Takealot'
         df_takealot_merged['Store Name'] = ''
 
         # Rename columns
-        df_takealot_merged = df_takealot_merged.rename(columns={'idProduct': 'SKU No.','Units Sold Qty' :'Sales Qty','Total SOH':'SOH Qty','SMD Code':'Product Code' })
+        df_takealot_merged = df_takealot_merged.rename(columns={'idProduct': 'SKU No.','Qty' :'Sales Qty','Total_Stock':'SOH Qty','SMD Code':'Product Code' })
 
         # Don't change these headings. Rather change the ones above
         final_df_takealot = df_takealot_merged[['Start Date','SKU No.', 'Product Code', 'Forecast Group','Store Name','SOH Qty','Sales Qty','Total Amt']]
