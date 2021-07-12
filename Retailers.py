@@ -112,7 +112,8 @@ if option == 'Ackermans':
         df_ackermans_data = df_data
         df_ackermans_data.columns = df_ackermans_data.iloc[6]
         df_ackermans_data = df_ackermans_data.iloc[7:]
-
+        df_ackermans_data = df_ackermans_data[df_ackermans_data['Style Description'].notna()] 
+        
         # Merge with retailer map
         df_ackermans_data['SKU No.'] = df_ackermans_data['Style Code'].astype(int)
         df_ackermans_merged = df_ackermans_data.merge(df_ackermans_retailers_map_final, how='left', on='SKU No.')
@@ -127,8 +128,8 @@ if option == 'Ackermans':
         st.write(" ")
 
     except:
-        st.markdown("**Retailer map column headings:** Style Code, Product Description, SMD Product Code & RSP")
-        st.markdown("**Retailer data column headings:** Style Code, Style Description, " + CSOH +", "+ Units_Sold)
+        st.markdown("**Retailer map column headings:** Style Code, Product Description, SMD Product Code")
+        st.markdown("**Retailer data column headings:** Style Code, Style Description, Current RSP " + CSOH +", "+ Units_Sold)
         st.markdown("Column headings are **case sensitive.** Please make sure they are correct") 
 
         
