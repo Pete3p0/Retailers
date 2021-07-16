@@ -50,7 +50,7 @@ option = st.selectbox(
     ('Please select','Ackermans','Bradlows/Russels','Builders','Checkers',
     'Clicks', 'CNA', 'Cross_Trainer','Dealz', 'Decofurn','Dis-Chem','Dis-Chem-Pharmacies', 'Game', 'H&H','HiFi',
     'Incredible-Connection','J.A.M.','Makro', 'Mr-Price-Sport', 'Musica','Ok-Furniture', 
-    'Outdoor-Warehouse','Pep-Africa','Pep-SA','PnP','Retailability', 'Sportsmans-Warehouse','Takealot','TFG','TFG_Cosmetics'))
+    'Outdoor-Warehouse','Pep-Africa','Pep-SA','PnP','Retailability', 'Sportsmans-Warehouse','Takealot','TFG','TFG_Cosmetics','TRU'))
 st.write('You selected:', option)
 
 st.write("")
@@ -1845,8 +1845,7 @@ elif option == 'J.A.M.':
         
         # Merge with retailer map
         df_jam_merged = df_jam_data.merge(df_jam_retailers_map, how='left', on='Item Number')
-        df_jam_merged
-        
+                
         # Find missing data
         missing_model_jam = df_jam_merged['Product Code'].isnull()
         df_jam_missing_model = df_jam_merged[missing_model_jam]
@@ -3355,6 +3354,92 @@ elif option == 'TFG_Cosmetics':
         # Output to .xlsx
         st.write('Please ensure that no products are missing before downloading!')
         st.markdown(get_table_download_link(final_df_tfgc), unsafe_allow_html=True)
+    except:
+        st.write('Check data')
+
+# 'Toys R Us Audio & Gaming'
+
+elif option == 'TRU':
+
+    units_sold = str(Long_Date_Dict[Date_End.month]) + " " + str(Date_End.year)
+    
+    try:
+        # Get retailers map
+        df_tru_retailers_map = df_map
+        df_tru_retailers_map = df_tru_retailers_map[['Product Code', 'Product Description', 'SMD Code']]
+        
+        # Get retailer data
+        df_tru_data = df_data
+        df_tru_data = df_tru_data.dropna(subset=['Description'])
+        df_tru_data['Product Code'] = df_tru_data['Product Code'].astype(int)
+            
+        # Merge with retailer map 
+        df_tru_merged = df_tru_data.merge(df_tru_retailers_map, how='left', on='Product Code')
+        
+        # Find missing data
+        missing_model_tru = df_tru_merged['SMD Code'].isnull()
+        df_tru_missing_model = df_tru_merged[missing_model_tru]
+        df_missing = df_tru_missing_model[['Product Code','Description']]
+        df_missing_unique = df_missing.drop_duplicates()
+        st.write("The following products are missing the SMD code on the map: ")
+        st.table(df_missing_unique)
+
+    except:
+        st.markdown("**Retailer map column headings:** Product Code, SMD Code")
+        st.markdown("**Retailer data column headings:** Product Code, Description, Store Name, SOH, "+units_sold)
+        st.markdown("Column headings are **case sensitive.** Please make sure they are correct")
+
+    try:
+        # Set date columns
+        df_tru_merged['Start Date'] = Date_Start
+
+        # Rename columns
+        df_tru_merged = df_tru_merged.rename(columns={'Product Code': 'SKU No.',units_sold :'Sales Qty', 'SOH':'SOH Qty', 'SMD Code' : 'Product Code' })
+
+        # Total Amount
+        df_tru_merged['Total Amt'] = df_tru_merged['Sales Qty'] * df_tru_merged['RSP (incl)']
+
+        # Add retailer and store column
+        df_tru_merged['Forecast Group'] = 'Toys R Us Audio & Gaming'
+        df_tru_merged['Store Name'] = df_tru_merged['Store Name'].str.title() 
+
+        # Don't change these headings. Rather change the ones above
+        final_df_tru = df_tru_merged[['Start Date','SKU No.', 'Product Code', 'Forecast Group','Store Name','SOH Qty','Sales Qty','Total Amt']]
+        final_df_tru_p = df_tru_merged[['Product Code','Product Description','Sales Qty','Total Amt']]
+        final_df_tru_s = df_tru_merged[['Store Name','Total Amt']]
+
+        # Show final df
+        total = df_tru_merged['Total Amt'].sum()
+        total_units = final_df_tru['Sales Qty'].sum()
+        st.write('**The total sales for the week are:** R',"{:0,.2f}".format(total).replace(',', ' '))
+        st.write('**Number of units sold:** '"{:0,.0f}".format(total_units).replace(',', ' '))
+        st.write('')
+        st.write('**Top 10 products for the week:**')
+        grouped_df_pt = final_df_tru_p.groupby("Product Description").sum().sort_values("Total Amt", ascending=False)
+        grouped_df_final_pt = grouped_df_pt[['Sales Qty', 'Total Amt']].head(10)
+        st.table(grouped_df_final_pt)
+        st.write('')
+        st.write('**Top 10 stores for the week:**')
+        grouped_df_st = final_df_tru_s.groupby("Store Name").sum().sort_values("Total Amt", ascending=False)
+        grouped_df_final_st = grouped_df_st[['Total Amt']].head(10)
+        st.table(grouped_df_final_st)
+        st.write('')
+        st.write('**Bottom 10 products for the week:**')
+        grouped_df_pb = final_df_tru_p.groupby("Product Description").sum().sort_values("Total Amt", ascending=False)
+        grouped_df_final_pb = grouped_df_pb[['Sales Qty', 'Total Amt']].tail(10)
+        st.table(grouped_df_final_pb)
+        st.write('')
+        st.write('**Bottom 10 stores for the week:**')
+        grouped_df_sb = final_df_tru_s.groupby("Store Name").sum().sort_values("Total Amt", ascending=False)
+        grouped_df_final_sb = grouped_df_sb[['Total Amt']].tail(10)
+        st.table(grouped_df_final_sb)
+
+        st.write('**Final Dataframe:**')
+        final_df_tru
+
+        # Output to .xlsx
+        st.write('Please ensure that no products are missing before downloading!')
+        st.markdown(get_table_download_link(final_df_tru), unsafe_allow_html=True)
     except:
         st.write('Check data')
 
