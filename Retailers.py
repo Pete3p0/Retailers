@@ -3391,7 +3391,7 @@ elif option == 'TRU':
 
     try:
         # Set date columns
-        df_tru_merged['Start Date'] = Date_Start
+        df_tru_merged['Start Date'] = Date_End
 
         # Rename columns
         df_tru_merged = df_tru_merged.rename(columns={'Product Code': 'SKU No.',units_sold :'Sales Qty', 'SOH':'SOH Qty', 'SMD Code' : 'Product Code' })
