@@ -3372,6 +3372,7 @@ elif option == 'TRU':
         df_tru_data = df_data
         df_tru_data = df_tru_data.dropna(subset=['Description'])
         df_tru_data['Product Code'] = df_tru_data['Product Code'].astype(int)
+        df_tru_data = df_tru_data[~df_tru_data['Description'].str.contains('REDUCED')]
             
         # Merge with retailer map 
         df_tru_merged = df_tru_data.merge(df_tru_retailers_map, how='left', on='Product Code')
