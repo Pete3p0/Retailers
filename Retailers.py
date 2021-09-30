@@ -107,21 +107,19 @@ if option == 'Ackermans':
         df_ackermans_retailers_map = df_map
         df_ackermans_retailers_map = df_ackermans_retailers_map.rename(columns={'Style Code': 'SKU No.'})
         df_ackermans_retailers_map_final = df_ackermans_retailers_map[['SKU No.','Product Description','SMD Product Code']]
-
+        
         # Get retailer data
         df_ackermans_data = df_data
-        df_ackermans_data.columns = df_ackermans_data.iloc[6]
-        df_ackermans_data = df_ackermans_data.iloc[7:]
-        df_ackermans_data = df_ackermans_data[df_ackermans_data['Style Description'].notna()] 
+        df_ackermans_data['SKU No.'] = df_ackermans_data['Style'].astype(str).str.split(' ').str[0]
         
         # Merge with retailer map
-        df_ackermans_data['SKU No.'] = df_ackermans_data['Style Code'].astype(int)
+        df_ackermans_data['SKU No.'] = df_ackermans_data['SKU No.'].astype(int)
         df_ackermans_merged = df_ackermans_data.merge(df_ackermans_retailers_map_final, how='left', on='SKU No.')
 
         # Find missing data
         missing_model_ackermans = df_ackermans_merged['SMD Product Code'].isnull()
         df_ackermans_missing_model = df_ackermans_merged[missing_model_ackermans]
-        df_missing = df_ackermans_missing_model[['SKU No.','Style Description']]
+        df_missing = df_ackermans_missing_model[['SKU No.','Style']]
         df_missing_unique = df_missing.drop_duplicates()
         st.write("The following products are missing the SMD code on the map: ")
         st.table(df_missing_unique)
@@ -129,7 +127,7 @@ if option == 'Ackermans':
 
     except:
         st.markdown("**Retailer map column headings:** Style Code, Product Description, SMD Product Code")
-        st.markdown("**Retailer data column headings:** Style Code, Style Description, Current RSP " + CSOH +", "+ Units_Sold)
+        st.markdown("**Retailer data column headings:** Store, Style, Closing Stock Units, Nett Sale Units, Nett Sale Value")
         st.markdown("Column headings are **case sensitive.** Please make sure they are correct") 
 
         
@@ -137,21 +135,15 @@ if option == 'Ackermans':
         # Set date columns
         df_ackermans_merged['Start Date'] = Date_End
 
-        # Total amount column
-        # df_ackermans_merged[Units_Sold].fillna(0,inplace=True)
-        # .astype(int)
-        df_ackermans_merged[Units_Sold].fillna(0,inplace=True)
-        df_ackermans_merged['Total Amt'] = df_ackermans_merged[Units_Sold] * df_ackermans_merged['Current RSP']
-
         # Add retailer column and store column
         df_ackermans_merged['Forecast Group'] = 'Ackermans'
-        df_ackermans_merged['Store Name'] = ''
-        df_ackermans_merged['Style Description'] = df_ackermans_merged['Style Description'].str.title() 
 
         # Rename columns
-        df_ackermans_merged = df_ackermans_merged.rename(columns={CSOH: 'SOH Qty'})
-        df_ackermans_merged = df_ackermans_merged.rename(columns={Units_Sold: 'Sales Qty'})
+        df_ackermans_merged = df_ackermans_merged.rename(columns={'Closing Stock Units': 'SOH Qty'})
+        df_ackermans_merged = df_ackermans_merged.rename(columns={'Nett Sale Units': 'Sales Qty'})
+        df_ackermans_merged = df_ackermans_merged.rename(columns={'Nett Sale Value': 'Total Amt'})
         df_ackermans_merged = df_ackermans_merged.rename(columns={'SMD Product Code': 'Product Code'})
+        df_ackermans_merged = df_ackermans_merged.rename(columns={'Store': 'Store Name'})
 
         # Don't change these headings. Rather change the ones above
         final_df_ackermans = df_ackermans_merged[['Start Date','SKU No.', 'Product Code', 'Forecast Group','Store Name','SOH Qty','Sales Qty','Total Amt']]
@@ -1333,135 +1325,30 @@ elif option == 'Game':
     except:
         st.write('Check data')
 
-# HiFi Corp
-
-elif option == 'HiFi':
-    try:
-        Units_Sold = ('Qty Sold '+ str(Month) + '.' + Year)
-        Value_Sold = ('Sales Value '+Long_Date_Dict[Month])
-        
-        # Get retailers map
-        df_hifi_retailer_map = df_map
-
-        # Get current week
-        df_hifi_data = df_data
-        df_hifi_data['Lookup'] = df_hifi_data['Material'].astype(str) + df_hifi_data['Plant']
-
-        # Merge with retailer map and previous week
-        df_hifi_merged = df_hifi_data.merge(df_hifi_retailer_map, how='left', on='Material')
-
-        # Find missing data
-        missing_model_hifi = df_hifi_merged['SMD Code'].isnull()
-        df_hifi_missing_model = df_hifi_merged[missing_model_hifi]
-        df_missing = df_hifi_missing_model[['Material','Material Desc']]
-        df_missing_unique = df_missing.drop_duplicates()
-        st.write("The following products are missing the SMD code on the map: ")
-        st.table(df_missing_unique)
-
-    except:
-        st.markdown("**Retailer map column headings:** Material, SMD Code, Product Description & RSP")
-        st.markdown("**Retailer data column headings:** Material, Material Desc, Plant, Plant Description, Total SOH Qty & "+Units_Sold)
-        st.markdown("Column headings are **case sensitive.** Please make sure they are correct")
-
-    try:
-        # Set date columns
-        df_hifi_merged['Start Date'] = Date_End
-
-        # Add Total Amount column
-        df_hifi_merged = df_hifi_merged.rename(columns={Units_Sold : 'Sales Qty'})
-        df_hifi_merged['Total Amt'] = df_hifi_merged[Value_Sold] * 1.15
-
-        # Add column for retailer and SOH
-        df_hifi_merged['Forecast Group'] = 'HIFI Corp'
-
-        # Rename columns
-        df_hifi_merged = df_hifi_merged.rename(columns={'Material': 'SKU No.'})
-        df_hifi_merged = df_hifi_merged.rename(columns={'Total SOH Qty': 'SOH Qty'})
-        df_hifi_merged = df_hifi_merged.rename(columns={'SMD Code': 'Product Code'})
-        df_hifi_merged = df_hifi_merged.rename(columns={'Plant Description': 'Store Name'})
-
-        # Final df. Don't change these headings. Rather change the ones above
-        final_df_hifi_sales = df_hifi_merged[['Start Date','SKU No.', 'Product Code', 'Forecast Group','Store Name','SOH Qty','Sales Qty','Total Amt']]
-        final_df_hifi_p = df_hifi_merged[['Product Code','Product Description','Sales Qty','Total Amt']]
-        final_df_hifi_s = df_hifi_merged[['Store Name','Total Amt']]
-
-        # Show final df
-        total = final_df_hifi_sales['Total Amt'].sum()
-        total_units = final_df_hifi_sales['Sales Qty'].sum()
-        st.write('**The total sales for the week are:** R',"{:0,.2f}".format(total).replace(',', ' '))
-        st.write('**Number of units sold:** '"{:0,.0f}".format(total_units).replace(',', ' '))
-        st.write('')
-        st.write('**Top 10 products for the week:**')
-        grouped_df_pt = final_df_hifi_p.groupby("Product Description").sum().sort_values("Total Amt", ascending=False)
-        grouped_df_final_pt = grouped_df_pt[['Sales Qty', 'Total Amt']].head(10)
-        st.table(grouped_df_final_pt.style.format({'Sales Qty':'{:,.0f}','Total Amt':'R{:,.2f}'}))
-        st.write('')
-        st.write('**Top 10 stores for the week:**')
-        grouped_df_st = final_df_hifi_s.groupby("Store Name").sum().sort_values("Total Amt", ascending=False)
-        grouped_df_final_st = grouped_df_st[['Total Amt']].head(10)
-        st.table(grouped_df_final_st.style.format('R{0:,.2f}'))
-        st.write('')
-        st.write('**Bottom 10 products for the week:**')
-        grouped_df_pb = final_df_hifi_p.groupby("Product Description").sum().sort_values("Total Amt", ascending=False)
-        grouped_df_final_pb = grouped_df_pb[['Sales Qty', 'Total Amt']].tail(10)
-        st.table(grouped_df_final_pb.style.format({'Sales Qty':'{:,.0f}','Total Amt':'R{:,.2f}'}))
-        st.write('')
-        st.write('**Bottom 10 stores for the week:**')
-        grouped_df_sb = final_df_hifi_s.groupby("Store Name").sum().sort_values("Total Amt", ascending=False)
-        grouped_df_final_sb = grouped_df_sb[['Total Amt']].tail(10)
-        st.table(grouped_df_final_sb.style.format('R{0:,.2f}'))
-        st.write('**Final Dataframe:**')          
-        final_df_hifi_sales
-
-        # Output to .xlsx
-        st.write('Please ensure that no products are missing before downloading!')
-        st.markdown(get_table_download_link(final_df_hifi_sales), unsafe_allow_html=True)
-
-    except:
-        st.write('Check data')
-
-
-# HiFi Corp (Accumalated)
+# HiFi Corp (Monthly)
 
 # elif option == 'HiFi':
 #     try:
 #         Units_Sold = ('Qty Sold '+ str(Month) + '.' + Year)
-
+#         Value_Sold = ('Sales Value '+Long_Date_Dict[Month])
+        
 #         # Get retailers map
 #         df_hifi_retailer_map = df_map
-           
-#         # Get previous week
-#         hifi_data_prev = st.file_uploader('Previous week', type='xlsx')
-#         if hifi_data_prev:
-#             df_hifi_data_prev = pd.read_excel(hifi_data_prev)
-#         df_hifi_data_prev = df_hifi_data_prev.rename(columns=lambda x: x.strip())
-#         df_hifi_data_prev['Lookup'] = df_hifi_data_prev['Material'].astype(str) + df_hifi_data_prev['Plant']
-#         df_hifi_data_prev = df_hifi_data_prev.rename(columns={Units_Sold: 'Prev Sales'})
-#         df_hifi_data_prev = df_hifi_data_prev[['Lookup','Prev Sales']]
 
 #         # Get current week
 #         df_hifi_data = df_data
 #         df_hifi_data['Lookup'] = df_hifi_data['Material'].astype(str) + df_hifi_data['Plant']
 
 #         # Merge with retailer map and previous week
-#         df_hifi_data_merge_curr = df_hifi_data.merge(df_hifi_data_prev, how='outer', on='Lookup')
-#         df_hifi_merged = df_hifi_data_merge_curr.merge(df_hifi_retailer_map, how='left', on='Material')
-#         # df_hifi_merged = df_hifi_merged.drop_duplicates(subset=['Lookup'])
+#         df_hifi_merged = df_hifi_data.merge(df_hifi_retailer_map, how='left', on='Material')
 
+#         # Find missing data
 #         missing_model_hifi = df_hifi_merged['SMD Code'].isnull()
 #         df_hifi_missing_model = df_hifi_merged[missing_model_hifi]
 #         df_missing = df_hifi_missing_model[['Material','Material Desc']]
 #         df_missing_unique = df_missing.drop_duplicates()
 #         st.write("The following products are missing the SMD code on the map: ")
 #         st.table(df_missing_unique)
-
-#         st.write(" ")
-#         missing_rsp_hifi = df_hifi_merged['RSP'].isnull()
-#         df_hifi_missing_rsp = df_hifi_merged[missing_rsp_hifi]
-#         df_missing_2 = df_hifi_missing_rsp[['Material','Material Desc']]
-#         df_missing_unique_2 = df_missing_2.drop_duplicates()
-#         st.write("The following products are missing the RSP on the map: ")
-#         st.table(df_missing_unique_2)
 
 #     except:
 #         st.markdown("**Retailer map column headings:** Material, SMD Code, Product Description & RSP")
@@ -1470,11 +1357,11 @@ elif option == 'HiFi':
 
 #     try:
 #         # Set date columns
-#         df_hifi_merged['Start Date'] = Date_Start
+#         df_hifi_merged['Start Date'] = Date_End
 
 #         # Add Total Amount column
-#         df_hifi_merged['Sales Qty'] = df_hifi_merged[Units_Sold] - df_hifi_merged['Prev Sales']
-#         df_hifi_merged['Total Amt'] = df_hifi_merged['Sales Qty'] * df_hifi_merged['RSP']
+#         df_hifi_merged = df_hifi_merged.rename(columns={Units_Sold : 'Sales Qty'})
+#         df_hifi_merged['Total Amt'] = df_hifi_merged[Value_Sold] * 1.15
 
 #         # Add column for retailer and SOH
 #         df_hifi_merged['Forecast Group'] = 'HIFI Corp'
@@ -1524,6 +1411,111 @@ elif option == 'HiFi':
 
 #     except:
 #         st.write('Check data')
+
+
+# HiFi Corp (Accumalated)
+
+elif option == 'HiFi':
+    try:
+        Units_Sold = ('Qty Sold '+ str(Month) + '.' + Year)
+
+        # Get retailers map
+        df_hifi_retailer_map = df_map
+           
+        # Get previous week
+        hifi_data_prev = st.file_uploader('Previous week', type='xlsx')
+        if hifi_data_prev:
+            df_hifi_data_prev = pd.read_excel(hifi_data_prev)
+        df_hifi_data_prev = df_hifi_data_prev.rename(columns=lambda x: x.strip())
+        df_hifi_data_prev['Lookup'] = df_hifi_data_prev['Material'].astype(str) + df_hifi_data_prev['Plant']
+        df_hifi_data_prev = df_hifi_data_prev.rename(columns={Units_Sold: 'Prev Sales'})
+        df_hifi_data_prev = df_hifi_data_prev[['Lookup','Prev Sales']]
+
+        # Get current week
+        df_hifi_data = df_data
+        df_hifi_data['Lookup'] = df_hifi_data['Material'].astype(str) + df_hifi_data['Plant']
+
+        # Merge with retailer map and previous week
+        df_hifi_data_merge_curr = df_hifi_data.merge(df_hifi_data_prev, how='outer', on='Lookup')
+        df_hifi_merged = df_hifi_data_merge_curr.merge(df_hifi_retailer_map, how='left', on='Material')
+        # df_hifi_merged = df_hifi_merged.drop_duplicates(subset=['Lookup'])
+
+        missing_model_hifi = df_hifi_merged['SMD Code'].isnull()
+        df_hifi_missing_model = df_hifi_merged[missing_model_hifi]
+        df_missing = df_hifi_missing_model[['Material','Material Desc']]
+        df_missing_unique = df_missing.drop_duplicates()
+        st.write("The following products are missing the SMD code on the map: ")
+        st.table(df_missing_unique)
+
+        st.write(" ")
+        missing_rsp_hifi = df_hifi_merged['RSP'].isnull()
+        df_hifi_missing_rsp = df_hifi_merged[missing_rsp_hifi]
+        df_missing_2 = df_hifi_missing_rsp[['Material','Material Desc']]
+        df_missing_unique_2 = df_missing_2.drop_duplicates()
+        st.write("The following products are missing the RSP on the map: ")
+        st.table(df_missing_unique_2)
+
+    except:
+        st.markdown("**Retailer map column headings:** Material, SMD Code, Product Description & RSP")
+        st.markdown("**Retailer data column headings:** Material, Material Desc, Plant, Plant Description, Total SOH Qty & "+Units_Sold)
+        st.markdown("Column headings are **case sensitive.** Please make sure they are correct")
+
+    try:
+        # Set date columns
+        df_hifi_merged['Start Date'] = Date_Start
+
+        # Add Total Amount column
+        df_hifi_merged['Sales Qty'] = df_hifi_merged[Units_Sold] - df_hifi_merged['Prev Sales']
+        df_hifi_merged['Total Amt'] = df_hifi_merged['Sales Qty'] * df_hifi_merged['RSP']
+
+        # Add column for retailer and SOH
+        df_hifi_merged['Forecast Group'] = 'HIFI Corp'
+
+        # Rename columns
+        df_hifi_merged = df_hifi_merged.rename(columns={'Material': 'SKU No.'})
+        df_hifi_merged = df_hifi_merged.rename(columns={'Total SOH Qty': 'SOH Qty'})
+        df_hifi_merged = df_hifi_merged.rename(columns={'SMD Code': 'Product Code'})
+        df_hifi_merged = df_hifi_merged.rename(columns={'Plant Description': 'Store Name'})
+
+        # Final df. Don't change these headings. Rather change the ones above
+        final_df_hifi_sales = df_hifi_merged[['Start Date','SKU No.', 'Product Code', 'Forecast Group','Store Name','SOH Qty','Sales Qty','Total Amt']]
+        final_df_hifi_p = df_hifi_merged[['Product Code','Product Description','Sales Qty','Total Amt']]
+        final_df_hifi_s = df_hifi_merged[['Store Name','Total Amt']]
+
+        # Show final df
+        total = final_df_hifi_sales['Total Amt'].sum()
+        total_units = final_df_hifi_sales['Sales Qty'].sum()
+        st.write('**The total sales for the week are:** R',"{:0,.2f}".format(total).replace(',', ' '))
+        st.write('**Number of units sold:** '"{:0,.0f}".format(total_units).replace(',', ' '))
+        st.write('')
+        st.write('**Top 10 products for the week:**')
+        grouped_df_pt = final_df_hifi_p.groupby("Product Description").sum().sort_values("Total Amt", ascending=False)
+        grouped_df_final_pt = grouped_df_pt[['Sales Qty', 'Total Amt']].head(10)
+        st.table(grouped_df_final_pt.style.format({'Sales Qty':'{:,.0f}','Total Amt':'R{:,.2f}'}))
+        st.write('')
+        st.write('**Top 10 stores for the week:**')
+        grouped_df_st = final_df_hifi_s.groupby("Store Name").sum().sort_values("Total Amt", ascending=False)
+        grouped_df_final_st = grouped_df_st[['Total Amt']].head(10)
+        st.table(grouped_df_final_st.style.format('R{0:,.2f}'))
+        st.write('')
+        st.write('**Bottom 10 products for the week:**')
+        grouped_df_pb = final_df_hifi_p.groupby("Product Description").sum().sort_values("Total Amt", ascending=False)
+        grouped_df_final_pb = grouped_df_pb[['Sales Qty', 'Total Amt']].tail(10)
+        st.table(grouped_df_final_pb.style.format({'Sales Qty':'{:,.0f}','Total Amt':'R{:,.2f}'}))
+        st.write('')
+        st.write('**Bottom 10 stores for the week:**')
+        grouped_df_sb = final_df_hifi_s.groupby("Store Name").sum().sort_values("Total Amt", ascending=False)
+        grouped_df_final_sb = grouped_df_sb[['Total Amt']].tail(10)
+        st.table(grouped_df_final_sb.style.format('R{0:,.2f}'))
+        st.write('**Final Dataframe:**')          
+        final_df_hifi_sales
+
+        # Output to .xlsx
+        st.write('Please ensure that no products are missing before downloading!')
+        st.markdown(get_table_download_link(final_df_hifi_sales), unsafe_allow_html=True)
+
+    except:
+        st.write('Check data')
 
 # House and Home
 elif option == 'H&H':
