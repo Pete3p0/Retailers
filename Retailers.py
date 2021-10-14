@@ -1327,7 +1327,7 @@ elif option == 'Game':
 
 # HiFi Corp (Monthly)
 
-# elif option == 'HiFi':
+elif option == 'HiFi':
     try:
         Units_Sold = ('Qty Sold '+ str(Month) + '.' + Year)
         Value_Sold = ('Sales Value '+Long_Date_Dict[Month])
@@ -1352,7 +1352,7 @@ elif option == 'Game':
 
     except:
         st.markdown("**Retailer map column headings:** Material, SMD Code, Product Description & RSP")
-        st.markdown("**Retailer data column headings:** Material, Material Desc, Plant, Plant Description, Total SOH Qty & "+Units_Sold)
+        st.markdown("**Retailer data column headings:** Material, Material Desc, Plant, Plant Description, Total SOH Qty & "+Units_Sold+", "+Value_Sold)
         st.markdown("Column headings are **case sensitive.** Please make sure they are correct")
 
     try:
@@ -1650,7 +1650,7 @@ elif option == 'Incredible-Connection':
 
     except:
         st.markdown("**Retailer map column headings:** Article, SMD Code, Product Description & RRP")
-        st.markdown("**Retailer data column headings:** Article, Article Name, Site, Site Name, Total SOH Qty & "+Units_Sold)
+        st.markdown("**Retailer data column headings:** Article, Article Name, Site, Site Name, Total SOH Qty & "+Units_Sold+", "+Value_Sold)
         st.markdown("Column headings are **case sensitive.** Please make sure they are correct")
 
     try:
