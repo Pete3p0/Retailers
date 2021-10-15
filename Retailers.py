@@ -1620,16 +1620,18 @@ elif option == 'Incredible-Connection':
     try:
         Units_Sold = ('Qty Sold '+ Long_Date_Dict[Month])
         Value_Sold = ('Sales Value '+Long_Date_Dict[Month])
-
+        
         # Get retailers map
         df_ic_retailers_map = df_map
 
         # Get current week
         df_ic_data = df_data
         df_ic_data = df_ic_data.rename(columns=lambda x: x.strip())
-        df_ic_data[Value_Sold] = df_ic_data[Value_Sold].replace(' ','', regex=True)
-        df_ic_data[Value_Sold] = df_ic_data.fillna(0)
+        df_ic_data[Value_Sold] = df_ic_data[Value_Sold].replace(' ','', regex=True)
+        # df_ic_data[Value_Sold] = df_ic_data[Value_Sold].replace('nan',0, regex=True)
+        df_ic_data[Value_Sold] = df_ic_data[Value_Sold].fillna(0)
         df_ic_data[Value_Sold] = df_ic_data[Value_Sold].astype(int)
+        df_ic_data
         
         
 
@@ -1659,7 +1661,7 @@ elif option == 'Incredible-Connection':
 
         # Add Total Amount column
         df_ic_merged = df_ic_merged.rename(columns={Units_Sold: 'Sales Qty'})
-        df_ic_merged['Total Amt'] = df_ic_merged['Sales Qty'] * df_ic_merged['RSP'] 
+        df_ic_merged['Total Amt'] = df_ic_merged[Value_Sold]*1.15
 
         # Add column for retailer and SOH
         df_ic_merged['Forecast Group'] = 'Incredible Connection'
