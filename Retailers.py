@@ -1329,29 +1329,34 @@ elif option == 'Game':
 
 elif option == 'HiFi':
     try:
-        Units_Sold = ('Qty Sold '+ str(Month) + '.' + Year)
+        Units_Sold = ('Qty Sold '+Long_Date_Dict[Month])
         Value_Sold = ('Sales Value '+Long_Date_Dict[Month])
         
         # Get retailers map
         df_hifi_retailer_map = df_map
+        df_hifi_retailer_map = df_hifi_retailer_map.drop_duplicates(subset=['Article'])
 
         # Get current week
         df_hifi_data = df_data
-        df_hifi_data['Lookup'] = df_hifi_data['Material'].astype(str) + df_hifi_data['Plant']
+        df_hifi_data = df_hifi_data.rename(columns=lambda x: x.strip())
+        df_hifi_data[Value_Sold] = df_hifi_data[Value_Sold].replace(' ','', regex=True)
+        df_hifi_data[Value_Sold] = df_hifi_data[Value_Sold].fillna(0)
+        df_hifi_data[Value_Sold] = df_hifi_data[Value_Sold].astype(int)
+        df_hifi_data['Lookup'] = df_hifi_data['Article'].astype(str) + df_hifi_data['Site']
 
         # Merge with retailer map and previous week
-        df_hifi_merged = df_hifi_data.merge(df_hifi_retailer_map, how='left', on='Material')
+        df_hifi_merged = df_hifi_data.merge(df_hifi_retailer_map, how='left', on='Article')
 
         # Find missing data
         missing_model_hifi = df_hifi_merged['SMD Code'].isnull()
         df_hifi_missing_model = df_hifi_merged[missing_model_hifi]
-        df_missing = df_hifi_missing_model[['Material','Material Desc']]
+        df_missing = df_hifi_missing_model[['Article','Article Name']]
         df_missing_unique = df_missing.drop_duplicates()
         st.write("The following products are missing the SMD code on the map: ")
         st.table(df_missing_unique)
 
     except:
-        st.markdown("**Retailer map column headings:** Material, SMD Code, Product Description & RSP")
+        st.markdown("**Retailer map column headings:** Article, SMD Code, Product Description & RSP")
         st.markdown("**Retailer data column headings:** Material, Material Desc, Plant, Plant Description, Total SOH Qty & "+Units_Sold+", "+Value_Sold)
         st.markdown("Column headings are **case sensitive.** Please make sure they are correct")
 
@@ -1367,10 +1372,10 @@ elif option == 'HiFi':
         df_hifi_merged['Forecast Group'] = 'HIFI Corp'
 
         # Rename columns
-        df_hifi_merged = df_hifi_merged.rename(columns={'Material': 'SKU No.'})
+        df_hifi_merged = df_hifi_merged.rename(columns={'Article': 'SKU No.'})
         df_hifi_merged = df_hifi_merged.rename(columns={'Total SOH Qty': 'SOH Qty'})
         df_hifi_merged = df_hifi_merged.rename(columns={'SMD Code': 'Product Code'})
-        df_hifi_merged = df_hifi_merged.rename(columns={'Plant Description': 'Store Name'})
+        df_hifi_merged = df_hifi_merged.rename(columns={'Site Name': 'Store Name'})
 
         # Final df. Don't change these headings. Rather change the ones above
         final_df_hifi_sales = df_hifi_merged[['Start Date','SKU No.', 'Product Code', 'Forecast Group','Store Name','SOH Qty','Sales Qty','Total Amt']]
