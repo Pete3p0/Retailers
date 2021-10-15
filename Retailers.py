@@ -1623,17 +1623,14 @@ elif option == 'Incredible-Connection':
         
         # Get retailers map
         df_ic_retailers_map = df_map
+        df_ic_retailers_map = df_ic_retailers_map.drop_duplicates(subset=['Article'])
 
         # Get current week
         df_ic_data = df_data
         df_ic_data = df_ic_data.rename(columns=lambda x: x.strip())
         df_ic_data[Value_Sold] = df_ic_data[Value_Sold].replace(' ','', regex=True)
-        # df_ic_data[Value_Sold] = df_ic_data[Value_Sold].replace('nan',0, regex=True)
         df_ic_data[Value_Sold] = df_ic_data[Value_Sold].fillna(0)
         df_ic_data[Value_Sold] = df_ic_data[Value_Sold].astype(int)
-        df_ic_data
-        
-        
 
         # Rename columns
         df_ic_retailers_map = df_ic_retailers_map.rename(columns={'RRP': 'RSP'})
