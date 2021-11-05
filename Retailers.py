@@ -870,7 +870,7 @@ elif option == 'Dealz':
 
         # Add Total Amount column
         df_dealz_merged[units_sold] = df_dealz_merged[units_sold].fillna(0)
-        df_dealz_merged['Total Amt'] = df_dealz_merged[units_sold].astype(int) * df_dealz_merged['Price'].astype(int)
+        df_dealz_merged['Total Amt'] = df_dealz_merged[units_sold].astype(int) * df_dealz_merged['Price'].astype(float)
 
         # Add column for retailer and store name
         df_dealz_merged['Forecast Group'] = 'Dealz'
