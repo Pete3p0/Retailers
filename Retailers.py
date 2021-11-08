@@ -72,7 +72,7 @@ if data_file:
 
     elif data_file.name[-3:] == 'txt':
         data_file.seek(0)
-        df_data = pd.read_csv(io.StringIO(data_file.read().decode('utf-8')), delimiter='|')
+        df_data = pd.read_csv(io.StringIO(data_file.read().decode('ANSI')), delimiter='|')
         try:
             df_data = df_data.rename(columns=lambda x: x.strip())
         except:
@@ -1932,7 +1932,7 @@ elif option == 'Makro':
 
         elif makro_soh.name[-3:] == 'txt':
             makro_soh.seek(0)
-            df_makro_soh = pd.read_csv(io.StringIO(makro_soh.read().decode('utf-8')), delimiter='|')
+            df_makro_soh = pd.read_csv(io.StringIO(makro_soh.read().decode('ANSI')), delimiter='|')
             df_makro_soh = df_makro_soh.rename(columns=lambda x: x.strip())
 
         else:
