@@ -936,6 +936,8 @@ elif option == 'Decofurn':
         
         # Get retailer data
         df_dcf_data = df_data
+        df_dcf_data.columns = df_dcf_data.iloc[1]
+        df_dcf_data = df_dcf_data.iloc[2:]
 
         # Merge with retailer map
         df_dcf_merged = df_dcf_data.merge(df_retailers_map_dcf_final, how='left', on='Article')
@@ -945,7 +947,7 @@ elif option == 'Decofurn':
         df_dcf_merged = df_dcf_merged.rename(columns={'Article': 'SKU No.'})
         df_dcf_merged = df_dcf_merged.rename(columns={'Soh': 'SOH Qty'})
         df_dcf_merged = df_dcf_merged.rename(columns={'Rsp': 'RSP'})
-        df_dcf_merged = df_dcf_merged.rename(columns={'Sales '+ str(Short_Date_Dict[Month]): 'Sales Qty'})
+        df_dcf_merged = df_dcf_merged.rename(columns={'Sales': 'Sales Qty'})
         df_dcf_merged = df_dcf_merged.rename(columns={'Smd Description': 'Product Description'})
 
         
