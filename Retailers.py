@@ -2146,17 +2146,16 @@ elif option == 'Mr-Price-Sport':
 
         # Get retailer data
         df_mrp_data = df_data
-        df_mrp_data.columns = df_mrp_data.iloc[1]
-        df_mrp_data = df_mrp_data.iloc[2:]  
+        df_mrp_data = df_mrp_data.iloc[2:] 
 
         # Merge with retailer map
         df_mrp_merged = df_mrp_data.merge(df_retailers_map_mrp_final, how='left', on='Item Number') 
-
+        df_mrp_merged
         # Rename columns
         df_mrp_merged = df_mrp_merged.rename(columns={'Item Number': 'SKU No.'})
-        df_mrp_merged = df_mrp_merged.rename(columns={'T/Y SalesValue': 'Total Amt'})
-        df_mrp_merged = df_mrp_merged.rename(columns={'T/Y SalesUnits': 'Sales Qty'})
-        df_mrp_merged = df_mrp_merged.rename(columns={'T/Y Open SOHUnits': 'SOH Qty'})
+        df_mrp_merged = df_mrp_merged.rename(columns={'T/Y Sales.1': 'Total Amt'})
+        df_mrp_merged = df_mrp_merged.rename(columns={'T/Y Sales': 'Sales Qty'})
+        df_mrp_merged = df_mrp_merged.rename(columns={'T/Y Close SOH': 'SOH Qty'})
         df_mrp_merged = df_mrp_merged.rename(columns={'SMD Code': 'Product Code'})
 
         # Find missing data
@@ -2169,7 +2168,7 @@ elif option == 'Mr-Price-Sport':
 
     except:
         st.markdown("**Retailer map column headings:** Retailer Item No., SMD Code, Product Description")
-        st.markdown("**Retailer data column headings:** Branch Description, Item Number, Item Description, T/Y SalesUnits, T/Y SalesValue, T/Y Open SOHUnits")
+        st.markdown("**Retailer data column headings:** Branch Description, Item Number, Item Description, T/Y Sales, T/Y Close SOH")
         st.markdown("Column headings are **case sensitive.** Please make sure they are correct")
 
     try:
