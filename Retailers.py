@@ -2150,7 +2150,7 @@ elif option == 'Mr-Price-Sport':
 
         # Merge with retailer map
         df_mrp_merged = df_mrp_data.merge(df_retailers_map_mrp_final, how='left', on='Item Number') 
-        df_mrp_merged
+        
         # Rename columns
         df_mrp_merged = df_mrp_merged.rename(columns={'Item Number': 'SKU No.'})
         df_mrp_merged = df_mrp_merged.rename(columns={'T/Y Sales.1': 'Total Amt'})
