@@ -303,13 +303,14 @@ elif option == 'Bradlows/Russels':
 elif option == 'Builders':
 
     Week = st.number_input("Enter week number: ",min_value = 0, value = 0)
-    if int(Week) < 10:
-        Week = str(0) + str(Week)
-    else:
-        Week = str(Week)
+    # if int(Week) < 10:
+    #     Week = str(0) + str(Week)
+    # else:
+    #     Week = str(Week)
     
-    weekly_sales = Week+'-'+Year[-1:]
-
+    weekly_sales = Week
+    # +'-'+Year[-1:]
+    
     bw_stores = st.file_uploader('Stores', type='xlsx')
     if bw_stores:
         df_bw_stores = pd.read_excel(bw_stores)
@@ -322,8 +323,8 @@ elif option == 'Builders':
 
         # Get retailer data
         df_bw_data = df_data
-        df_bw_data = df_bw_data.rename(columns={'Incl SP': 'RSP'})
-        df_bw_data = df_bw_data[df_bw_data['Article Description'].notna()]
+        df_bw_data = df_bw_data.rename(columns={'InclSP': 'RSP'})
+        df_bw_data = df_bw_data[df_bw_data['ArticleDescription'].notna()]
         df_bw_data['RSP'] = df_bw_data['RSP'].replace(',','', regex=True)
         df_bw_data['RSP'] = df_bw_data['RSP'].astype(float)
         
@@ -336,7 +337,7 @@ elif option == 'Builders':
         # Find missing data
         missing_model_bw = df_bw_merged['SMD Product Code'].isnull()
         df_bw_missing_model = df_bw_merged[missing_model_bw]
-        df_missing = df_bw_missing_model[['Article','Article Description']]
+        df_missing = df_bw_missing_model[['Article','ArticleDescription']]
         df_missing_unique = df_missing.drop_duplicates()
         st.write("The following products are missing the SMD code on the map: ")
         st.table(df_missing_unique)
@@ -344,7 +345,7 @@ elif option == 'Builders':
         st.write(" ")
         missing_rsp_bw = df_bw_merged['RSP'].isnull()
         df_bw_missing_rsp = df_bw_merged[missing_rsp_bw]  
-        df_missing_2 = df_bw_missing_rsp[['Article','Article Description']]
+        df_missing_2 = df_bw_missing_rsp[['Article','ArticleDescription']]
         df_missing_unique_2 = df_missing_2.drop_duplicates()
         st.write("The following products are missing the RSP on the map: ")
         st.table(df_missing_unique_2)
@@ -352,7 +353,7 @@ elif option == 'Builders':
     except:
         st.markdown("**Please remove all spacing in headings!**")
         st.markdown("**Retailer map column headings:** Article, SMD Product Code")
-        st.markdown("**Retailer data column headings:** Article, Article Desc, Site, Store Name (in Stores.xlsx), SOH, "+weekly_sales)
+        st.markdown("**Retailer data column headings:** Article, ArticleDescription, Site, Store Name (in Stores.xlsx), SOH, "+weekly_sales)
         st.markdown("Column headings are **case sensitive.** Please make sure they are correct")
 
     try:
@@ -2051,6 +2052,7 @@ elif option == 'Makro':
         df_makro_data = df_makro_data[df_makro_data['StartDate'].notna()]
         df_makro_data['Lookup'] = df_makro_data['ProductCode'].astype(str) + df_makro_data['SiteCode']
         df_makro_data = df_makro_data.rename(columns={'ProductCode': 'Article'})
+        df_makro_data = df_makro_data[df_makro_data['ProductDescription'].str.contains('SONY')]
 
         # Merge with retailer map 
         df_makro_merged = df_makro_data.merge(df_retailers_map_makro_final, how='left', on='Article')
