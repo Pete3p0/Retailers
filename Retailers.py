@@ -303,13 +303,13 @@ elif option == 'Bradlows/Russels':
 elif option == 'Builders':
 
     Week = st.number_input("Enter week number: ",min_value = 0, value = 0)
-    # if int(Week) < 10:
-    #     Week = str(0) + str(Week)
-    # else:
-    #     Week = str(Week)
+    if int(Week) < 10:
+        Week = str(0) + str(Week)
+    else:
+        Week = str(Week)
     
-    weekly_sales = Week
-    # +'-'+Year[-1:]
+    weekly_sales = Week +'-'+Year[-1:]
+    
     
     bw_stores = st.file_uploader('Stores', type='xlsx')
     if bw_stores:
@@ -323,11 +323,11 @@ elif option == 'Builders':
 
         # Get retailer data
         df_bw_data = df_data
-        df_bw_data = df_bw_data.rename(columns={'InclSP': 'RSP'})
-        df_bw_data = df_bw_data[df_bw_data['ArticleDescription'].notna()]
+        df_bw_data = df_bw_data.rename(columns={'Incl SP': 'RSP'})
+        df_bw_data = df_bw_data[df_bw_data['Article Description'].notna()]
         df_bw_data['RSP'] = df_bw_data['RSP'].replace(',','', regex=True)
         df_bw_data['RSP'] = df_bw_data['RSP'].astype(float)
-        
+                
         # Merge with retailer map 
         df_bw_merged = df_bw_data.merge(df_retailers_map_bw_final, how='left', on='Article')
 
@@ -337,7 +337,7 @@ elif option == 'Builders':
         # Find missing data
         missing_model_bw = df_bw_merged['SMD Product Code'].isnull()
         df_bw_missing_model = df_bw_merged[missing_model_bw]
-        df_missing = df_bw_missing_model[['Article','ArticleDescription']]
+        df_missing = df_bw_missing_model[['Article','Article Description']]
         df_missing_unique = df_missing.drop_duplicates()
         st.write("The following products are missing the SMD code on the map: ")
         st.table(df_missing_unique)
@@ -345,7 +345,7 @@ elif option == 'Builders':
         st.write(" ")
         missing_rsp_bw = df_bw_merged['RSP'].isnull()
         df_bw_missing_rsp = df_bw_merged[missing_rsp_bw]  
-        df_missing_2 = df_bw_missing_rsp[['Article','ArticleDescription']]
+        df_missing_2 = df_bw_missing_rsp[['Article','Article Description']]
         df_missing_unique_2 = df_missing_2.drop_duplicates()
         st.write("The following products are missing the RSP on the map: ")
         st.table(df_missing_unique_2)
@@ -353,66 +353,65 @@ elif option == 'Builders':
     except:
         st.markdown("**Please remove all spacing in headings!**")
         st.markdown("**Retailer map column headings:** Article, SMD Product Code")
-        st.markdown("**Retailer data column headings:** Article, ArticleDescription, Site, Store Name (in Stores.xlsx), SOH, "+weekly_sales)
+        st.markdown("**Retailer data column headings:** Article, Article Description, Site, Store Name (in Stores.xlsx), SOH, "+weekly_sales)
         st.markdown("Column headings are **case sensitive.** Please make sure they are correct")
 
-    try:
-        # Set date columns
-        df_bw_merged['Start Date'] = Date_Start
+    # try:
+    # Set date columns
+    df_bw_merged['Start Date'] = Date_Start
 
-        # Total amount column
-        df_bw_merged[weekly_sales] = df_bw_merged[weekly_sales].astype(float)
-        df_bw_merged['Total Amt'] = df_bw_merged[weekly_sales].astype(float) * df_bw_merged['RSP'].astype(float)
-        
-        # Add retailer column
-        df_bw_merged['Forecast Group'] = 'Builders Warehouse'
+    # Total amount column
+    df_bw_merged['Total Amt'] = df_bw_merged[weekly_sales].astype(float) * df_bw_merged['RSP'].astype(float)
+    
+    # Add retailer column
+    df_bw_merged['Forecast Group'] = 'Builders Warehouse'
 
-        # Rename columns
-        df_bw_merged = df_bw_merged.rename(columns={'Article': 'SKU No.'})
-        df_bw_merged = df_bw_merged.rename(columns={'SMD Product Code': 'Product Code'})
-        df_bw_merged = df_bw_merged.rename(columns={'SOH': 'SOH Qty'})
-        df_bw_merged = df_bw_merged.rename(columns={weekly_sales: 'Sales Qty'})
+    # Rename columns
+    df_bw_merged = df_bw_merged.rename(columns={'Article': 'SKU No.'})
+    df_bw_merged = df_bw_merged.rename(columns={'SMD Product Code': 'Product Code'})
+    df_bw_merged = df_bw_merged.rename(columns={'SOH': 'SOH Qty'})
+    df_bw_merged = df_bw_merged.rename(columns={weekly_sales: 'Sales Qty'})
 
-        # Don't change these headings. Rather change the ones above
-        final_df_bw = df_bw_merged[['Start Date','SKU No.', 'Product Code', 'Forecast Group','Store Name','SOH Qty','Sales Qty','Total Amt']]
-        final_df_bw_p = df_bw_merged[['Product Code','Product Description','Sales Qty','Total Amt']]
-        final_df_bw_s = df_bw_merged[['Store Name','Total Amt']]
+    # Don't change these headings. Rather change the ones above
+    final_df_bw = df_bw_merged[['Start Date','SKU No.', 'Product Code', 'Forecast Group','Store Name','SOH Qty','Sales Qty','Total Amt']]
+    final_df_bw_p = df_bw_merged[['Product Code','Product Description','Sales Qty','Total Amt']]
+    final_df_bw_s = df_bw_merged[['Store Name','Total Amt']]
 
-        # Show final df
-        total = final_df_bw['Total Amt'].sum()
-        total_units = final_df_bw['Sales Qty'].sum()
-        st.write('**The total sales for the week are:** R',"{:0,.2f}".format(total).replace(',', ' '))
-        st.write('**Number of units sold:** '"{:0,.0f}".format(total_units).replace(',', ' '))
-        st.write('')
-        st.write('**Top 10 products for the week:**')
-        grouped_df_pt = final_df_bw_p.groupby("Product Description").sum().sort_values("Total Amt", ascending=False)
-        grouped_df_final_pt = grouped_df_pt[['Sales Qty', 'Total Amt']].head(10)
-        st.table(grouped_df_final_pt.style.format({'Sales Qty':'{:,.0f}','Total Amt':'R{:,.2f}'}))
-        st.write('')
-        st.write('**Top 10 stores for the week:**')
-        grouped_df_st = final_df_bw_s.groupby("Store Name").sum().sort_values("Total Amt", ascending=False)
-        grouped_df_final_st = grouped_df_st[['Total Amt']].head(10)
-        st.table(grouped_df_final_st.style.format('R{0:,.2f}'))
-        st.write('')
-        st.write('**Bottom 10 products for the week:**')
-        grouped_df_pb = final_df_bw_p.groupby("Product Description").sum().sort_values("Total Amt", ascending=False)
-        grouped_df_final_pb = grouped_df_pb[['Sales Qty', 'Total Amt']].tail(10)
-        st.table(grouped_df_final_pb.style.format({'Sales Qty':'{:,.0f}','Total Amt':'R{:,.2f}'}))
-        st.write('')
-        st.write('**Bottom 10 stores for the week:**')
-        grouped_df_sb = final_df_bw_s.groupby("Store Name").sum().sort_values("Total Amt", ascending=False)
-        grouped_df_final_sb = grouped_df_sb[['Total Amt']].tail(10)
-        st.table(grouped_df_final_sb.style.format('R{0:,.2f}'))
+    # Show final df
+    total = final_df_bw['Total Amt'].sum()
+    total_units = final_df_bw['Sales Qty'].sum()
+    st.write('**The total sales for the week are:** R',"{:0,.2f}".format(total).replace(',', ' '))
+    st.write('**Number of units sold:** '"{:0,.0f}".format(total_units).replace(',', ' '))
+    st.write('')
+    st.write('**Top 10 products for the week:**')
+    grouped_df_pt = final_df_bw_p.groupby("Product Description").sum().sort_values("Total Amt", ascending=False)
+    grouped_df_final_pt = grouped_df_pt[['Sales Qty', 'Total Amt']].head(10)
+    st.table(grouped_df_final_pt.style.format({'Sales Qty':'{:,.0f}','Total Amt':'R{:,.2f}'}))
+    st.write('')
+    st.write('**Top 10 stores for the week:**')
+    grouped_df_st = final_df_bw_s.groupby("Store Name").sum().sort_values("Total Amt", ascending=False)
+    grouped_df_final_st = grouped_df_st[['Total Amt']].head(10)
+    st.table(grouped_df_final_st.style.format('R{0:,.2f}'))
+    st.write('')
+    st.write('**Bottom 10 products for the week:**')
+    grouped_df_pb = final_df_bw_p.groupby("Product Description").sum().sort_values("Total Amt", ascending=False)
+    grouped_df_final_pb = grouped_df_pb[['Sales Qty', 'Total Amt']].tail(10)
+    st.table(grouped_df_final_pb.style.format({'Sales Qty':'{:,.0f}','Total Amt':'R{:,.2f}'}))
+    st.write('')
+    st.write('**Bottom 10 stores for the week:**')
+    grouped_df_sb = final_df_bw_s.groupby("Store Name").sum().sort_values("Total Amt", ascending=False)
+    grouped_df_final_sb = grouped_df_sb[['Total Amt']].tail(10)
+    st.table(grouped_df_final_sb.style.format('R{0:,.2f}'))
 
-        st.write('**Final Dataframe:**')
-        final_df_bw
+    st.write('**Final Dataframe:**')
+    final_df_bw
 
-        # Output to .xlsx
-        st.write('Please ensure that no products are missing before downloading!')
-        st.markdown(get_table_download_link(final_df_bw), unsafe_allow_html=True)
+    # Output to .xlsx
+    st.write('Please ensure that no products are missing before downloading!')
+    st.markdown(get_table_download_link(final_df_bw), unsafe_allow_html=True)
 
-    except:
-        st.write('Check data')
+    # except:
+    #     st.write('Check data')
 
 # Checkers
 
