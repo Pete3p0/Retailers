@@ -2051,7 +2051,6 @@ elif option == 'Makro':
         df_makro_data = df_makro_data[df_makro_data['StartDate'].notna()]
         df_makro_data['Lookup'] = df_makro_data['ProductCode'].astype(str) + df_makro_data['SiteCode']
         df_makro_data = df_makro_data.rename(columns={'ProductCode': 'Article'})
-        df_makro_data = df_makro_data[df_makro_data['ProductDescription'].str.contains('SONY')]
 
         # Merge with retailer map 
         df_makro_merged = df_makro_data.merge(df_retailers_map_makro_final, how='left', on='Article')
