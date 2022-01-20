@@ -3106,7 +3106,7 @@ elif option == 'Takealot':
         # Get retailers map
         df_takealot_retailers_map = df_map
         df_takealot_retailers_map = df_takealot_retailers_map.rename(columns={'Description': 'Product Description'})
-        df_retailers_map_takealot_final = df_takealot_retailers_map[['idProduct','Product Description','Manufacturer','SMD Code','RSP']]
+        df_retailers_map_takealot_final = df_takealot_retailers_map[['idProduct','Product Description','SMD Code']]
 
         # Get retailer data
         df_takealot_data = df_data
@@ -3125,8 +3125,8 @@ elif option == 'Takealot':
 
 
     except:
-        st.markdown("**Retailer map column headings:** idProduct, SMD Code, RSP")
-        st.markdown("**Retailer data column headings:** idProduct, ProdTitle, Total_Stock, Qty, SaleValueEx")
+        st.markdown("**Retailer map column headings:** idProduct, Description, SMD Code")
+        st.markdown("**Retailer data column headings:** idProduct, Total_Stock, Qty, SaleValueEx")
         st.markdown("Column headings are **case sensitive.** Please make sure they are correct")
 
     try:
