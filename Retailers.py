@@ -35,22 +35,22 @@ def df_stats(df,df_p,df_s):
         st.write('**Number of units sold:** '"{:0,.0f}".format(total_units).replace(',', ' '))
         st.write('')
         st.write('**Top 10 products for the week:**')
-        grouped_df_pt = df_p.groupby("Product Description").sum().sort_values("Total Amt", ascending=False)
+        grouped_df_pt = df_p.groupby(["Product Description"]).agg({"Sales Qty":"sum", "Total Amt":"sum"}).sort_values("Total Amt", ascending=False)
         grouped_df_final_pt = grouped_df_pt[['Sales Qty', 'Total Amt']].head(10)
         st.table(grouped_df_final_pt.style.format({'Sales Qty':'{:,.0f}','Total Amt':'R{:,.2f}'}))
         st.write('')
         st.write('**Top 10 stores for the week:**')
-        grouped_df_st = df_s.groupby("Store Name").sum().sort_values("Total Amt", ascending=False)
+        grouped_df_st = df_s.groupby("Store Name").agg({"Total Amt":"sum"}).sort_values("Total Amt", ascending=False)
         grouped_df_final_st = grouped_df_st[['Total Amt']].head(10)
         st.table(grouped_df_final_st.style.format('R{0:,.2f}'))
         st.write('')
         st.write('**Bottom 10 products for the week:**')
-        grouped_df_pb = df_p.groupby("Product Description").sum().sort_values("Total Amt", ascending=False)
+        grouped_df_pb = df_p.groupby("Product Description").agg({"Sales Qty":"sum", "Total Amt":"sum"}).sort_values("Total Amt", ascending=False)
         grouped_df_final_pb = grouped_df_pb[['Sales Qty', 'Total Amt']].tail(10)
         st.table(grouped_df_final_pb.style.format({'Sales Qty':'{:,.0f}','Total Amt':'R{:,.2f}'}))
         st.write('')
         st.write('**Bottom 10 stores for the week:**')
-        grouped_df_sb = df_s.groupby("Store Name").sum().sort_values("Total Amt", ascending=False)
+        grouped_df_sb = df_s.groupby("Store Name").agg({"Total Amt":"sum"}).sort_values("Total Amt", ascending=False)
         grouped_df_final_sb = grouped_df_sb[['Total Amt']].tail(10)
         st.table(grouped_df_final_sb.style.format('R{0:,.2f}'))
         st.write('**Final Dataframe:**') 
@@ -1981,7 +1981,7 @@ elif option == 'Pep-SA':
 
         # Transpose data
         df_pep_data = df_pep_data.T
-
+        
         # Get column headings
         df_pep_data.columns = df_pep_data.iloc[0]
         df_pep_data = df_pep_data.iloc[1:]
@@ -1996,6 +1996,7 @@ elif option == 'Pep-SA':
         df_pep_merged = df_pep_merged.rename(columns={'Style Code': 'SKU No.'})
         df_pep_merged = df_pep_merged.rename(columns={'Total Company Stock': 'SOH Qty'})
         df_pep_merged = df_pep_merged.rename(columns={'Wk '+str(Wk): 'Sales Qty'})
+        
         
         # Find missing data
         missing_model = df_pep_merged['Product Code'].isnull()
@@ -2034,7 +2035,7 @@ elif option == 'Pep-SA':
         final_df_pep = df_pep_merged[['Start Date','SKU No.', 'Product Code', 'Forecast Group','Store Name','SOH Qty','Sales Qty','Total Amt']]
         final_df_pep_p = df_pep_merged[['Product Code','Product Description','Sales Qty','Total Amt']]
         final_df_pep_s = df_pep_merged[['Store Name','Total Amt']]   
-
+        
         # Show final df
         df_stats(final_df_pep,final_df_pep_p,final_df_pep_s)
 
