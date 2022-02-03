@@ -1785,7 +1785,7 @@ elif option == 'Ok-Furniture-Africa':
         df_okfa_data_prev['Lookup'] = df_okfa_data_prev['SKU Number'].astype(str) + df_okfa_data_prev['Brn No'].astype(str)
         df_okfa_data_prev = df_okfa_data_prev.rename(columns={'Qty Sold': 'Prev Qty'})
         df_okfa_data_prev = df_okfa_data_prev.rename(columns={'Sold RSP': 'Prev Amt'})
-        df_okfa_data_prev = df_okfa_data_prev[['Lookup','Prev Qty','Prev Amt']]
+        df_okfa_data_prev_final = df_okfa_data_prev[['Lookup','Prev Qty','Prev Amt']]
 
         # Get current week
         df_okfa_data = df_data
