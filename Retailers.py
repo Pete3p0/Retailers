@@ -77,7 +77,7 @@ option = st.selectbox(
     'Please select a retailer:',
     ('Please select','Ackermans','Bradlows/Russels','Builders','Checkers',
     'Clicks', 'CNA', 'Cross_Trainer','Dealz', 'Decofurn','Dis-Chem','Dis-Chem-Pharmacies', 'Game', 'H&H','HiFi',
-    'Incredible-Connection','J.A.M.','Makro', 'Mr-Price-Sport', 'Musica','Ok-Furniture', 
+    'Incredible-Connection','J.A.M.','Makro', 'Mr-Price-Sport', 'Musica','Ok-Furniture', 'Ok-Furniture-Africa', 
     'Outdoor-Warehouse','Pep-Africa','Pep-SA','PnP','Retailability', 'Sportsmans-Warehouse','Takealot','TFG','TFG_Cosmetics','TRU'))
 st.write('You selected:', option)
 
@@ -1765,6 +1765,79 @@ elif option == 'Ok-Furniture':
         # Output to .xlsx
         st.write('Please ensure that no products are missing before downloading!')
         st.markdown(get_table_download_link(final_df_ok_sales), unsafe_allow_html=True)
+    except:
+        st.write('Check data')
+
+# Ok Furniture Africa
+
+elif option == 'Ok-Furniture-Africa':
+
+    try:
+        # Get retailers map
+        df_okfa_retailers_map = df_map
+        df_okfa_retailers_map_final = df_okfa_retailers_map[['SKU Number','SMD Product Code','SMD Description']]
+
+        # Get previous week
+        okfa_data_prev = st.file_uploader('Previous week', type='xlsx')
+        if okfa_data_prev:
+            df_okfa_data_prev = pd.read_excel(okfa_data_prev)
+        df_okfa_data_prev = df_okfa_data_prev.rename(columns=lambda x: x.strip())
+        df_okfa_data_prev['Lookup'] = df_okfa_data_prev['SKU Number'].astype(str) + df_okfa_data_prev['Brn No'].astype(str)
+        df_okfa_data_prev = df_okfa_data_prev.rename(columns={'Qty Sold': 'Prev Qty'})
+        df_okfa_data_prev = df_okfa_data_prev.rename(columns={'Sold RSP': 'Prev Amt'})
+        df_okfa_data_prev = df_okfa_data_prev[['Lookup','Prev Qty','Prev Amt']]
+
+        # Get current week
+        df_okfa_data = df_data
+        df_okfa_data['Lookup'] = df_okfa_data['SKU Number'].astype(str) + df_okfa_data['Brn No'].astype(str)
+
+        # Merge with retailer map and previous week
+        df_okfa_data_merge_curr = df_okfa_data.merge(df_okfa_data_prev_final, how='left', on='Lookup')
+        df_okfa_merged = df_okfa_data_merge_curr.merge(df_okfa_retailers_map_final, how='left', on='SKU Number')
+        df_okfa_merged['Qty Sold'].fillna(0,inplace=True)
+        df_okfa_merged['Prev Qty'].fillna(0,inplace=True)
+
+        # Find missing data
+        missing_model_okfa = df_okfa_merged['SMD Product Code'].isnull()
+        df_okfa_missing_model = df_okfa_merged[missing_model_okfa]
+        df_missing = df_okfa_missing_model[['SKU Number','SKU Description']]
+        st.write("The following products are missing the SMD code on the map: ")
+        st.table(df_missing)
+
+    except:
+        st.markdown("**Retailer map column headings:** SKU Number, SMD Product Code & SMD Description")
+        st.markdown("**Retailer data column headings:** Brn No, Brn Description, SKU Number, SKU Description, Qty Sold, Sold RSP, Qty On Hand")
+        st.markdown("Column headings are **case sensitive.** Please make sure they are correct")
+
+    try:
+        # Set date columns
+        df_okfa_merged['Start Date'] = Date_Start
+
+        # Add Total Amount column
+        df_okfa_merged['Sales Qty'] = df_okfa_merged['Qty Sold'] - df_okfa_merged['Prev Qty']
+        df_okfa_merged['Total Amt'] = (df_okfa_merged['Sold RSP'] - df_okfa_merged['Prev Amt'])*1.15
+
+        # Add column for retailer and SOH
+        df_okfa_merged['Forecast Group'] = 'OK Furniture Africa'
+        df_okfa_merged['Store Name'] = df_okfa_merged['Brn Description'].str.title()
+
+        # Rename columns
+        df_okfa_merged = df_okfa_merged.rename(columns={'SKU Number': 'SKU No.'})
+        df_okfa_merged = df_okfa_merged.rename(columns={'Qty On Hand': 'SOH Qty'})
+        df_okfa_merged = df_okfa_merged.rename(columns={'SMD Product Code': 'Product Code'})
+        df_okfa_merged = df_okfa_merged.rename(columns={'SMD Description': 'Product Description'})
+
+        # Final df. Don't change these headings. Rather change the ones above
+        final_df_okfa_sales = df_okfa_merged[['Start Date','SKU No.', 'Product Code', 'Forecast Group','Store Name','SOH Qty','Sales Qty','Total Amt']]
+        final_df_okfa_p = df_okfa_merged[['Product Code', 'Product Description','Sales Qty','Total Amt']]
+        final_df_okfa_s = df_okfa_merged[['Store Name','Total Amt']]   
+
+        # Show final df
+        df_stats(final_df_okfa_sales,final_df_okfa_p,final_df_okfa_s)
+
+        # Output to .xlsx
+        st.write('Please ensure that no products are missing before downloading!')
+        st.markdown(get_table_download_link(final_df_okfa_sales), unsafe_allow_html=True)
     except:
         st.write('Check data')
 
