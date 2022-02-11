@@ -334,7 +334,7 @@ elif option == 'Builders':
 
         # Total amount column
         df_bw_merged['Total Amt'] = df_bw_merged[weekly_sales].astype(float) * df_bw_merged['RSP'].astype(float)
-        
+
         # Add retailer column
         df_bw_merged['Forecast Group'] = 'Builders Warehouse'
 
@@ -350,7 +350,7 @@ elif option == 'Builders':
         final_df_bw_s = df_bw_merged[['Store Name','Total Amt']]
 
         # Show final df
-        df_stats(final_df_bw,final_df_bw_p,final_df_bw_p)
+        df_stats(final_df_bw,final_df_bw_p,final_df_bw_s)
 
         # Output to .xlsx
         st.write('Please ensure that no products are missing before downloading!')
