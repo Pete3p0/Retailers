@@ -499,23 +499,24 @@ elif option == 'Clicks':
         # Rename columns
         df_clicks_merged = df_clicks_merged.rename(columns={'Clicks Product Number': 'SKU No.'})
         df_clicks_merged = df_clicks_merged.rename(columns={'SMD CODE': 'Product Code'})
-        df_clicks_merged = df_clicks_merged.rename(columns={'SMD DESC': 'Product Desc'})
+        df_clicks_merged = df_clicks_merged.rename(columns={'Product Description' : 'Clicks Desc'})
+        df_clicks_merged = df_clicks_merged.rename(columns={'SMD DESC': 'Product Description'})
         df_clicks_merged = df_clicks_merged.rename(columns={'Store Description': 'Store Name'})
         df_clicks_merged = df_clicks_merged.rename(columns={'Store Stock Qty': 'SOH Qty'})
         df_clicks_merged = df_clicks_merged.rename(columns={'Sales Qty LW TY': 'Sales Qty'})
-
+        
         # Don't change these headings. Rather change the ones above
         final_df_clicks = df_clicks_merged[['Start Date','SKU No.', 'Product Code', 'Forecast Group','Store Name','SOH Qty','Sales Qty','Total Amt']]
-        final_df_clicks_p = df_clicks_merged[['Product Code','Product Desc','Sales Qty', 'Total Amt']]
+        final_df_clicks_p = df_clicks_merged[['Product Code','Product Description','Sales Qty', 'Total Amt']]
         final_df_clicks_s = df_clicks_merged[['Store Name','Total Amt']]
-
+        
         # Show final df
         df_stats(final_df_clicks,final_df_clicks_p,final_df_clicks_s)
 
         # Output to .xlsx
         st.write('Please ensure that no products are missing before downloading!')
         st.markdown(get_table_download_link(final_df_clicks), unsafe_allow_html=True)
-    
+
     except:
         st.write('Check data')
 
