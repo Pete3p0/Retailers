@@ -1212,6 +1212,9 @@ elif option == 'H&H':
         df_hh_data_merge_curr = df_hh_data.merge(df_hh_data_prev_final, how='left', on='Lookup')
         df_hh_merged = df_hh_data_merge_curr.merge(df_hh_retailers_map_final, how='left', on='SKU Number')
         df_hh_merged = df_hh_merged.drop_duplicates(subset=['Lookup'])
+        df_hh_merged['Qty Sold'].fillna(0,inplace=True)
+        df_hh_merged['Prev Qty'].fillna(0,inplace=True)
+        df_hh_merged['Prev Amt'].fillna(0,inplace=True)
 
         # Find missing data
         missing_model_hh = df_hh_merged['SMD Product Code'].isnull()
