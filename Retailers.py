@@ -1714,16 +1714,17 @@ elif option == 'Ok-Furniture':
         df_okf_data_prev = df_okf_data_prev.rename(columns={'Qty Sold': 'Prev Qty'})
         df_okf_data_prev = df_okf_data_prev.rename(columns={'Sold RSP': 'Prev Amt'})
         df_okf_data_prev_final = df_okf_data_prev[['Lookup','Prev Qty','Prev Amt']]
-
+        
         # Get current week
         df_okf_data = df_data
         df_okf_data['Lookup'] = df_okf_data['SKU Number'].astype(str) + df_okf_data['Brn No'].astype(str)
-
+        
         # Merge with retailer map and previous week
-        df_okf_data_merge_curr = df_okf_data.merge(df_okf_data_prev_final, how='left', on='Lookup')
+        df_okf_data_merge_curr = df_okf_data.merge(df_okf_data_prev_final, how='outer', on='Lookup')
         df_okf_merged = df_okf_data_merge_curr.merge(df_okf_retailers_map_final, how='left', on='SKU Number')
         df_okf_merged['Qty Sold'].fillna(0,inplace=True)
         df_okf_merged['Prev Qty'].fillna(0,inplace=True)
+        df_okf_merged['Prev Amt'].fillna(0,inplace=True)
 
         # Find missing data
         missing_model_okf = df_okf_merged['SMD Product Code'].isnull()
@@ -1743,8 +1744,8 @@ elif option == 'Ok-Furniture':
 
         # Add Total Amount column
         df_okf_merged['Sales Qty'] = df_okf_merged['Qty Sold'] - df_okf_merged['Prev Qty']
-        df_okf_merged['Total Amt'] = (df_okf_merged['Sold RSP'] - df_okf_merged['Prev Amt'])*1.15
-
+        df_okf_merged['Total Amt'] = (df_okf_merged['Sold RSP'].astype(float) - df_okf_merged['Prev Amt'].astype(float))*1.15
+        
         # Add column for retailer and SOH
         df_okf_merged['Forecast Group'] = 'OK Furniture'
         df_okf_merged['Store Name'] = df_okf_merged['Brn Description'].str.title()
