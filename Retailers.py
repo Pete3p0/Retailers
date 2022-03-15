@@ -196,48 +196,32 @@ elif option == 'Bradlows/Russels':
 
         # Get retailer data
         df_br_data = df_data
-        df_br_data.columns = df_br_data.iloc[1]
-        df_br_data = df_br_data.iloc[2:]
+        df_br_data = df_br_data.rename(columns={'Qty Sold Last Month':'Sales Qty'})
 
         # Fill sales qty
-        df_br_data['Sales Qty*'].fillna(0,inplace=True)
-
-        # Drop result rows
-        df_br_data.drop(df_br_data[df_br_data['Article'] == 'Result'].index, inplace = True) 
-        df_br_data.drop(df_br_data[df_br_data['Site'] == 'Result'].index, inplace = True) 
-        df_br_data.drop(df_br_data[df_br_data['Cluster'] == 'Overall Result'].index, inplace = True) 
+        df_br_data['Sales Qty'].fillna(0,inplace=True)
 
         # Get SKU No. column
-        df_br_data['SKU No. B&R'] = df_br_data['Article'].astype(float)
+        df_br_data['SKU No. B&R'] = df_br_data['Material'].astype(float)
 
         # Site columns
-        df_br_data['Store Name'] = df_br_data['Site'] + ' - ' + df_br_data['Site Name'] 
-
-        # Consolidate
-        df_br_data_new = df_br_data[['Cluster','SKU No. B&R','Description','Store Name','Sales Qty*','Valuated Stock Qty(Total)']]
+        df_br_data['Store Name'] = ''
 
         # Merge with retailer map
-        df_br_data_merged = df_br_data_new.merge(df_br_retailers_map, how='left', on='SKU No. B&R',indicator=True)
+        df_br_data_merged = df_br_data.merge(df_br_retailers_map, how='left', on='SKU No. B&R',indicator=True)
 
         # Find missing data
         missing_model_br = df_br_data_merged['Product Code'].isnull()
         df_br_missing_model = df_br_data_merged[missing_model_br]
-        df_missing = df_br_missing_model[['SKU No. B&R','Description']]
+        df_missing = df_br_missing_model[['SKU No. B&R','Material Description']]
         df_missing_unique = df_missing.drop_duplicates()
         st.write("The following products are missing the SMD code on the map: ")
         st.table(df_missing_unique)
         st.write(" ")
-
-        missing_rsp_br = df_br_data_merged['RSP'].isnull()
-        df_br_missing_rsp = df_br_data_merged[missing_rsp_br]
-        df_missing_2 = df_br_missing_rsp[['SKU No. B&R','Description']]
-        df_missing_unique_2 = df_missing_2.drop_duplicates()
-        st.write("The following products are missing the RSP on the map: ")
-        st.table(df_missing_unique_2)
         
     except:
         st.markdown("**Retailer map column headings:** Article Number, Product Code, Product Description & RSP")
-        st.markdown("**Retailer data column headings:** Cluster, Article, Description, Site, Site Name, Valuated Stock Qty(Total), Sales Qty*")
+        st.markdown("**Retailer data column headings:** Material, Material Description, SOH Qty, Qty Sold Last Month, Sales Value Last Month")
         st.markdown("Column headings are **case sensitive.** Please make sure they are correct") 
 
     try:
@@ -245,16 +229,13 @@ elif option == 'Bradlows/Russels':
         df_br_data_merged['Start Date'] = Date_Start
 
         # Total amount column
-        df_br_data_merged['Total Amt'] = df_br_data_merged['Sales Qty*'] * df_br_data_merged['RSP']
+        df_br_data_merged['Total Amt'] = df_br_data_merged['Sales Value Last Month'] * 1.15
 
         # Tidy columns
         df_br_data_merged['Forecast Group'] = 'Bradlows/Russels'
-        df_br_data_merged['Store Name']= df_br_data_merged['Store Name'].str.title() 
-
+    
         # Rename columns
-        df_br_data_merged = df_br_data_merged.rename(columns={'Sales Qty*': 'Sales Qty'})
         df_br_data_merged = df_br_data_merged.rename(columns={'SKU No. B&R': 'SKU No.'})
-        df_br_data_merged = df_br_data_merged.rename(columns={'Valuated Stock Qty(Total)': 'SOH Qty'})
 
         # Don't change these headings. Rather change the ones above
         final_df_br = df_br_data_merged[['Start Date','SKU No.', 'Product Code', 'Forecast Group','Store Name','SOH Qty','Sales Qty','Total Amt']]
