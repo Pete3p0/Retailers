@@ -1608,28 +1608,28 @@ elif option == 'Mr-Price-Sport':
         st.markdown("**Retailer data column headings:** Branch Description, Item Number, Item Description, T/Y Sales Value, T/Y Sales Units, T/Y Close SOH Units")
         st.markdown("Column headings are **case sensitive.** Please make sure they are correct")
 
-    # try:
-    # Set date columns
-    df_mrp_merged['Start Date'] = Date_Start
+    try:
+        # Set date columns
+        df_mrp_merged['Start Date'] = Date_Start
 
-    # Add retailer column and Store Name
-    df_mrp_merged['Forecast Group'] = 'Mr Price Sport'
-    df_mrp_merged['Store Name'] = df_mrp_merged['Branch Description'].str.title()
-    df_mrp_merged
-    # Don't change these headings. Rather change the ones above
-    final_df_mrp = df_mrp_merged[['Start Date','SKU No.', 'Product Code', 'Forecast Group','Store Name','SOH Qty','Sales Qty','Total Amt']]
-    final_df_mrp_p = df_mrp_merged[['Product Code','Product Description','Sales Qty','Total Amt']]
-    final_df_mrp_s = df_mrp_merged[['Store Name','Total Amt']]        
+        # Add retailer column and Store Name
+        df_mrp_merged['Forecast Group'] = 'Mr Price Sport'
+        df_mrp_merged['Store Name'] = df_mrp_merged['Branch Description'].str.title()
+        df_mrp_merged
+        # Don't change these headings. Rather change the ones above
+        final_df_mrp = df_mrp_merged[['Start Date','SKU No.', 'Product Code', 'Forecast Group','Store Name','SOH Qty','Sales Qty','Total Amt']]
+        final_df_mrp_p = df_mrp_merged[['Product Code','Product Description','Sales Qty','Total Amt']]
+        final_df_mrp_s = df_mrp_merged[['Store Name','Total Amt']]        
 
-    # Show final df
-    df_stats(final_df_mrp,final_df_mrp_p,final_df_mrp_s)
+        # Show final df
+        df_stats(final_df_mrp,final_df_mrp_p,final_df_mrp_s)
 
-    # Output to .xlsx
-    st.write('Please ensure that no products are missing before downloading!')
-    st.markdown(get_table_download_link(final_df_mrp), unsafe_allow_html=True)
+        # Output to .xlsx
+        st.write('Please ensure that no products are missing before downloading!')
+        st.markdown(get_table_download_link(final_df_mrp), unsafe_allow_html=True)
 
-    # except:
-    #     st.write('Check data')
+    except:
+        st.write('Check data')
 
 
         # Musica
