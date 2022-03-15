@@ -1,5 +1,6 @@
 
 # Import libraries
+from hashlib import new
 import streamlit as st
 import numpy as np
 import pandas as pd
@@ -1579,19 +1580,19 @@ elif option == 'Mr-Price-Sport':
         df_mrp_retailers_map = df_mrp_retailers_map.rename(columns={'RRP':'RSP'})
         df_mrp_retailers_map = df_mrp_retailers_map.rename(columns={'Retailer Item No.':'Item Number'})
         df_retailers_map_mrp_final = df_mrp_retailers_map[['Item Number','SMD Code', 'Product Description', 'RSP']]
-
+        
         # Get retailer data
         df_mrp_data = df_data
-        df_mrp_data = df_mrp_data.iloc[2:] 
+        df_mrp_data = df_mrp_data[2:]
 
         # Merge with retailer map
         df_mrp_merged = df_mrp_data.merge(df_retailers_map_mrp_final, how='left', on='Item Number') 
         
         # Rename columns
         df_mrp_merged = df_mrp_merged.rename(columns={'Item Number': 'SKU No.'})
-        df_mrp_merged = df_mrp_merged.rename(columns={'T/Y Sales.1': 'Total Amt'})
-        df_mrp_merged = df_mrp_merged.rename(columns={'T/Y Sales': 'Sales Qty'})
-        df_mrp_merged = df_mrp_merged.rename(columns={'T/Y Close SOH': 'SOH Qty'})
+        df_mrp_merged = df_mrp_merged.rename(columns={'T/Y Sales Value': 'Total Amt'})
+        df_mrp_merged = df_mrp_merged.rename(columns={'T/Y Sales Units': 'Sales Qty'})
+        df_mrp_merged = df_mrp_merged.rename(columns={'T/Y Close SOH Units': 'SOH Qty'})
         df_mrp_merged = df_mrp_merged.rename(columns={'SMD Code': 'Product Code'})
 
         # Find missing data
@@ -1604,31 +1605,31 @@ elif option == 'Mr-Price-Sport':
 
     except:
         st.markdown("**Retailer map column headings:** Retailer Item No., SMD Code, Product Description")
-        st.markdown("**Retailer data column headings:** Branch Description, Item Number, Item Description, T/Y Sales, T/Y Close SOH")
+        st.markdown("**Retailer data column headings:** Branch Description, Item Number, Item Description, T/Y Sales Value, T/Y Sales Units, T/Y Close SOH Units")
         st.markdown("Column headings are **case sensitive.** Please make sure they are correct")
 
-    try:
-        # Set date columns
-        df_mrp_merged['Start Date'] = Date_Start
+    # try:
+    # Set date columns
+    df_mrp_merged['Start Date'] = Date_Start
 
-        # Add retailer column and Store Name
-        df_mrp_merged['Forecast Group'] = 'Mr Price Sport'
-        df_mrp_merged['Store Name'] = df_mrp_merged['Branch Description'].str.title()
+    # Add retailer column and Store Name
+    df_mrp_merged['Forecast Group'] = 'Mr Price Sport'
+    df_mrp_merged['Store Name'] = df_mrp_merged['Branch Description'].str.title()
+    df_mrp_merged
+    # Don't change these headings. Rather change the ones above
+    final_df_mrp = df_mrp_merged[['Start Date','SKU No.', 'Product Code', 'Forecast Group','Store Name','SOH Qty','Sales Qty','Total Amt']]
+    final_df_mrp_p = df_mrp_merged[['Product Code','Product Description','Sales Qty','Total Amt']]
+    final_df_mrp_s = df_mrp_merged[['Store Name','Total Amt']]        
 
-        # Don't change these headings. Rather change the ones above
-        final_df_mrp = df_mrp_merged[['Start Date','SKU No.', 'Product Code', 'Forecast Group','Store Name','SOH Qty','Sales Qty','Total Amt']]
-        final_df_mrp_p = df_mrp_merged[['Product Code','Product Description','Sales Qty','Total Amt']]
-        final_df_mrp_s = df_mrp_merged[['Store Name','Total Amt']]        
+    # Show final df
+    df_stats(final_df_mrp,final_df_mrp_p,final_df_mrp_s)
 
-        # Show final df
-        df_stats(final_df_mrp,final_df_mrp_p,final_df_mrp_s)
+    # Output to .xlsx
+    st.write('Please ensure that no products are missing before downloading!')
+    st.markdown(get_table_download_link(final_df_mrp), unsafe_allow_html=True)
 
-        # Output to .xlsx
-        st.write('Please ensure that no products are missing before downloading!')
-        st.markdown(get_table_download_link(final_df_mrp), unsafe_allow_html=True)
-
-    except:
-        st.write('Check data')
+    # except:
+    #     st.write('Check data')
 
 
         # Musica
@@ -2100,7 +2101,7 @@ elif option == 'Pep-SA':
     try:
         # Set date columns
         df_pep_merged['Start Date'] = Date_Start
-
+        
         # Total amount column
         df_pep_merged['Total Amt'] = df_pep_merged['Sales Qty'].astype(float) * df_pep_merged['RSP']
         df_pep_merged['Total Amt'] = df_pep_merged['Total Amt'].apply(lambda x: round(x,2))
