@@ -1,5 +1,8 @@
 
 # Import libraries
+from calendar import month
+from email import header
+from hashlib import new
 import streamlit as st
 import numpy as np
 import pandas as pd
@@ -53,8 +56,11 @@ def df_stats(df,df_p,df_s):
         grouped_df_sb = df_s.groupby("Store Name").agg({"Total Amt":"sum"}).sort_values("Total Amt", ascending=False)
         grouped_df_final_sb = grouped_df_sb[['Total Amt']].tail(10)
         st.table(grouped_df_final_sb.style.format('R{0:,.2f}'))
-        st.write('**Final Dataframe:**') 
-        df 
+        try:
+            st.write('**Final Dataframe:**') 
+            st.dataframe(df) 
+        except:
+            st.write('Final Dataframe cannot be displayed')
 
 st.title('Retailer Sales Reports - SA')
 
@@ -75,10 +81,10 @@ Country_Dict = {'AO':'Angola', 'MW':'Malawi', 'MZ':'Mozambique', 'NG':'Nigeria',
 
 option = st.selectbox(
     'Please select a retailer:',
-    ('Please select','Ackermans','Bradlows/Russels','Builders','Checkers',
-    'Clicks', 'CNA', 'Cross_Trainer','Dealz', 'Decofurn','Dis-Chem','Dis-Chem-Pharmacies', 'Game', 'H&H','HiFi',
-    'Incredible-Connection','J.A.M.','Makro', 'Mr-Price-Sport', 'Musica','Ok-Furniture', 'Ok-Furniture-Africa', 
-    'Outdoor-Warehouse','Pep-Africa','Pep-SA','PnP','Retailability', 'Sportsmans-Warehouse','Takealot','TFG','TFG_Cosmetics','TRU'))
+    ('Please select','Ackermans','Bradlows/Russels','Buco','Builders','Checkers',
+    'Clicks', 'CNA', 'Cross_Trainer','Dealz', 'Decofurn','Dis-Chem','Dis-Chem-Pharmacies', 'eBucks', 'Game', 'H&H','HiFi',
+    'Incredible-Connection','J.A.M.','Loot', 'Makro', 'Makro-Online', 'Mr-Price-Sport', 'Musica','Ok-Furniture', 'Ok-Furniture-Africa', 
+    'Outdoor-Warehouse','Pep-Africa','Pep-SA','PnP','Retailability', 'Snatcher', 'Sportsmans-Warehouse','Takealot','Takealot_Marketplace','TFG','TFG_Cosmetics','TRU'))
 st.write('You selected:', option)
 
 st.write("")
@@ -92,7 +98,7 @@ data_file = st.file_uploader('Weekly Sales Data',type=['csv','txt','xlsx','xls']
 if data_file:    
     if data_file.name[-3:] == 'csv':
         data_file.seek(0)
-        df_data = pd.read_csv(io.StringIO(data_file.read().decode('utf-8')), delimiter='|')
+        df_data = pd.read_csv(io.StringIO(data_file.read().decode('utf-8')), delimiter=',')
         try:
             df_data = df_data.rename(columns=lambda x: x.strip())
         except:
@@ -116,16 +122,6 @@ if data_file:
 # Ackermans
 if option == 'Ackermans':
 
-    if Date_End.month < 10:
-        Month = '0'+str(Date_End.month)
-    else:
-        Month = str(Date_End.month)
-
-    Units_Sold = 'Sales: ' + Year + '/' + str(Month) + '/' + Day
-    CSOH = 'CSOH: ' + Year + '/' + str(Month) + '/' + Day
-
-
-
     try:
         # Get retailers map
         df_ackermans_retailers_map = df_map
@@ -143,7 +139,7 @@ if option == 'Ackermans':
         # Find missing data
         missing_model_ackermans = df_ackermans_merged['SMD Product Code'].isnull()
         df_ackermans_missing_model = df_ackermans_merged[missing_model_ackermans]
-        df_missing = df_ackermans_missing_model[['SKU No.','Style']]
+        df_missing = df_ackermans_missing_model[['SKU No.','Style','Nett Sale Units', 'Closing Stock Units']]
         df_missing_unique = df_missing.drop_duplicates()
         st.write("The following products are missing the SMD code on the map: ")
         st.table(df_missing_unique)
@@ -157,7 +153,11 @@ if option == 'Ackermans':
         
     try:
         # Set date columns
-        df_ackermans_merged['Start Date'] = Date_End
+        # df_ackermans_merged['Start Date'] = Date_End
+        # df_ackermans_merged
+        # df_ackermans_merged['DateFixed'] = df_ackermans_merged['Week End Date'].str[6:]+'-'+df_ackermans_merged['Week End Date'].str[3:5]+'-'+df_ackermans_merged['Week End Date'].str[0:2]
+        df_ackermans_merged['DateFixed'] = df_ackermans_merged['Week End Date']
+        df_ackermans_merged['Start Date'] = pd.to_datetime(df_ackermans_merged['DateFixed'])
 
         # Add retailer column and store column
         df_ackermans_merged['Forecast Group'] = 'Ackermans'
@@ -184,7 +184,6 @@ if option == 'Ackermans':
     except:
         st.write('Check data')
 
-
 # Bradlows/Russels
 elif option == 'Bradlows/Russels':
     try:
@@ -195,48 +194,32 @@ elif option == 'Bradlows/Russels':
 
         # Get retailer data
         df_br_data = df_data
-        df_br_data.columns = df_br_data.iloc[1]
-        df_br_data = df_br_data.iloc[2:]
+        df_br_data = df_br_data.rename(columns={'Qty Sold Last Month':'Sales Qty'})
 
         # Fill sales qty
-        df_br_data['Sales Qty*'].fillna(0,inplace=True)
-
-        # Drop result rows
-        df_br_data.drop(df_br_data[df_br_data['Article'] == 'Result'].index, inplace = True) 
-        df_br_data.drop(df_br_data[df_br_data['Site'] == 'Result'].index, inplace = True) 
-        df_br_data.drop(df_br_data[df_br_data['Cluster'] == 'Overall Result'].index, inplace = True) 
+        df_br_data['Sales Qty'].fillna(0,inplace=True)
 
         # Get SKU No. column
-        df_br_data['SKU No. B&R'] = df_br_data['Article'].astype(float)
+        df_br_data['SKU No. B&R'] = df_br_data['Material'].astype(float)
 
         # Site columns
-        df_br_data['Store Name'] = df_br_data['Site'] + ' - ' + df_br_data['Site Name'] 
-
-        # Consolidate
-        df_br_data_new = df_br_data[['Cluster','SKU No. B&R','Description','Store Name','Sales Qty*','Valuated Stock Qty(Total)']]
+        df_br_data['Store Name'] = ''
 
         # Merge with retailer map
-        df_br_data_merged = df_br_data_new.merge(df_br_retailers_map, how='left', on='SKU No. B&R',indicator=True)
+        df_br_data_merged = df_br_data.merge(df_br_retailers_map, how='left', on='SKU No. B&R',indicator=True)
 
         # Find missing data
         missing_model_br = df_br_data_merged['Product Code'].isnull()
         df_br_missing_model = df_br_data_merged[missing_model_br]
-        df_missing = df_br_missing_model[['SKU No. B&R','Description']]
+        df_missing = df_br_missing_model[['SKU No. B&R','Material Description']]
         df_missing_unique = df_missing.drop_duplicates()
         st.write("The following products are missing the SMD code on the map: ")
         st.table(df_missing_unique)
         st.write(" ")
-
-        missing_rsp_br = df_br_data_merged['RSP'].isnull()
-        df_br_missing_rsp = df_br_data_merged[missing_rsp_br]
-        df_missing_2 = df_br_missing_rsp[['SKU No. B&R','Description']]
-        df_missing_unique_2 = df_missing_2.drop_duplicates()
-        st.write("The following products are missing the RSP on the map: ")
-        st.table(df_missing_unique_2)
         
     except:
         st.markdown("**Retailer map column headings:** Article Number, Product Code, Product Description & RSP")
-        st.markdown("**Retailer data column headings:** Cluster, Article, Description, Site, Site Name, Valuated Stock Qty(Total), Sales Qty*")
+        st.markdown("**Retailer data column headings:** Material, Material Description, SOH Qty, Qty Sold Last Month, Sales Value Last Month")
         st.markdown("Column headings are **case sensitive.** Please make sure they are correct") 
 
     try:
@@ -244,16 +227,13 @@ elif option == 'Bradlows/Russels':
         df_br_data_merged['Start Date'] = Date_Start
 
         # Total amount column
-        df_br_data_merged['Total Amt'] = df_br_data_merged['Sales Qty*'] * df_br_data_merged['RSP']
+        df_br_data_merged['Total Amt'] = df_br_data_merged['Sales Value Last Month'] * 1.15
 
         # Tidy columns
         df_br_data_merged['Forecast Group'] = 'Bradlows/Russels'
-        df_br_data_merged['Store Name']= df_br_data_merged['Store Name'].str.title() 
-
+    
         # Rename columns
-        df_br_data_merged = df_br_data_merged.rename(columns={'Sales Qty*': 'Sales Qty'})
         df_br_data_merged = df_br_data_merged.rename(columns={'SKU No. B&R': 'SKU No.'})
-        df_br_data_merged = df_br_data_merged.rename(columns={'Valuated Stock Qty(Total)': 'SOH Qty'})
 
         # Don't change these headings. Rather change the ones above
         final_df_br = df_br_data_merged[['Start Date','SKU No.', 'Product Code', 'Forecast Group','Store Name','SOH Qty','Sales Qty','Total Amt']]
@@ -270,18 +250,91 @@ elif option == 'Bradlows/Russels':
     except:
         st.write('Check data')
 
-# Builders Warehouse
+# Buco
+elif option == 'Buco':
 
+    month_sales = Short_Date_Dict[Month]+"-"+Year+"_Sum of Units"
+    month_value = Short_Date_Dict[Month]+"-"+Year+"_Sum of Total Sales"
+
+    try:
+        # Get retailers map
+        df_bu_map = df_map
+        df_bu_map['Article'] = df_bu_map['Article Code']
+        df_bu_map = df_bu_map.drop_duplicates(subset='Article')
+        
+        # Get retailer data
+
+        df_bu_data = df_data
+        header_list1 = df_bu_data.iloc[2].astype(str)
+        header_list2 = df_bu_data.iloc[3].astype(str)
+        df_bu_data.columns = list(map(lambda x, y: x+'_'+y,header_list1,header_list2))
+        df_bu_data = df_bu_data[4:]
+        df_bu_data = df_bu_data.rename(columns={month_sales:'Sales Qty','nan_BranchName':'Store Name','nan_Partno':'Article Code','nan_FullDesc':'Product Description'})
+        df_bu_data = df_bu_data.rename(columns={month_value:'Total Amt'})
+        df_bu_data['Sales Qty'] = df_bu_data['Sales Qty'].astype(float)
+        df_bu_data['Total Amt'] = df_bu_data['Total Amt'].astype(float)
+        df_bu_map['Article Code'] = df_bu_map['Article Code']
+        
+        # Merge with retailer map 
+        df_bu_merged = df_bu_data.merge(df_bu_map, how='left', on='Article Code')
+
+        # Find missing data
+        missing_model_bu = df_bu_merged['SMD product code'].isnull()
+        df_bu_missing_model = df_bu_merged[missing_model_bu]
+        df_missing = df_bu_missing_model[['Article Code','Product Description']]
+        df_missing_unique = df_missing.drop_duplicates()
+        st.write("The following products are missing the SMD code on the map: ")
+        st.table(df_missing_unique)
+
+    except:
+        st.markdown("**Retailer map column headings:** Article Code, SMD product code, SMD product description")
+        st.markdown("**Retailer data column headings:** BranchName, FullDesc")
+        st.markdown("Column headings are **case sensitive.** Please make sure they are correct") 
+
+    try:
+        # Set date columns
+        df_bu_merged['Start Date'] = Date_End
+
+        # Add retailer column and SOH
+        df_bu_merged['Forecast Group'] = 'Buco'
+        df_bu_merged['SOH Qty'] = ''
+
+        # Rename columns
+        df_bu_merged = df_bu_merged.rename(columns={'Article': 'SKU No.'})
+        df_bu_merged = df_bu_merged.rename(columns={'SMD product code': 'Product Code'})
+        df_bu_merged = df_bu_merged.rename(columns={'Product Description': 'BUCO Description'})
+        df_bu_merged = df_bu_merged.rename(columns={'SMD product description': 'Product Description'})
+
+
+        # Don't change these headings. Rather change the ones above
+        final_df_bu = df_bu_merged[['Start Date','SKU No.', 'Product Code', 'Forecast Group','Store Name','SOH Qty','Sales Qty','Total Amt']]
+        final_df_bu_p = df_bu_merged[['Product Code','Product Description','Sales Qty','Total Amt']]
+        final_df_bu_s = df_bu_merged[['Store Name','Total Amt']]
+
+        # Show final df
+        df_stats(final_df_bu,final_df_bu_p,final_df_bu_s)
+
+        # Output to .xlsx
+        st.write('Please ensure that no products are missing before downloading!')
+        st.markdown(get_table_download_link(final_df_bu), unsafe_allow_html=True)
+
+    except:
+        st.write('Check data')
+
+
+# Builders Warehouse
 elif option == 'Builders':
 
-    Week = st.number_input("Enter week number: ",min_value = 0, value = 0)
+    # Week = st.number_input("Enter week number: ",min_value = 0, value = 0)
+    Week = dt.date(Date_End.year,Date_End.month,Date_End.day).isocalendar()[1]
+    
     if int(Week) < 10:
         Week = str(0) + str(Week)
     else:
         Week = str(Week)
     
     weekly_sales = Week +'-'+Year[-1:]
-    
+    st.write('Week selected is '+weekly_sales)
     
     bw_stores = st.file_uploader('Stores', type='xlsx')
     if bw_stores:
@@ -290,16 +343,16 @@ elif option == 'Builders':
     try:
         # Get retailers map
         df_bw_retailers_map = df_map
-        df_bw_retailers_map = df_bw_retailers_map.rename(columns={'SMD Description':'Product Description'})
-        df_retailers_map_bw_final = df_bw_retailers_map[['Article','SMD Product Code','Product Description']]
+        df_retailers_map_bw_final = df_bw_retailers_map[['Article','SMD Product Code','SMD Description']]
 
         # Get retailer data
         df_bw_data = df_data
-        df_bw_data = df_bw_data.rename(columns={'Incl SP': 'RSP'})
-        df_bw_data = df_bw_data[df_bw_data['Article Description'].notna()]
+        df_bw_data.columns = df_bw_data.columns.str.replace(' ', '')
+        df_bw_data = df_bw_data.rename(columns={'InclSP': 'RSP', 'ArticleCode' : 'Article', 'SiteCode': 'Site', 'ProductDescription':'Product Description'})
+        df_bw_data = df_bw_data[df_bw_data['Product Description'].notna()]
         df_bw_data['RSP'] = df_bw_data['RSP'].replace(',','', regex=True)
         df_bw_data['RSP'] = df_bw_data['RSP'].astype(float)
-                
+                    
         # Merge with retailer map 
         df_bw_merged = df_bw_data.merge(df_retailers_map_bw_final, how='left', on='Article')
 
@@ -309,18 +362,10 @@ elif option == 'Builders':
         # Find missing data
         missing_model_bw = df_bw_merged['SMD Product Code'].isnull()
         df_bw_missing_model = df_bw_merged[missing_model_bw]
-        df_missing = df_bw_missing_model[['Article','Article Description']]
+        df_missing = df_bw_missing_model[['Article','Product Description']]
         df_missing_unique = df_missing.drop_duplicates()
         st.write("The following products are missing the SMD code on the map: ")
         st.table(df_missing_unique)
-
-        st.write(" ")
-        missing_rsp_bw = df_bw_merged['RSP'].isnull()
-        df_bw_missing_rsp = df_bw_merged[missing_rsp_bw]  
-        df_missing_2 = df_bw_missing_rsp[['Article','Article Description']]
-        df_missing_unique_2 = df_missing_2.drop_duplicates()
-        st.write("The following products are missing the RSP on the map: ")
-        st.table(df_missing_unique_2)
 
     except:
         st.markdown("**Please remove all spacing in headings!**")
@@ -360,7 +405,6 @@ elif option == 'Builders':
         st.write('Check data')
 
 # Checkers
-
 elif option == 'Checkers':
 
     checkers_soh = st.file_uploader('SOH', type='xlsx')
@@ -448,7 +492,6 @@ elif option == 'Checkers':
         st.write('Check data')
 
 # Clicks
-
 elif option == 'Clicks':
     try:
         # Get retailers map
@@ -488,7 +531,7 @@ elif option == 'Clicks':
 
     try:
         # Set date columns
-        df_clicks_merged['Start Date'] = Date_Start
+        df_clicks_merged['Start Date'] = Date_End
 
         # Total amount column
         df_clicks_merged['Total Amt'] = df_clicks_merged['Sales Value LW TY'] * 1.15
@@ -525,15 +568,24 @@ elif option == 'CNA':
 
     st.markdown("**Stock on hand needs to be in a separate sheet**")
 
-    cna_soh = st.file_uploader('SOH', type='xlsx')
-    if cna_soh:
-        df_cna_soh = pd.read_excel(cna_soh)
+    cna_soh = st.file_uploader('SOH', type=['csv','txt','xlsx','xls'])
+    
+    if cna_soh:    
+        if cna_soh.name[-3:] == 'csv':
+            cna_soh.seek(0)
+            df_soh = pd.read_csv(io.StringIO(cna_soh.read().decode('utf-8')), delimiter=',')
+            try:
+                df_soh = df_soh.rename(columns=lambda x: x.strip())
+                df_cna_soh = df_soh
+            except:
+                df_soh = df_soh
+                df_cna_soh = df_soh
 
     try:
         # Get retailers map
         df_cna_retailers_map = df_map
-        df_cna_retailers_map = df_cna_retailers_map.rename(columns={'NEW- Retailers Article code':'SKU No.', 'SMD Code': 'Product Code'})
-        df_cna_retailers_map = df_cna_retailers_map[['SKU No.','Product Code']]
+        df_cna_retailers_map = df_cna_retailers_map.rename(columns={'Article Code':'SKU No.', 'SMD Code': 'Product Code'})
+        df_cna_retailers_map = df_cna_retailers_map[['SKU No.','Product Code','Description']]
 
         # Get retailer data
         df_cna_data = df_data
@@ -541,15 +593,15 @@ elif option == 'CNA':
         # Rename columns
         df_cna_data = df_cna_data.rename(columns={'Part Number': 'SKU No.'})
         df_cna_data = df_cna_data.rename(columns={'Branch Name': 'Store Name'})
-        df_cna_data = df_cna_data.rename(columns={'Sum of Unit Sales': 'Sales Qty'})
-        df_cna_data = df_cna_data.rename(columns={'Date Decarded': 'Start Date'})
-
+        df_cna_data = df_cna_data.rename(columns={'Unit Sales': 'Sales Qty'})
+        df_cna_data = df_cna_data.rename(columns={'Sales Date': 'Start Date'})
+        
         # Lookup column
         df_cna_data['Lookup'] = df_cna_data['SKU No.'].astype(str) + df_cna_data['Store Name']
 
         # Get stock on hand
         df_cna_soh = df_cna_soh.rename(columns={'Branch Name': 'Store Name'})
-        df_cna_soh = df_cna_soh.rename(columns={'Sum of Total Stock': 'SOH Qty'})
+        df_cna_soh = df_cna_soh.rename(columns={'Total Stock': 'SOH Qty'})
         df_cna_soh['Lookup'] = df_cna_soh['Product Code'].astype(str) + df_cna_soh['Store Name']
         df_cna_soh_final = df_cna_soh[['Lookup','SOH Qty']]
 
@@ -570,15 +622,15 @@ elif option == 'CNA':
         st.write(" ")
 
     except:
-        st.markdown("**Retailer map column headings:** NEW- Retailers Article code, SMD Code, Description ,RSP")
-        st.markdown("**Retailer data column headings:** Branch Name, Part Number, Sum of Unit Sales, Sum of Sales Excl VAT, Date Decarded, Full Description")
-        st.markdown("**Retailer SOH column headings:** Branch Name, Product Code, Sum of Total Stock")
+        st.markdown("**Retailer map column headings:** Article Code, SMD Code, Description ,RSP")
+        st.markdown("**Retailer data column headings:** Branch Name, Part Number, Unit Sales, Sales Excl VAT, Sales Date, Full Description")
+        st.markdown("**Retailer SOH column headings:** Branch Name, Product Code, Total Stock")
         st.markdown("Column headings are **case sensitive.** Please make sure they are correct")
 
 
     try:
         # Total amount column
-        df_cna_merged['Total Amt'] = df_cna_merged['Sum of Sales Excl VAT'] * 1.15
+        df_cna_merged['Total Amt'] = df_cna_merged['Sales Excl VAT'] * 1.15
 
         # Add retailer and store column
         df_cna_merged['Forecast Group'] = 'Edcon CNA Audio and Digital'
@@ -597,7 +649,6 @@ elif option == 'CNA':
 
     except:
         st.write('Check data') 
-
 
 # Cross Trainer
 elif option == 'Cross_Trainer':
@@ -702,8 +753,6 @@ elif option == 'Dealz':
         st.write("The following products are missing the SMD code on the map: ")
         st.table(df_missing_unique)
 
-
-
     except:
         st.markdown("**Retailer map column headings:** Style Code, Product Code, Product Description")
         st.markdown("**Retailer data column headings:** Style Code, Style Desc, "+units_sold)
@@ -711,7 +760,7 @@ elif option == 'Dealz':
 
     try:
         # Set date columns
-        df_dealz_merged['Start Date'] = Date_Start
+        df_dealz_merged['Start Date'] = Date_End
 
         # Add Total Amount column
         df_dealz_merged[units_sold] = df_dealz_merged[units_sold].fillna(0)
@@ -741,8 +790,7 @@ elif option == 'Dealz':
         st.markdown(get_table_download_link(final_df_dealz_sales), unsafe_allow_html=True)
 
     except:
-        st.write('Check data. Make sure the month in long form eg. '+units_sold)
-
+        st.write('Check data. Make sure the month is in long form eg. '+units_sold)
 
 # Decofurn
 elif option == 'Decofurn':
@@ -813,9 +861,7 @@ elif option == 'Decofurn':
     except:
         st.write('Check data')
 
-
 # Dis-Chem
-
 elif option == 'Dis-Chem':
     try:
         Units_Sold = (Short_Date_Dict[Month] + ' ' + Year)
@@ -884,7 +930,6 @@ elif option == 'Dis-Chem':
         st.write('Check data') 
 
 # Dis-Chem-Pharmacies
-
 elif option == 'Dis-Chem-Pharmacies':
     try:
         Units_Sold = (Short_Date_Dict[Month] + ' ' + Year)
@@ -951,8 +996,90 @@ elif option == 'Dis-Chem-Pharmacies':
     except:
         st.write('Check data') 
 
-# Game
+# eBucks
+elif option == 'eBucks':
 
+    st.write("Please upload **SOH** separately")
+
+    try:
+
+        # Get retailers map
+        df_eb_retailers_map = df_map
+        df_eb_retailers_map = df_eb_retailers_map.rename(columns={'partner_code' : 'Partner Code'})
+
+        # Get retailer data
+        df_eb_data = df_data
+        df_eb_data.columns = df_eb_data.iloc[2]
+        df_eb_data = df_eb_data.iloc[3:]
+        df_eb_data = df_eb_data[df_eb_data['partner_code']!="Grand Total"]
+        df_eb_data = df_eb_data.rename(columns={'partner_code' : 'Partner Code'})
+        df_eb_data = df_eb_data.rename(columns={'product_name' : 'Product Name'})
+        df_eb_data = df_eb_data.rename(columns={'Total' : 'Sales Qty'})
+        
+        # Get retailer SOH
+        ebucks_soh = st.file_uploader('SOH',type=['csv','txt','xlsx'])
+        df_eb_soh = pd.read_excel(ebucks_soh)
+        df_eb_soh.columns = df_eb_soh.iloc[2]
+        df_eb_soh = df_eb_soh.iloc[3:]
+        df_eb_soh = df_eb_soh[df_eb_soh['Partner Code']!="Grand Total"]
+        df_eb_soh = df_eb_soh.rename(columns={'Total' : 'SOH Qty'})
+            
+        # Merge two
+        df_eb_soh_merged = pd.merge(df_eb_data,df_eb_soh, how='outer', on=['Partner Code','Product Name'])
+        
+        # Merge with Retailers Map
+        df_eb_merged = df_eb_soh_merged.merge(df_eb_retailers_map, how='left', on='Partner Code')
+
+        # Find missing data
+        missing_model_eb = df_eb_merged['SKU'].isnull()
+        df_eb_missing_model = df_eb_merged[missing_model_eb]
+        df_missing_eb = df_eb_missing_model[['Partner Code','Product Name']]
+        df_missing_unique_eb = df_missing_eb.drop_duplicates()
+        st.write("TThe following products are missing the SMD code on the map:")
+        st.table(df_missing_unique_eb)
+
+        st.write(" ")
+        missing_rsp_eb = df_eb_merged['RSP'].isnull()
+        df_eb_missing_rsp = df_eb_merged[missing_rsp_eb]
+        df_missing_2 = df_eb_missing_rsp[['Partner Code','Product Name']]
+        df_missing_unique_2 = df_missing_2.drop_duplicates()
+        st.write("The following products are missing the RSP on the map: ")
+        st.table(df_missing_unique_2)
+        
+    except:
+        st.markdown("**Retailer map column headings:** product_name, partner_code, SKU, RSP")
+        st.markdown("**Retailer data column headings:** partner_code, product_name, Total")
+
+    try:
+        # Add columns for dates
+        df_eb_merged['Start Date'] = Date_End
+
+        # Add Total Amount column
+        df_eb_merged['Total Amt'] = df_eb_merged['Sales Qty'] * df_eb_merged['RSP']
+
+        # Add column for retailer and store name
+        df_eb_merged['Forecast Group'] = 'FNB (Ebucks)'
+        df_eb_merged['Store Name'] = 'FNB (Ebucks)'
+        df_eb_merged
+        # Rename columns
+        df_eb_merged = df_eb_merged.rename(columns={'Partner Code': 'SKU No.','SKU' :'Product Code','product_name' :'Product Description'})
+
+        # Don't change these headings. Rather change the ones above
+        final_df_eb = df_eb_merged[['Start Date','SKU No.', 'Product Code', 'Forecast Group','Store Name','SOH Qty','Sales Qty','Total Amt']]
+        final_df_eb_p = df_eb_merged[['Product Code','Product Description','Sales Qty','Total Amt']]
+        final_df_eb_s = df_eb_merged[['Store Name','Total Amt']]        
+
+        # Show final df
+        df_stats(final_df_eb,final_df_eb_p,final_df_eb_s)
+
+        # Output to .xlsx
+        st.write('Please ensure that no products are missing before downloading!')
+        st.markdown(get_table_download_link(final_df_eb), unsafe_allow_html=True)
+
+    except:
+        st.write("eBucks data error")
+
+# Game
 elif option == 'Game':
 
     game_soh = st.file_uploader('SOH',type=['csv','txt','xlsx'])
@@ -1040,31 +1167,29 @@ elif option == 'Game':
         st.write('Check data')
 
 # HiFi Corp (Monthly)
-
 elif option == 'HiFi':
     try:
-        Units_Sold = ('Qty Sold '+Long_Date_Dict[Month])
-        Value_Sold = ('Sales Value '+Long_Date_Dict[Month])
+        Units_Sold = ('Qty Sold Last Month')
+        Value_Sold = ('Sales Value Last Month')
         
         # Get retailers map
         df_hifi_retailer_map = df_map
         df_hifi_retailer_map = df_hifi_retailer_map.drop_duplicates(subset=['Article'])
+        df_hifi_retailer_map = df_hifi_retailer_map.rename(columns={'Article': 'Material'})
 
         # Get current week
         df_hifi_data = df_data
         df_hifi_data = df_hifi_data.rename(columns=lambda x: x.strip())
-        df_hifi_data[Value_Sold] = df_hifi_data[Value_Sold].replace(' ','', regex=True)
         df_hifi_data[Value_Sold] = df_hifi_data[Value_Sold].fillna(0)
         df_hifi_data[Value_Sold] = df_hifi_data[Value_Sold].astype(int)
-        df_hifi_data['Lookup'] = df_hifi_data['Article'].astype(str) + df_hifi_data['Site']
-
+        
         # Merge with retailer map and previous week
-        df_hifi_merged = df_hifi_data.merge(df_hifi_retailer_map, how='left', on='Article')
+        df_hifi_merged = df_hifi_data.merge(df_hifi_retailer_map, how='left', on='Material')
 
         # Find missing data
         missing_model_hifi = df_hifi_merged['SMD Code'].isnull()
         df_hifi_missing_model = df_hifi_merged[missing_model_hifi]
-        df_missing = df_hifi_missing_model[['Article','Article Name']]
+        df_missing = df_hifi_missing_model[['Material','Material Desc']]
         df_missing_unique = df_missing.drop_duplicates()
         st.write("The following products are missing the SMD code on the map: ")
         st.table(df_missing_unique)
@@ -1086,10 +1211,11 @@ elif option == 'HiFi':
         df_hifi_merged['Forecast Group'] = 'HIFI Corp'
 
         # Rename columns
-        df_hifi_merged = df_hifi_merged.rename(columns={'Article': 'SKU No.'})
-        df_hifi_merged = df_hifi_merged.rename(columns={'Total SOH Qty': 'SOH Qty'})
+        df_hifi_merged = df_hifi_merged.rename(columns={'Material': 'SKU No.'})
+        df_hifi_merged = df_hifi_merged.rename(columns={'SOH Qty': 'Store SOH'})
+        df_hifi_merged = df_hifi_merged.rename(columns={'Total Store SOH Qty': 'SOH Qty'})
         df_hifi_merged = df_hifi_merged.rename(columns={'SMD Code': 'Product Code'})
-        df_hifi_merged = df_hifi_merged.rename(columns={'Site Name': 'Store Name'})
+        df_hifi_merged = df_hifi_merged.rename(columns={'Plant Description': 'Store Name'})
 
         # Final df. Don't change these headings. Rather change the ones above
         final_df_hifi_sales = df_hifi_merged[['Start Date','SKU No.', 'Product Code', 'Forecast Group','Store Name','SOH Qty','Sales Qty','Total Amt']]
@@ -1105,86 +1231,6 @@ elif option == 'HiFi':
 
     except:
         st.write('Check data')
-
-
-# HiFi Corp (Accumalated)
-
-# elif option == 'HiFi':
-#     try:
-#         Units_Sold = ('Qty Sold '+ str(Month) + '.' + Year)
-
-#         # Get retailers map
-#         df_hifi_retailer_map = df_map
-           
-#         # Get previous week
-#         hifi_data_prev = st.file_uploader('Previous week', type='xlsx')
-#         if hifi_data_prev:
-#             df_hifi_data_prev = pd.read_excel(hifi_data_prev)
-#         df_hifi_data_prev = df_hifi_data_prev.rename(columns=lambda x: x.strip())
-#         df_hifi_data_prev['Lookup'] = df_hifi_data_prev['Material'].astype(str) + df_hifi_data_prev['Plant']
-#         df_hifi_data_prev = df_hifi_data_prev.rename(columns={Units_Sold: 'Prev Sales'})
-#         df_hifi_data_prev = df_hifi_data_prev[['Lookup','Prev Sales']]
-
-#         # Get current week
-#         df_hifi_data = df_data
-#         df_hifi_data['Lookup'] = df_hifi_data['Material'].astype(str) + df_hifi_data['Plant']
-
-#         # Merge with retailer map and previous week
-#         df_hifi_data_merge_curr = df_hifi_data.merge(df_hifi_data_prev, how='outer', on='Lookup')
-#         df_hifi_merged = df_hifi_data_merge_curr.merge(df_hifi_retailer_map, how='left', on='Material')
-#         # df_hifi_merged = df_hifi_merged.drop_duplicates(subset=['Lookup'])
-
-#         missing_model_hifi = df_hifi_merged['SMD Code'].isnull()
-#         df_hifi_missing_model = df_hifi_merged[missing_model_hifi]
-#         df_missing = df_hifi_missing_model[['Material','Material Desc']]
-#         df_missing_unique = df_missing.drop_duplicates()
-#         st.write("The following products are missing the SMD code on the map: ")
-#         st.table(df_missing_unique)
-
-#         st.write(" ")
-#         missing_rsp_hifi = df_hifi_merged['RSP'].isnull()
-#         df_hifi_missing_rsp = df_hifi_merged[missing_rsp_hifi]
-#         df_missing_2 = df_hifi_missing_rsp[['Material','Material Desc']]
-#         df_missing_unique_2 = df_missing_2.drop_duplicates()
-#         st.write("The following products are missing the RSP on the map: ")
-#         st.table(df_missing_unique_2)
-
-#     except:
-#         st.markdown("**Retailer map column headings:** Material, SMD Code, Product Description & RSP")
-#         st.markdown("**Retailer data column headings:** Material, Material Desc, Plant, Plant Description, Total SOH Qty & "+Units_Sold)
-#         st.markdown("Column headings are **case sensitive.** Please make sure they are correct")
-
-#     try:
-#         # Set date columns
-#         df_hifi_merged['Start Date'] = Date_Start
-
-#         # Add Total Amount column
-#         df_hifi_merged['Sales Qty'] = df_hifi_merged[Units_Sold] - df_hifi_merged['Prev Sales']
-#         df_hifi_merged['Total Amt'] = df_hifi_merged['Sales Qty'] * df_hifi_merged['RSP']
-
-#         # Add column for retailer and SOH
-#         df_hifi_merged['Forecast Group'] = 'HIFI Corp'
-
-#         # Rename columns
-#         df_hifi_merged = df_hifi_merged.rename(columns={'Material': 'SKU No.'})
-#         df_hifi_merged = df_hifi_merged.rename(columns={'Total SOH Qty': 'SOH Qty'})
-#         df_hifi_merged = df_hifi_merged.rename(columns={'SMD Code': 'Product Code'})
-#         df_hifi_merged = df_hifi_merged.rename(columns={'Plant Description': 'Store Name'})
-
-#         # Final df. Don't change these headings. Rather change the ones above
-#         final_df_hifi_sales = df_hifi_merged[['Start Date','SKU No.', 'Product Code', 'Forecast Group','Store Name','SOH Qty','Sales Qty','Total Amt']]
-#         final_df_hifi_p = df_hifi_merged[['Product Code','Product Description','Sales Qty','Total Amt']]
-#         final_df_hifi_s = df_hifi_merged[['Store Name','Total Amt']]
-
-#         # Show final df
-#         df_stats(final_df_hifi_sales,final_df_hifi_p,final_df_hifi_s)
-
-#         # Output to .xlsx
-#         st.write('Please ensure that no products are missing before downloading!')
-#         st.markdown(get_table_download_link(final_df_hifi_sales), unsafe_allow_html=True)
-
-#     except:
-#         st.write('Check data')
 
 # House and Home
 elif option == 'H&H':
@@ -1212,6 +1258,9 @@ elif option == 'H&H':
         df_hh_data_merge_curr = df_hh_data.merge(df_hh_data_prev_final, how='left', on='Lookup')
         df_hh_merged = df_hh_data_merge_curr.merge(df_hh_retailers_map_final, how='left', on='SKU Number')
         df_hh_merged = df_hh_merged.drop_duplicates(subset=['Lookup'])
+        df_hh_merged['Qty Sold'].fillna(0,inplace=True)
+        df_hh_merged['Prev Qty'].fillna(0,inplace=True)
+        df_hh_merged['Prev Amt'].fillna(0,inplace=True)
 
         # Find missing data
         missing_model_hh = df_hh_merged['SMD Product Code'].isnull()
@@ -1261,8 +1310,8 @@ elif option == 'H&H':
 elif option == 'Incredible-Connection':
 
     try:
-        Units_Sold = ('Qty Sold '+ Long_Date_Dict[Month])
-        Value_Sold = ('Sales Value '+Long_Date_Dict[Month])
+        Units_Sold = ('Qty Sold Last Month')
+        Value_Sold = ('Sales Value Last Month')
         
         # Get retailers map
         df_ic_retailers_map = df_map
@@ -1276,19 +1325,18 @@ elif option == 'Incredible-Connection':
         df_ic_data[Value_Sold] = df_ic_data[Value_Sold].astype(int)
 
         # Rename columns
-        df_ic_retailers_map = df_ic_retailers_map.rename(columns={'RRP': 'RSP'})
+        df_ic_retailers_map = df_ic_retailers_map.rename(columns={'RRP': 'RSP','Article':'Material'})
 
         # Merge with retailer map and previous week
-        df_ic_merged = df_ic_data.merge(df_ic_retailers_map, how='left', on='Article')
+        df_ic_merged = df_ic_data.merge(df_ic_retailers_map, how='left', on='Material')
 
         # Find missing data
         missing_model_ic = df_ic_merged['SMD Code'].isnull()
         df_ic_missing_model = df_ic_merged[missing_model_ic]
-        df_missing = df_ic_missing_model[['Article','Article Name']]
+        df_missing = df_ic_missing_model[['Material','Material Desc']]
         df_missing_unique = df_missing.drop_duplicates()
         st.write("The following products are missing the SMD code on the map: ")
         st.table(df_missing_unique)
-
 
     except:
         st.markdown("**Retailer map column headings:** Article, SMD Code, Product Description & RRP")
@@ -1307,10 +1355,11 @@ elif option == 'Incredible-Connection':
         df_ic_merged['Forecast Group'] = 'Incredible Connection'
 
         # Rename columns
-        df_ic_merged = df_ic_merged.rename(columns={'Article': 'SKU No.'})
-        df_ic_merged = df_ic_merged.rename(columns={'Total SOH Qty': 'SOH Qty'})
+        df_ic_merged = df_ic_merged.rename(columns={'Material': 'SKU No.'})
+        df_ic_merged = df_ic_merged.rename(columns={'SOH Qty': 'Store SOH'})
+        df_ic_merged = df_ic_merged.rename(columns={'Total Store SOH Qty': 'SOH Qty'})
         df_ic_merged = df_ic_merged.rename(columns={'SMD Code': 'Product Code'})
-        df_ic_merged = df_ic_merged.rename(columns={'Site Name': 'Store Name'})
+        df_ic_merged = df_ic_merged.rename(columns={'Plant Description': 'Store Name'})
 
         # Final df. Don't change these headings. Rather change the ones above
         final_df_ic_sales = df_ic_merged[['Start Date','SKU No.', 'Product Code', 'Forecast Group','Store Name','SOH Qty','Sales Qty','Total Amt']]
@@ -1327,91 +1376,7 @@ elif option == 'Incredible-Connection':
     except:
         st.write('Check data')
 
-# # Incredible Connection (Accumulated)
-# elif option == 'Incredible-Connection':
-#     try:
-#         Units_Sold = ('Qty Sold '+ str(Month) + '.' + Year)
-
-#         # Get retailers map
-#         df_ic_retailers_map = df_map
-  
-#         # Get previous week
-#         ic_data_prev = st.file_uploader('Previous week', type='xlsx')
-#         if ic_data_prev:
-#             df_ic_data_prev = pd.read_excel(ic_data_prev)
-#         df_ic_data_prev = df_ic_data_prev.rename(columns=lambda x: x.strip())
-#         df_ic_data_prev['Lookup'] = df_ic_data_prev['Article'].astype(str) + df_ic_data_prev['Site']
-#         df_ic_data_prev = df_ic_data_prev.rename(columns={Units_Sold: 'Prev Sales'})
-#         df_ic_data_prev_final = df_ic_data_prev[['Lookup','Prev Sales']]
-
-#         # Get current week
-#         df_ic_data = df_data
-#         df_ic_data = df_ic_data.rename(columns=lambda x: x.strip())
-#         df_ic_data['Lookup'] = df_ic_data['Article'].astype(str) + df_ic_data['Site']
-
-#         # Rename columns
-#         df_ic_retailers_map = df_ic_retailers_map.rename(columns={'RRP': 'RSP'})
-
-#         # Merge with retailer map and previous week
-#         df_ic_data_merge_curr = df_ic_data.merge(df_ic_data_prev_final, how='left', on='Lookup')
-#         df_ic_merged = df_ic_data_merge_curr.merge(df_ic_retailers_map, how='left', on='Article')
-#         df_ic_merged = df_ic_merged.drop_duplicates(subset=['Lookup'])
-
-#         missing_model_ic = df_ic_merged['SMD Code'].isnull()
-#         df_ic_missing_model = df_ic_merged[missing_model_ic]
-#         df_missing = df_ic_missing_model[['Article','Article Name']]
-#         df_missing_unique = df_missing.drop_duplicates()
-#         st.write("The following products are missing the SMD code on the map: ")
-#         st.table(df_missing_unique)
-
-#         # Find missing data
-#         st.write(" ")
-#         missing_rsp_ic = df_ic_merged['RSP'].isnull()
-#         df_ic_missing_rsp = df_ic_merged[missing_rsp_ic]
-#         df_missing_2 = df_ic_missing_rsp[['Article','Article Name']]
-#         df_missing_unique_2 = df_missing_2.drop_duplicates()
-#         st.write("The following products are missing the RSP on the map: ")
-#         st.table(df_missing_unique_2)
-
-#     except:
-#         st.markdown("**Retailer map column headings:** Article, SMD Code, Product Description & RRP")
-#         st.markdown("**Retailer data column headings:** Article, Article Name, Site, Site Name, Total SOH Qty & "+Units_Sold)
-#         st.markdown("Column headings are **case sensitive.** Please make sure they are correct")
-
-#     try:
-#         # Set date columns
-#         df_ic_merged['Start Date'] = Date_Start
-
-#         # Add Total Amount column
-#         df_ic_merged['Sales Qty'] = df_ic_merged[Units_Sold] - df_ic_merged['Prev Sales']
-#         df_ic_merged['Total Amt'] = df_ic_merged['Sales Qty'] * df_ic_merged['RSP']
-
-#         # Add column for retailer and SOH
-#         df_ic_merged['Forecast Group'] = 'Incredible Connection'
-
-#         # Rename columns
-#         df_ic_merged = df_ic_merged.rename(columns={'Article': 'SKU No.'})
-#         df_ic_merged = df_ic_merged.rename(columns={'Total SOH Qty': 'SOH Qty'})
-#         df_ic_merged = df_ic_merged.rename(columns={'SMD Code': 'Product Code'})
-#         df_ic_merged = df_ic_merged.rename(columns={'Site Name': 'Store Name'})
-
-#         # Final df. Don't change these headings. Rather change the ones above
-#         final_df_ic_sales = df_ic_merged[['Start Date','SKU No.', 'Product Code', 'Forecast Group','Store Name','SOH Qty','Sales Qty','Total Amt']]
-#         final_df_ic_p = df_ic_merged[['Product Code','Product Description','Sales Qty','Total Amt']]
-#         final_df_ic_s = df_ic_merged[['Store Name','Total Amt']]
-
-#         # Show final df
-#         df_stats(final_df_ic_sales,final_df_ic_p,final_df_ic_s)
-
-#         # Output to .xlsx
-#         st.write('Please ensure that no products are missing before downloading!')
-#         st.markdown(get_table_download_link(final_df_ic_sales), unsafe_allow_html=True)
-
-#     except:
-#         st.write('Check data')
-
 # J.A.M.
-
 elif option == 'J.A.M.':
 
     try:
@@ -1475,8 +1440,70 @@ elif option == 'J.A.M.':
     except:
         st.write('Check data')
 
-# Makro
+# Loot
+elif option == 'Loot':
 
+    Date_Start_Loot = st.date_input("Week starting: ")
+    Date_Start_Loot = Date_Start_Loot.strftime('%Y%m%d')
+    Date_End2 = Date_End.strftime('%Y%m%d')
+    sales_qty = 'Sales between'+chr(10)+ str(Date_Start_Loot)+'-'+ str(Date_End2)
+    
+    try:
+        # Get retailers map
+        df_loot_retailers_map = df_map
+        df_loot_retailers_map = df_loot_retailers_map.rename(columns={'ID':'SKU No.'}) 
+        df_loot_retailers_map = df_loot_retailers_map.rename(columns={'SKU':'Product Code'})  
+        df_loot_retailers_map = df_loot_retailers_map.rename(columns={'Description':'Product Description'})    
+        df_loot_retailers_map = df_loot_retailers_map[['SKU No.','Product Description', 'Product Code']]
+        
+        # Get retailer data
+        df_loot_data = df_data
+        # df_loot_data.columns = df_loot_data.iloc[0]
+        # df_loot_data = df_loot_data.iloc[1:]
+        df_loot_data = df_loot_data.rename(columns={'SKU':'SKU No.'})
+            
+        # Merge with retailer map
+        df_loot_merged = df_loot_data.merge(df_loot_retailers_map, how='left', on='SKU No.')
+        df_loot_merged = df_loot_merged.rename(columns={sales_qty:'Sales Qty'})
+        df_loot_merged = df_loot_merged.rename(columns={'Sales Value':'Total Amt'})
+        df_loot_merged = df_loot_merged.rename(columns={'Stock Total':'SOH Qty'})
+
+        # Find missing data
+        missing_model = df_loot_merged['Product Code'].isnull()
+        df_loot_missing_model = df_loot_merged[missing_model]
+        df_missing = df_loot_missing_model[['SKU No.','Title']]
+        df_missing_unique = df_missing.drop_duplicates()
+        st.write("The following products are missing the SMD code on the map: ")
+        st.table(df_missing_unique)
+
+    except:
+        st.markdown("**Retailer map column headings:** ID, SKU, Description")
+        st.markdown("**Retailer data column headings:** SKU, Title, Sales Value, Stock Total, "+sales_qty)
+        st.markdown("Column headings are **case sensitive.** Please make sure they are correct")
+
+    try:
+        # Set date columns
+        df_loot_merged['Start Date'] = Date_End
+
+        # Add retailer and store column
+        df_loot_merged['Forecast Group'] = 'Loot'
+        df_loot_merged['Store Name'] = ''
+
+        # Don't change these headings. Rather change the ones above
+        final_df_loot = df_loot_merged[['Start Date','SKU No.', 'Product Code', 'Forecast Group','Store Name','SOH Qty','Sales Qty','Total Amt']]
+        final_df_loot_p = df_loot_merged[['Product Code','Product Description','Sales Qty','Total Amt']]
+        final_df_loot_s = df_loot_merged[['Store Name','Total Amt']]  
+
+        # Show final df
+        df_stats(final_df_loot,final_df_loot_p,final_df_loot_s)
+
+        # Output to .xlsx
+        st.write('Please ensure that no products are missing before downloading!')
+        st.markdown(get_table_download_link(final_df_loot), unsafe_allow_html=True)
+    except:
+        st.write('Check data. Have you selected the correct starting day and ending day?') 
+
+# Makro
 elif option == 'Makro':
 
     week = (dt.date(int(Year),int(Month),int(Day)).isocalendar()[1]) + 1
@@ -1568,6 +1595,65 @@ elif option == 'Makro':
     except:
         st.write('Check data')
 
+# Makro Online
+elif option == 'Makro-Online':
+    try:
+
+        # Get retailers map
+        df_mo_retailers_map = df_map
+
+        # Get retailer data
+        df_mo_data = df_data
+        df_mo_data = df_mo_data.rename(columns={'BarCode' : 'Barcode'})
+        df_mo_data['Line Total'] = df_mo_data['Line Total'].str.replace("R ","")
+        df_mo_data['Line Total'] = df_mo_data['Line Total'].str.replace(",","")
+        df_mo_data['Line Total'] = df_mo_data['Line Total'].astype(float)
+
+        # Merge with Sony Range
+        df_mo_merged = df_mo_data.merge(df_mo_retailers_map, how='left', on='Barcode')
+
+        # Find missing data
+        missing_model_mo = df_mo_merged['ProductName'].isnull()
+        df_mo_missing_model = df_mo_merged[missing_model_mo]
+        df_missing_mo = df_mo_missing_model[['Barcode','ProductName']]
+        df_missing_unique_mo = df_missing_mo.drop_duplicates()
+        st.write("The following SKUs are missing Model Names for Makro Online:")
+        df_missing_unique_mo
+        
+    except:
+        st.write("Makro Online data not found")
+        st.write("Makro Online headers for sales: ** BarCode, ProductName, Quantity, Price**")
+
+    try:
+        # Add columns for dates
+        df_mo_merged['Start Date'] = df_mo_merged['Order Date'].astype('datetime64[ns]')
+
+        # Add Total Amount column
+        df_mo_merged['Total Amt'] = df_mo_merged['Line Total'] * 1.15
+
+        # Add column for retailer and store name
+        df_mo_merged['Forecast Group'] = 'Makro Online'
+        df_mo_merged['Store Name'] = 'Makro Online'
+        df_mo_merged['SOH Qty'] = ''
+
+        # Rename columns
+        df_mo_merged = df_mo_merged.rename(columns={'Barcode': 'SKU No.','Quantity' :'Sales Qty', 'ProductName' : 'Product Description'})
+
+        # Don't change these headings. Rather change the ones above
+        final_df_mo = df_mo_merged[['Start Date','SKU No.', 'Product Code', 'Forecast Group','Store Name','SOH Qty','Sales Qty','Total Amt']]
+        final_df_mo_p = df_mo_merged[['Product Code','Product Description','Sales Qty','Total Amt']]
+        final_df_mo_s = df_mo_merged[['Store Name','Total Amt']]        
+
+        # Show final df
+        df_stats(final_df_mo,final_df_mo_p,final_df_mo_s)
+
+        # Output to .xlsx
+        st.write('Please ensure that no products are missing before downloading!')
+        st.markdown(get_table_download_link(final_df_mo), unsafe_allow_html=True)
+
+    except:
+        st.write("Makro Online data error")
+
 # Mr Price Sport
 elif option == 'Mr-Price-Sport':
     try:
@@ -1576,19 +1662,19 @@ elif option == 'Mr-Price-Sport':
         df_mrp_retailers_map = df_mrp_retailers_map.rename(columns={'RRP':'RSP'})
         df_mrp_retailers_map = df_mrp_retailers_map.rename(columns={'Retailer Item No.':'Item Number'})
         df_retailers_map_mrp_final = df_mrp_retailers_map[['Item Number','SMD Code', 'Product Description', 'RSP']]
-
+        
         # Get retailer data
         df_mrp_data = df_data
-        df_mrp_data = df_mrp_data.iloc[2:] 
+        df_mrp_data = df_mrp_data[2:]
 
         # Merge with retailer map
         df_mrp_merged = df_mrp_data.merge(df_retailers_map_mrp_final, how='left', on='Item Number') 
         
         # Rename columns
         df_mrp_merged = df_mrp_merged.rename(columns={'Item Number': 'SKU No.'})
-        df_mrp_merged = df_mrp_merged.rename(columns={'T/Y Sales.1': 'Total Amt'})
-        df_mrp_merged = df_mrp_merged.rename(columns={'T/Y Sales': 'Sales Qty'})
-        df_mrp_merged = df_mrp_merged.rename(columns={'T/Y Close SOH': 'SOH Qty'})
+        df_mrp_merged = df_mrp_merged.rename(columns={'T/Y Sales Value': 'Total Amt'})
+        df_mrp_merged = df_mrp_merged.rename(columns={'T/Y Sales Units': 'Sales Qty'})
+        df_mrp_merged = df_mrp_merged.rename(columns={'T/Y Close SOH Units': 'SOH Qty'})
         df_mrp_merged = df_mrp_merged.rename(columns={'SMD Code': 'Product Code'})
 
         # Find missing data
@@ -1601,7 +1687,7 @@ elif option == 'Mr-Price-Sport':
 
     except:
         st.markdown("**Retailer map column headings:** Retailer Item No., SMD Code, Product Description")
-        st.markdown("**Retailer data column headings:** Branch Description, Item Number, Item Description, T/Y Sales, T/Y Close SOH")
+        st.markdown("**Retailer data column headings:** Branch Description, Item Number, Item Description, T/Y Sales Value, T/Y Sales Units, T/Y Close SOH Units")
         st.markdown("Column headings are **case sensitive.** Please make sure they are correct")
 
     try:
@@ -1611,7 +1697,7 @@ elif option == 'Mr-Price-Sport':
         # Add retailer column and Store Name
         df_mrp_merged['Forecast Group'] = 'Mr Price Sport'
         df_mrp_merged['Store Name'] = df_mrp_merged['Branch Description'].str.title()
-
+        
         # Don't change these headings. Rather change the ones above
         final_df_mrp = df_mrp_merged[['Start Date','SKU No.', 'Product Code', 'Forecast Group','Store Name','SOH Qty','Sales Qty','Total Amt']]
         final_df_mrp_p = df_mrp_merged[['Product Code','Product Description','Sales Qty','Total Amt']]
@@ -1627,8 +1713,7 @@ elif option == 'Mr-Price-Sport':
     except:
         st.write('Check data')
 
-
-        # Musica
+# Musica
 elif option == 'Musica':
     try:
         # Get retailers map
@@ -1696,7 +1781,6 @@ elif option == 'Musica':
     except:
         st.write('Check data')
 
-
 # Ok Furniture
 elif option == 'Ok-Furniture':
 
@@ -1714,16 +1798,17 @@ elif option == 'Ok-Furniture':
         df_okf_data_prev = df_okf_data_prev.rename(columns={'Qty Sold': 'Prev Qty'})
         df_okf_data_prev = df_okf_data_prev.rename(columns={'Sold RSP': 'Prev Amt'})
         df_okf_data_prev_final = df_okf_data_prev[['Lookup','Prev Qty','Prev Amt']]
-
+        
         # Get current week
         df_okf_data = df_data
         df_okf_data['Lookup'] = df_okf_data['SKU Number'].astype(str) + df_okf_data['Brn No'].astype(str)
-
+        
         # Merge with retailer map and previous week
         df_okf_data_merge_curr = df_okf_data.merge(df_okf_data_prev_final, how='left', on='Lookup')
         df_okf_merged = df_okf_data_merge_curr.merge(df_okf_retailers_map_final, how='left', on='SKU Number')
         df_okf_merged['Qty Sold'].fillna(0,inplace=True)
         df_okf_merged['Prev Qty'].fillna(0,inplace=True)
+        df_okf_merged['Prev Amt'].fillna(0,inplace=True)
 
         # Find missing data
         missing_model_okf = df_okf_merged['SMD Product Code'].isnull()
@@ -1743,8 +1828,8 @@ elif option == 'Ok-Furniture':
 
         # Add Total Amount column
         df_okf_merged['Sales Qty'] = df_okf_merged['Qty Sold'] - df_okf_merged['Prev Qty']
-        df_okf_merged['Total Amt'] = (df_okf_merged['Sold RSP'] - df_okf_merged['Prev Amt'])*1.15
-
+        df_okf_merged['Total Amt'] = (df_okf_merged['Sold RSP'].astype(float) - df_okf_merged['Prev Amt'].astype(float))*1.15
+        
         # Add column for retailer and SOH
         df_okf_merged['Forecast Group'] = 'OK Furniture'
         df_okf_merged['Store Name'] = df_okf_merged['Brn Description'].str.title()
@@ -1770,7 +1855,6 @@ elif option == 'Ok-Furniture':
         st.write('Check data')
 
 # Ok Furniture Africa
-
 elif option == 'Ok-Furniture-Africa':
 
     try:
@@ -1841,7 +1925,6 @@ elif option == 'Ok-Furniture-Africa':
         st.markdown(get_table_download_link(final_df_okfa_sales), unsafe_allow_html=True)
     except:
         st.write('Check data')
-
 
 # Outdoor Warehouse
 elif option == 'Outdoor-Warehouse':
@@ -2021,7 +2104,6 @@ elif option == 'Pep-Africa':
     except:
         st.write('Check data') 
 
-
 #Pep South Africa
 elif option == 'Pep-SA':
       
@@ -2096,7 +2178,7 @@ elif option == 'Pep-SA':
     try:
         # Set date columns
         df_pep_merged['Start Date'] = Date_Start
-
+        
         # Total amount column
         df_pep_merged['Total Amt'] = df_pep_merged['Sales Qty'].astype(float) * df_pep_merged['RSP']
         df_pep_merged['Total Amt'] = df_pep_merged['Total Amt'].apply(lambda x: round(x,2))
@@ -2131,12 +2213,14 @@ elif option == 'PnP':
         df_pnp_retailers_map = df_map
         df_pnp_retailers_map = df_pnp_retailers_map.rename(columns={'Article Number': 'SKU No.'})
         df_pnp_retailers_map = df_pnp_retailers_map.drop_duplicates(subset='SKU No.')
+        df_pnp_retailers_map['SKU No.'] = df_pnp_retailers_map['SKU No.'].astype(str)
         df_retailers_map_pnp_final = df_pnp_retailers_map[['SKU No.','SMD code','Product Description']]
         
         # Get retailer data
         df_pnp_data = df_data
         df_pnp_data = df_pnp_data.rename(columns={'Day': 'Start Date'})
         df_pnp_data = df_pnp_data.rename(columns={'PnP ArticleNumber': 'SKU No.'})
+        df_pnp_data['SKU No.'] = df_pnp_data['SKU No.'].astype(str)
         df_pnp_data = df_pnp_data.rename(columns={'Store': 'Store Name'})
         df_pnp_data = df_pnp_data.rename(columns={'Units': 'Sales Qty'})
         df_pnp_data = df_pnp_data.rename(columns={'Amount': 'Total Amt'})
@@ -2145,10 +2229,19 @@ elif option == 'PnP':
         df_pnp_data_final = df_pnp_data[['Start Date','SKU No.','Article description','Store Name','SOH Qty','Sales Qty','Total Amt']]
         
         # Get stock on hand
-        df_pnp_soh = df_pnp_soh.rename(columns={'Week Ending Date': 'Start Date'})
+        # df_pnp_soh = df_pnp_soh.rename(columns={'Week Ending Date': 'Start Date'})
         df_pnp_soh = df_pnp_soh.rename(columns={'Article Number': 'SKU No.'})
         df_pnp_soh = df_pnp_soh.rename(columns={'Site Description': 'Store Name'})
-        df_pnp_soh['Start Date'] =  pd.to_datetime(df_pnp_soh['Start Date'])
+        df_pnp_soh['SKU No.'] = df_pnp_soh['SKU No.'].astype(str)
+        df_pnp_soh['SKU No.'] = df_pnp_soh['SKU No.'].str.replace('_x003','')
+        df_pnp_soh['SKU No.'] = df_pnp_soh['SKU No.'].str.replace('_','')
+        df_pnp_soh['Article description'] = df_pnp_soh['Article description'].str.replace('_x0020_',' ')
+        df_pnp_soh['Article description'] = df_pnp_soh['Article description'].str.replace('_x002F_',' ')
+        df_pnp_soh['Article description'] = df_pnp_soh['Article description'].str.replace('_x002B_',' ')
+        df_pnp_soh['Article description'] = df_pnp_soh['Article description'].str.replace('_x0026_',' ')
+
+
+        df_pnp_soh['Start Date'] =  Date_End
         df_pnp_soh['Sales Qty'] = 0
         df_pnp_soh['Total Amt'] = 0
         df_pnp_soh_final = df_pnp_soh[['Start Date','SKU No.','Article description','Store Name','SOH Qty','Sales Qty','Total Amt']]
@@ -2196,7 +2289,6 @@ elif option == 'PnP':
         st.write('Check data') 
 
 # Retailability
-
 elif option == 'Retailability':
 
     week = dt.date(int(Year),int(Month),int(Day)).isocalendar()[1]
@@ -2260,7 +2352,63 @@ elif option == 'Retailability':
     except:
         st.write('Check data') 
 
+# Snatcher
+elif option == 'Snatcher':
 
+    try:
+        # Get retailers map
+        df_snt_retailers_map = df_map
+        df_snt_retailers_map = df_snt_retailers_map.rename(columns={'product_code':'SKU No.'}) 
+        df_snt_retailers_map = df_snt_retailers_map.rename(columns={'product_code_or_sku':'Product Code'})  
+        df_snt_retailers_map = df_snt_retailers_map.rename(columns={'name':'Product Description'})    
+        df_snt_retailers_map = df_snt_retailers_map[['SKU No.','Product Description', 'Product Code']]
+        
+        # Get retailer data
+        df_snt_data = df_data
+        df_snt_data = df_snt_data.rename(columns={'product_code':'SKU No.'})
+            
+        # Merge with retailer map
+        df_snt_merged = df_snt_data.merge(df_snt_retailers_map, how='left', on='SKU No.')
+        df_snt_merged = df_snt_merged.rename(columns={'qty_sold':'Sales Qty'})
+
+        # Find missing data
+        missing_model = df_snt_merged['Product Code'].isnull()
+        df_snt_missing_model = df_snt_merged[missing_model]
+        df_missing = df_snt_missing_model[['SKU No.','name']]
+        df_missing_unique = df_missing.drop_duplicates()
+        st.write("The following products are missing the SMD code on the map: ")
+        st.table(df_missing_unique)
+
+    except:
+        st.markdown("**Retailer map column headings:** product_code, product_code_or_sku, name")
+        st.markdown("**Retailer data column headings:** name, product_code, cost ex, qty_sold")
+        st.markdown("Column headings are **case sensitive.** Please make sure they are correct")
+
+    try:
+        # Set date columns
+        df_snt_merged['Start Date'] = Date_Start
+
+        # Total amount column
+        df_snt_merged['Total Amt'] = df_snt_merged['cost ex'] * df_snt_merged['Sales Qty'] * 1.15
+
+        # Add retailer and store column
+        df_snt_merged['Forecast Group'] = 'Snatcher Online'
+        df_snt_merged['Store Name'] = ''
+        df_snt_merged['SOH Qty'] = ''
+
+        # Don't change these headings. Rather change the ones above
+        final_df_snt = df_snt_merged[['Start Date','SKU No.', 'Product Code', 'Forecast Group','Store Name','SOH Qty','Sales Qty','Total Amt']]
+        final_df_snt_p = df_snt_merged[['Product Code','Product Description','Sales Qty','Total Amt']]
+        final_df_snt_s = df_snt_merged[['Store Name','Total Amt']]  
+
+        # Show final df
+        df_stats(final_df_snt,final_df_snt_p,final_df_snt_s)
+
+        # Output to .xlsx
+        st.write('Please ensure that no products are missing before downloading!')
+        st.markdown(get_table_download_link(final_df_snt), unsafe_allow_html=True)
+    except:
+        st.write('Check data') 
 
 # Sportsmans Warehouse
 elif option == 'Sportsmans-Warehouse':
@@ -2379,14 +2527,11 @@ elif option == 'Takealot':
         df_takealot_retailers_map = df_map
         df_takealot_retailers_map = df_takealot_retailers_map.rename(columns={'Description': 'Product Description'})
         df_retailers_map_takealot_final = df_takealot_retailers_map[['idProduct','Product Description','SMD Code']]
-
         # Get retailer data
         df_takealot_data = df_data
         df_takealot_data = df_takealot_data.iloc[1:]
-
         #Merge with retailer map
         df_takealot_merged = df_takealot_data.merge(df_retailers_map_takealot_final, how='left', on='idProduct')   
-
         # Find missing data
         missing_model = df_takealot_merged['SMD Code'].isnull()
         df_takealot_missing_model = df_takealot_merged[missing_model]
@@ -2394,24 +2539,18 @@ elif option == 'Takealot':
         df_missing_unique = df_missing.drop_duplicates()
         st.write("The following products are missing the SMD code on the map: ")
         st.table(df_missing_unique)
-
-
     except:
         st.markdown("**Retailer map column headings:** idProduct, Description, SMD Code")
         st.markdown("**Retailer data column headings:** idProduct, Total_Stock, Qty, SaleValueEx")
         st.markdown("Column headings are **case sensitive.** Please make sure they are correct")
-
+    
     try:
-        # Set date columns
         df_takealot_merged['Start Date'] = Date_Start
-
         # Total amount column
         df_takealot_merged['Total Amt'] = df_takealot_merged['SaleValueEx'] * 1.15
-
         # Add retailer and store column
         df_takealot_merged['Forecast Group'] = 'Takealot'
         df_takealot_merged['Store Name'] = ''
-
         # Rename columns
         df_takealot_merged = df_takealot_merged.rename(columns={'idProduct': 'SKU No.','Qty' :'Sales Qty','Total_Stock':'SOH Qty','SMD Code':'Product Code' })
 
@@ -2429,6 +2568,63 @@ elif option == 'Takealot':
     except:
         st.write('Check data')
 
+# Takealot Marketplace
+elif option == 'Takealot_Marketplace':
+    try:
+        # Get retailers map
+        df_takealot_retailers_map = df_map
+        df_takealot_retailers_map = df_takealot_retailers_map.rename(columns={'Description': 'Product Description'})
+        df_takealot_retailers_map = df_takealot_retailers_map.rename(columns={'SKU': 'SMD Code'})
+        df_retailers_map_takealot_final = df_takealot_retailers_map[['TSIN','Product Description','SMD Code']]
+
+        # Get retailer data
+        df_takealot_data = df_data
+        df_takealot_data = df_takealot_data.iloc[1:]
+
+        #Merge with retailer map
+        df_takealot_merged = df_takealot_data.merge(df_retailers_map_takealot_final, how='left', on='TSIN')   
+
+        # Find missing data
+        missing_model = df_takealot_merged['SMD Code'].isnull()
+        df_takealot_missing_model = df_takealot_merged[missing_model]
+        df_missing = df_takealot_missing_model[['TSIN','Product Title']]
+        df_missing_unique = df_missing.drop_duplicates()
+        st.write("The following products are missing the SMD code on the map: ")
+        st.table(df_missing_unique)
+
+
+    except:
+        st.markdown("**Retailer map column headings:** TSIN, Description, SKU")
+        st.markdown("**Retailer data column headings:** Order Date, TSIN, Product Title, Qty, Gross Sales")
+        st.markdown("Column headings are **case sensitive.** Please make sure they are correct")
+
+    try:
+        # Set date columns
+        df_takealot_merged['Start Date'] = Date_End
+        # Total amount column
+        df_takealot_merged['Total Amt'] = df_takealot_merged['Gross Sales']
+
+        # Add retailer and store column
+        df_takealot_merged['Forecast Group'] = 'Takealot MarketPlace'
+        df_takealot_merged['Store Name'] = ''
+        df_takealot_merged['SOH Qty'] = ''
+
+        # Rename columns
+        df_takealot_merged = df_takealot_merged.rename(columns={'TSIN': 'SKU No.','Qty' :'Sales Qty','SMD Code':'Product Code' })
+
+        # Don't change these headings. Rather change the ones above
+        final_df_takealot = df_takealot_merged[['Start Date','SKU No.', 'Product Code', 'Forecast Group','Store Name','SOH Qty','Sales Qty','Total Amt']]
+        final_df_takealot_p = df_takealot_merged[['Product Code','Product Description','Sales Qty','Total Amt']]
+        final_df_takealot_s = df_takealot_merged[['Store Name','Total Amt']]  
+
+        # Show final df
+        df_stats(final_df_takealot,final_df_takealot_p,final_df_takealot_s)
+
+        # Output to .xlsx
+        st.write('Please ensure that no products are missing before downloading!')
+        st.markdown(get_table_download_link(final_df_takealot), unsafe_allow_html=True)
+    except:
+        st.write('Check data')
 
 # TFG
 elif option == 'TFG':
@@ -2550,7 +2746,6 @@ elif option == 'TFG_Cosmetics':
         st.write('Check data')
 
 # 'Toys R Us Audio & Gaming'
-
 elif option == 'TRU':
 
     units_sold = str(Long_Date_Dict[Date_End.month]) + " " + str(Date_End.year)
