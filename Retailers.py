@@ -10,6 +10,7 @@ import base64
 from io import BytesIO
 import io
 import datetime as dt
+import re
 # import locale
 # locale.setlocale( locale.LC_ALL, 'en_ZA.ANSI' )
 # st.set_page_config(layout="centered")
@@ -84,7 +85,7 @@ option = st.selectbox(
     ('Please select','Ackermans','Bradlows/Russels','Buco','Builders','Checkers',
     'Clicks', 'CNA', 'Cross_Trainer','Dealz', 'Decofurn','Dis-Chem','Dis-Chem-Pharmacies', 'eBucks', 'Game', 'H&H','HiFi',
     'Incredible-Connection','J.A.M.','Loot', 'Makro', 'Makro-Online', 'Mr-Price-Sport', 'Musica','Ok-Furniture', 'Ok-Furniture-Africa', 
-    'Outdoor-Warehouse','Pep-Africa','Pep-SA','PnP','Retailability', 'Snatcher', 'Sportsmans-Warehouse','Takealot','Takealot_Marketplace','TFG','TFG_Cosmetics','TRU'))
+    'Outdoor-Warehouse','Pep-Africa','Pep-SA','PnP','Retailability', 'Snatcher', 'Sportsmans-Warehouse','Takealot','Takealot_Marketplace','TFG','TFG_Cosmetics','Toy Kingdom','TRU'))
 st.write('You selected:', option)
 
 st.write("")
@@ -2037,7 +2038,7 @@ elif option == 'Outdoor-Warehouse':
     except:
         st.write('Check data') 
 
-#Pep Africa
+# Pep Africa
 elif option == 'Pep-Africa':
       
     try:
@@ -2104,7 +2105,7 @@ elif option == 'Pep-Africa':
     except:
         st.write('Check data') 
 
-#Pep South Africa
+# Pep South Africa
 elif option == 'Pep-SA':
       
     try:
@@ -2744,6 +2745,173 @@ elif option == 'TFG_Cosmetics':
         st.markdown(get_table_download_link(final_df_tfgc), unsafe_allow_html=True)
     except:
         st.write('Check data')
+
+# Toy Kingdom
+elif option == 'Toy Kingdom':
+      
+    try:
+        # Get retailers map
+        df_tk_retailers_map = df_map
+
+        # Get retailer data and drop first row
+        df_tk_data = df_data
+        df_tk_data = df_tk_data.iloc[1:]
+        
+        # Get rid of extra columns
+        df_tk_data = df_tk_data.drop(['TOT SOH', 'TOT SIT', 'TOT Stock', 'TOT Sales', 'Stock Value (LCP)', 'Cost of Sales', 'Stock Value (ACP)'],axis=1)
+
+        # Process Data def
+        def melt_by_branch(
+            df: pd.DataFrame,
+            id_vars=None,
+            metrics_out=("Soh","Sit","Stock","Sls"),
+            metric_alias_map=None,
+        ):
+
+            if id_vars is None:
+                id_vars = [
+                    "Supplier Type","Product Code","Supplier Name","Description","Brand",
+                    "Trader Status","List Price","PM_STATUS_ID","CAT 1","Cat 2","Cat 3",
+                    "Last Cost Price","Avg Cost Price","Std Selling Price","Margin %","PR_ID",
+                    "Promo Price","Pack Size","Supplier Order","CAT 4","Last Purch Date",
+                    "First Purch Date","FIRST TRF OUT DATE","First Sell Date","Last Sell Date",
+                ]
+            id_vars = [c for c in id_vars if c in df.columns]
+
+            # Map any suffix token -> normalized metric column name
+            # (You can extend this dict if needed.)
+            if metric_alias_map is None:
+                metric_alias_map = {
+                    "SOH": "Soh",
+                    "SIT": "Sit",
+                    "STOCK": "Stock",
+                    "SLS": "Sls",
+                    "SALES": "Sls",  # <-- accept "Sales" and map to Sls
+                    "SALE": "Sls",   # optional: sometimes people use "Sale"
+                }
+
+            dynamic_cols = [c for c in df.columns if c not in id_vars]
+            parsed = []
+            unmatched = []
+
+            # Helper: parse "<Branch> <Metric>" (on the LAST space; robust to extra spaces)
+            for col in dynamic_cols:
+                s = str(col).strip()
+                s_norm = re.sub(r"\s+", " ", s)          # collapse internal whitespace
+                parts = s_norm.rsplit(" ", 1)            # split on last space
+                if len(parts) == 2:
+                    branch, last = parts[0].strip(), parts[1].strip().upper()
+                    if branch and last in metric_alias_map:
+                        parsed.append((col, branch, metric_alias_map[last]))
+                        continue
+                unmatched.append(col)
+
+            if not parsed:
+                # Nothing matched — return empty and the unmatched list for inspection
+                return pd.DataFrame(), unmatched
+
+            # Melt
+            value_vars = [c for c, _, _ in parsed]
+            col_to_branch = {c: b for c, b, _ in parsed}
+            col_to_metric = {c: m for c, _, m in parsed}
+
+            long_df = df.melt(
+                id_vars=id_vars,
+                value_vars=value_vars,
+                var_name="__col",
+                value_name="Value"
+            )
+            long_df["Branch"] = long_df["__col"].map(col_to_branch)
+            long_df["Metric"] = long_df["__col"].map(col_to_metric)
+            long_df = long_df.drop(columns="__col")
+
+            # Pivot safely (avoid dtype comparison issues by string-casting id_vars)
+            tmp = long_df.copy()
+            tmp[id_vars] = tmp[id_vars].astype(str)
+
+            reshaped = (
+                tmp.pivot_table(
+                    index=id_vars + ["Branch"],
+                    columns="Metric",
+                    values="Value",
+                    aggfunc="first",
+                    sort=False,
+                    observed=True,
+                )
+                .reset_index()
+            )
+
+            # Order metric columns
+            existing_metrics = [m for m in metrics_out if m in reshaped.columns]
+            final_cols = id_vars + ["Branch"] + existing_metrics
+            reshaped = reshaped[final_cols]
+
+            return reshaped, unmatched
+
+        # Process data
+        reshaped, unmatched = melt_by_branch(df_tk_data)
+
+        # Rename columns
+        reshaped = reshaped.rename(columns={'Product Code': 'SKU'})
+
+        # Merge with retailer map
+        df_tk_merged = reshaped.merge(df_tk_retailers_map, how='left', on='SKU')
+
+        # Rename columns
+        df_tk_merged = df_tk_merged.rename(columns={'SKU': 'SKU No.'})
+        df_tk_merged = df_tk_merged.rename(columns={'ProductCode': 'Product Code'})
+        df_tk_merged = df_tk_merged.rename(columns={'Stock': 'SOH Qty'})
+        df_tk_merged = df_tk_merged.rename(columns={'Sls': 'Sales Qty'})
+    
+
+        # Get sales amount column
+        df_tk_merged['Total Amt'] = df_tk_merged['Sales Qty'] * df_tk_merged['Std Selling Price'].astype(float)
+        
+        # Find missing data
+        missing_model = df_tk_merged['Product Code'].isnull()
+        df_tk_missing_model = df_tk_merged[missing_model]
+        df_missing = df_tk_missing_model[['SKU No.','Description']]
+        df_missing_unique = df_missing.drop_duplicates()
+        st.write("The following products are missing the SMD code on the map: ")
+        st.table(df_missing_unique)
+
+        # st.write(" ") 
+        # missing_rsp = df_tk_merged['RSP'].isnull()
+        # df_tk_missing_rsp = df_tk_merged[missing_rsp]
+        # df_missing_2 = df_tk_missing_rsp[['SKU No.','Description']]
+        # df_missing_unique_2 = df_missing_2.drop_duplicates()
+        # st.write("The following products are missing the RSP on the map: ")
+        # st.table(df_missing_unique_2)
+
+    except:
+        st.markdown("**Retailer map column headings:** SKU, ProductCode")
+        st.markdown("**Retailer data column headings:** Product Code, Description, Std Selling Price")
+        st.markdown("Column headings are **case sensitive.** Please make sure they are correct")
+        
+    try:
+        # Set date columns
+        df_tk_merged['Start Date'] = Date_Start
+        
+        # Add retailer and store column
+        df_tk_merged['Forecast Group'] = 'Toy Kingdom'
+        df_tk_merged['Store Name'] = df_tk_merged['Branch']
+
+        # Rename for final data
+        df_tk_merged = df_tk_merged.rename(columns={'Description': 'Product Description'})
+
+        # Don't change these headings. Rather change the ones above
+        final_df_tk = df_tk_merged[['Start Date','SKU No.', 'Product Code', 'Forecast Group','Store Name','SOH Qty','Sales Qty','Total Amt']]
+        final_df_tk_p = df_tk_merged[['Product Code','Product Description','Sales Qty','Total Amt']]
+        final_df_tk_s = df_tk_merged[['Store Name','Total Amt']]   
+        
+        # Show final df
+        df_stats(final_df_tk,final_df_tk_p,final_df_tk_s)
+
+        # Output to .xlsx
+        st.write('Please ensure that no products are missing before downloading!')
+        st.markdown(get_table_download_link(final_df_tk), unsafe_allow_html=True)
+    except:
+        st.write('Check data') 
 
 # 'Toys R Us Audio & Gaming'
 elif option == 'TRU':
