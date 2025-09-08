@@ -2890,7 +2890,7 @@ elif option == 'Toy Kingdom':
         
     try:
         # Set date columns
-        df_tk_merged['Start Date'] = Date_Start
+        df_tk_merged['Start Date'] = Date_End
         
         # Add retailer and store column
         df_tk_merged['Forecast Group'] = 'Toy Kingdom'
