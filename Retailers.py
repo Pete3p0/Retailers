@@ -322,7 +322,6 @@ elif option == 'Buco':
     except:
         st.write('Check data')
 
-
 # Builders Warehouse
 elif option == 'Builders':
 
