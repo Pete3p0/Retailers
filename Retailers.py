@@ -2117,13 +2117,15 @@ elif option == 'Pep-SA':
         df_pep_data = df_data
         df_pep_data['SKU Number'] = df_pep_data.apply(lambda x: 'Wk '+ str(x['Unnamed: 1']) if x['Unnamed: 1'] == Wk else x['SKU Number'], axis = 1)
         
-        # Get rid of extra columns
-        del df_pep_data['Accessories']
-        del df_pep_data['Accessories.1']
-        del df_pep_data['Accessories.2']
-        del df_pep_data['Accessories.3']
-        del df_pep_data['Total']
-        del df_pep_data['Total.1']
+        try: # Get rid of extra columns
+            del df_pep_data['Accessories']
+            del df_pep_data['Accessories.1']
+            del df_pep_data['Accessories.2']
+            del df_pep_data['Accessories.3']
+            del df_pep_data['Total']
+            del df_pep_data['Total.1']
+        except:
+            df_pep_data = df_pep_data
 
         # Rename trash then delete trash
         df_pep_data = df_pep_data.rename(columns={df_pep_data.filter(regex='Unnamed:*').columns[0]:'Unnamed'})
